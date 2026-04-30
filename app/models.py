@@ -282,13 +282,10 @@ class Order(db.Model):
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='order')
 
 
-t_product_modifiers = Table(
-    'product_modifiers', db.Model.metadata,
-    Column('product_id', Uuid, primary_key=True),
-    Column('modifier_id', Uuid, primary_key=True),
-    ForeignKeyConstraint(['modifier_id'], ['modifiers.id'], ondelete='CASCADE', name='product_modifiers_modifier_id_fkey'),
-    ForeignKeyConstraint(['product_id'], ['products.id'], ondelete='CASCADE', name='product_modifiers_product_id_fkey'),
-    PrimaryKeyConstraint('product_id', 'modifier_id', name='product_modifiers_pkey')
+t_product_modifiers = db.Table(
+    'product_modifiers',
+    db.Column('product_id', Uuid, db.ForeignKey('products.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('modifier_id', Uuid, db.ForeignKey('modifiers.id', ondelete='CASCADE'), primary_key=True)
 )
 
 

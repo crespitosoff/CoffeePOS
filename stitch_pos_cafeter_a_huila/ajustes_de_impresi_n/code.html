@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ajustes de Impresión - Tiendas de Promisión Huila</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#60401b",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#584237",
+                    "primary": "#9b4100",
+                    "primary-fixed-dim": "#ffb691",
+                    "outline-variant": "#e0c0b1",
+                    "tertiary-fixed-dim": "#c6c7c5",
+                    "surface-container-highest": "#dce2f3",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary-fixed-variant": "#793100",
+                    "outline": "#8c7165",
+                    "on-primary-container": "#fffbff",
+                    "secondary-fixed-dim": "#ecbe8e",
+                    "surface-container-high": "#e2e8f8",
+                    "tertiary": "#5b5c5b",
+                    "secondary": "#7a5730",
+                    "surface-variant": "#dce2f3",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9ff",
+                    "secondary-container": "#fecf9e",
+                    "surface-tint": "#9e4200",
+                    "on-tertiary-container": "#fdfdfa",
+                    "tertiary-container": "#737573",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#79562f",
+                    "surface-container": "#e7eefe",
+                    "primary-container": "#c25300",
+                    "tertiary-fixed": "#e2e3e0",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed-variant": "#454746",
+                    "on-primary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#2b1700",
+                    "surface-dim": "#d3daea",
+                    "background": "#f9f9ff",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#ffddbb",
+                    "surface-container-low": "#f0f3ff",
+                    "inverse-surface": "#2a313d",
+                    "on-surface": "#151c27",
+                    "primary-fixed": "#ffdbcb",
+                    "on-background": "#151c27",
+                    "on-primary-fixed": "#341100",
+                    "inverse-primary": "#ffb691",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#1a1c1b",
+                    "inverse-on-surface": "#ebf1ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e0c0b1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex min-h-screen overflow-hidden">
+<aside class="h-screen w-64 border-r-0 bg-stone-100 dark:bg-stone-900 flex flex-col py-6 space-y-2 shrink-0">
+<div class="px-6 mb-8">
+<h1 class="text-2xl font-black text-orange-950 dark:text-orange-50 tracking-tighter">Huila POS</h1>
+<p class="text-xs text-stone-500 font-medium tracking-wide uppercase">Terminal 01</p>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="text-stone-600 dark:text-stone-400 mx-2 px-4 py-3 hover:text-stone-900 dark:hover:text-stone-100 transition-all cursor-pointer flex items-center gap-3">
+<span class="material-symbols-outlined">table_restaurant</span>
+<span class="font-medium">Mesas</span>
+</div>
+<div class="text-stone-600 dark:text-stone-400 mx-2 px-4 py-3 hover:text-stone-900 dark:hover:text-stone-100 transition-all cursor-pointer flex items-center gap-3">
+<span class="material-symbols-outlined">local_cafe</span>
+<span class="font-medium">Catálogo</span>
+</div>
+<div class="text-stone-600 dark:text-stone-400 mx-2 px-4 py-3 hover:text-stone-900 dark:hover:text-stone-100 transition-all cursor-pointer flex items-center gap-3">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium">Inventario</span>
+</div>
+<div class="text-stone-600 dark:text-stone-400 mx-2 px-4 py-3 hover:text-stone-900 dark:hover:text-stone-100 transition-all cursor-pointer flex items-center gap-3">
+<span class="material-symbols-outlined">group</span>
+<span class="font-medium">Usuarios</span>
+</div>
+<div class="bg-orange-100/50 dark:bg-orange-900/30 text-orange-900 dark:text-orange-200 rounded-full mx-2 px-4 py-3 font-bold flex items-center gap-3">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>Ajustes</span>
+</div>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-xl">lock_open</span>
+                Cerrar Caja
+            </button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<header class="bg-stone-50/90 dark:bg-stone-950/90 backdrop-blur-xl shadow-sm flex justify-between items-center w-full px-8 py-5 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-orange-950 dark:text-orange-50">Tiendas de Promisión Huila</span>
+<nav class="hidden md:flex items-center gap-6 font-['Plus_Jakarta_Sans'] text-base tracking-tight">
+<a class="text-stone-500 hover:text-stone-900 transition-colors" href="#">Dashboard</a>
+<a class="text-stone-500 hover:text-stone-900 transition-colors" href="#">Menú</a>
+<a class="text-stone-500 hover:text-stone-900 transition-colors" href="#">Caja</a>
+<a class="text-orange-900 dark:text-orange-400 font-bold border-b-2 border-orange-900 pb-1" href="#">Admin</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-stone-100 text-stone-600">print</button>
+<button class="material-symbols-outlined p-2 rounded-full hover:bg-stone-100 text-stone-600">settings</button>
+<div class="h-8 w-8 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-sm" data-weight="fill">account_circle</span>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-8 bg-surface-container-low">
+<div class="max-w-6xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+<div>
+<h2 class="text-4xl font-extrabold text-on-surface tracking-tight mb-2">Configuración de Hardware</h2>
+<p class="text-secondary font-medium italic">Personaliza la experiencia táctil de tus recibos y periféricos.</p>
+</div>
+<button class="bg-primary text-on-primary px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined">save</span>
+                        Guardar Cambios
+                    </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<section class="lg:col-span-7 space-y-8">
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">print</span>
+</div>
+<h3 class="text-xl font-bold">Impresora de Recibos</h3>
+</div>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-outline mb-2 uppercase tracking-wider">Dispositivo Seleccionado</label>
+<div class="relative">
+<select class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 appearance-none font-medium">
+<option>Epson TM-T88VI (USB:001)</option>
+<option>Star Micronics mC-Print3</option>
+<option>Red Local: 192.168.1.45</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-4 rounded-xl border-2 border-outline-variant text-secondary font-bold hover:bg-secondary-fixed transition-colors active:scale-95">
+<span class="material-symbols-outlined">refresh</span>
+                                        Buscar
+                                    </button>
+<button class="flex items-center justify-center gap-3 py-4 rounded-xl bg-secondary-container text-on-secondary-container font-bold hover:bg-secondary-fixed-dim transition-colors active:scale-95">
+<span class="material-symbols-outlined">print_connect</span>
+                                        Prueba de Impresión
+                                    </button>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">Corte Automático</span>
+<span class="text-xs text-outline font-medium">Activar cuchilla al terminar el recibo</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-14 h-8 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">receipt_long</span>
+</div>
+<h3 class="text-xl font-bold">Contenido del Recibo</h3>
+</div>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-outline mb-2 uppercase tracking-wider">Encabezado del Establecimiento</label>
+<input class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 font-medium mb-3" type="text" value="TIENDAS DE PROMISIÓN HUILA S.A.S"/>
+<input class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 font-medium" placeholder="NIT / Identificación Tributaria" type="text" value="NIT: 900.123.456-7"/>
+</div>
+<div>
+<label class="block text-sm font-semibold text-outline mb-2 uppercase tracking-wider">Pie de Página (Mensaje)</label>
+<textarea class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 font-medium resize-none" rows="3">¡Gracias por apoyar el café de origen huilense!
+Vuelve pronto.</textarea>
+</div>
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="block text-sm font-semibold text-outline mb-2 uppercase tracking-wider">Tamaño de Fuente</label>
+<select class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 appearance-none font-medium">
+<option>8pt (Compacto)</option>
+<option selected="">10pt (Normal)</option>
+<option>12pt (Grande)</option>
+</select>
+</div>
+<div class="flex-1">
+<label class="block text-sm font-semibold text-outline mb-2 uppercase tracking-wider">Ancho de Papel</label>
+<select class="w-full bg-surface-container-high border-0 rounded-xl py-4 px-5 text-on-surface focus:ring-2 focus:ring-primary/30 appearance-none font-medium">
+<option>58mm</option>
+<option selected="">80mm</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+</section>
+<aside class="lg:col-span-5 flex flex-col gap-8">
+<div class="bg-surface-container-highest rounded-lg p-6 shadow-inner flex flex-col items-center">
+<span class="text-xs font-bold text-secondary-fixed-dim bg-secondary p-1 px-3 rounded-full mb-6 uppercase tracking-widest">Vista Previa Real</span>
+<div class="w-full max-w-[300px] bg-white shadow-2xl p-6 font-mono text-[10px] text-stone-800 leading-tight">
+<div class="text-center mb-4 space-y-1">
+<div class="flex justify-center mb-2">
+<div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center border border-stone-200">
+<span class="material-symbols-outlined text-stone-400">image</span>
+</div>
+</div>
+<p class="font-bold text-[12px]">TIENDAS DE PROMISIÓN HUILA S.A.S</p>
+<p>NIT: 900.123.456-7</p>
+<p>Calle 10 # 5-24, Neiva, Huila</p>
+<p>Tel: (608) 871 0000</p>
+</div>
+<div class="border-b border-dashed border-stone-300 my-3"></div>
+<div class="space-y-1">
+<div class="flex justify-between">
+<span>FAC: POS-001234</span>
+<span>14/10/2023 09:45</span>
+</div>
+<div class="flex justify-between font-bold">
+<span>CLIENTE:</span>
+<span>CONSUMIDOR FINAL</span>
+</div>
+</div>
+<div class="border-b border-dashed border-stone-300 my-3"></div>
+<div class="space-y-2">
+<div class="flex justify-between">
+<span class="w-3/5">1x Café Geisha (Origen)</span>
+<span class="w-2/5 text-right">$12.500</span>
+</div>
+<div class="flex justify-between">
+<span class="w-3/5">1x Torta de Zanahoria</span>
+<span class="w-2/5 text-right">$8.000</span>
+</div>
+</div>
+<div class="border-b border-dashed border-stone-300 my-3"></div>
+<div class="space-y-1">
+<div class="flex justify-between">
+<span>SUBTOTAL</span>
+<span>$20.500</span>
+</div>
+<div class="flex justify-between">
+<span>IVA (19%)</span>
+<span>$3.895</span>
+</div>
+<div class="flex justify-between font-bold text-[13px] pt-1">
+<span>TOTAL</span>
+<span>$24.395</span>
+</div>
+</div>
+<div class="border-b border-dashed border-stone-300 my-3"></div>
+<div class="text-center mt-4 italic">
+<p>¡Gracias por apoyar el café de origen huilense!</p>
+<p>Vuelve pronto.</p>
+</div>
+<div class="mt-4 flex justify-center">
+<div class="w-20 h-20 bg-stone-50 border border-stone-100 flex items-center justify-center opacity-50">
+<span class="material-symbols-outlined text-stone-300">qr_code_2</span>
+</div>
+</div>
+</div>
+<p class="mt-6 text-sm text-outline text-center px-4 font-medium italic">Esta es una representación visual del estilo seleccionado.</p>
+</div>
+<div class="bg-surface-container rounded-lg p-6 space-y-4">
+<h4 class="font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">info</span>
+                                Recomendación de Hardware
+                            </h4>
+<div class="bg-white/40 backdrop-blur rounded-xl p-4 border border-white/60">
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                                    Para una mejor experiencia con <span class="font-bold text-primary">Huila POS</span>, recomendamos el uso de impresoras térmicas con soporte <span class="underline underline-offset-4 decoration-primary/30">ESC/POS</span> nativo.
+                                </p>
+</div>
+<div class="flex items-center gap-4 text-xs font-bold text-outline">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                    ESTADO: ONLINE
+                                </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">thermometer</span>
+                                    TEMP: 34°C
+                                </div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</main>
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-stone-50 border-t border-stone-200 px-6 py-3 flex justify-between items-center z-[60]">
+<button class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="text-[10px] font-bold">Venta</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-weight="fill">settings</span>
+<span class="text-[10px] font-bold">Ajustes</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-stone-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Perfil</span>
+</button>
+</div>
+</body></html>

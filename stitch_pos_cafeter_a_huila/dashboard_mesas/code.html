@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tiendas de Promisión Huila - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#60401b",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#584237",
+                      "primary": "#9b4100",
+                      "primary-fixed-dim": "#ffb691",
+                      "outline-variant": "#e0c0b1",
+                      "tertiary-fixed-dim": "#c6c7c5",
+                      "surface-container-highest": "#dce2f3",
+                      "surface-bright": "#f9f9ff",
+                      "on-primary-fixed-variant": "#793100",
+                      "outline": "#8c7165",
+                      "on-primary-container": "#fffbff",
+                      "secondary-fixed-dim": "#ecbe8e",
+                      "surface-container-high": "#e2e8f8",
+                      "tertiary": "#5b5c5b",
+                      "secondary": "#7a5730",
+                      "surface-variant": "#dce2f3",
+                      "on-error-container": "#93000a",
+                      "surface": "#f9f9ff",
+                      "secondary-container": "#fecf9e",
+                      "surface-tint": "#9e4200",
+                      "on-tertiary-container": "#fdfdfa",
+                      "tertiary-container": "#737573",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#79562f",
+                      "surface-container": "#e7eefe",
+                      "primary-container": "#c25300",
+                      "tertiary-fixed": "#e2e3e0",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#454746",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed": "#2b1700",
+                      "surface-dim": "#d3daea",
+                      "background": "#f9f9ff",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#ffddbb",
+                      "surface-container-low": "#f0f3ff",
+                      "inverse-surface": "#2a313d",
+                      "on-surface": "#151c27",
+                      "primary-fixed": "#ffdbcb",
+                      "on-background": "#151c27",
+                      "on-primary-fixed": "#341100",
+                      "inverse-primary": "#ffb691",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#1a1c1b",
+                      "inverse-on-surface": "#ebf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Plus Jakarta Sans"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-glass {
+            background: rgba(220, 226, 243, 0.6);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-secondary-container overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-stone-50/90 backdrop-blur-xl shadow-sm px-6 py-4 flex justify-between items-center w-full max-w-full font-jakarta text-base tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-orange-950">Tiendas de Promisión Huila</span>
+<nav class="hidden md:flex items-center space-x-6">
+<a class="text-orange-900 font-bold border-b-2 border-orange-900 pb-2" href="#">Dashboard</a>
+<a class="text-stone-500 hover:text-stone-900 pb-2 transition-colors duration-200" href="#">Menú</a>
+<a class="text-stone-500 hover:text-stone-900 pb-2 transition-colors duration-200" href="#">Caja</a>
+<a class="text-stone-500 hover:text-stone-900 pb-2 transition-colors duration-200" href="#">Admin</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2 rounded-full font-bold transition-transform active:scale-95">
+                Nueva Venta
+            </button>
+<div class="flex items-center gap-2">
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors"><span class="material-symbols-outlined">print</span></button>
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<button class="p-2 text-stone-500 hover:bg-stone-100 rounded-full transition-colors"><span class="material-symbols-outlined">account_circle</span></button>
+</div>
+</div>
+</header>
+<div class="flex h-screen pt-20">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full w-64 py-6 space-y-2 bg-stone-100 font-jakarta font-medium">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-sm font-bold text-orange-950">Terminal 01</p>
+<p class="text-xs text-stone-500">Usuario Admin</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 bg-orange-100/50 text-orange-900 rounded-full mx-2 px-4 py-3 font-bold" href="#">
+<span class="material-symbols-outlined">table_restaurant</span>
+<span>Mesas</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 mx-2 px-4 py-3 hover:bg-stone-200 hover:text-stone-900 transition-all rounded-full" href="#">
+<span class="material-symbols-outlined">local_cafe</span>
+<span>Catálogo</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 mx-2 px-4 py-3 hover:bg-stone-200 hover:text-stone-900 transition-all rounded-full" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Inventario</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 mx-2 px-4 py-3 hover:bg-stone-200 hover:text-stone-900 transition-all rounded-full" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Usuarios</span>
+</a>
+<a class="flex items-center gap-3 text-stone-600 mx-2 px-4 py-3 hover:bg-stone-200 hover:text-stone-900 transition-all rounded-full" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>Ajustes</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full bg-stone-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-stone-950 transition-colors">
+<span class="material-symbols-outlined">point_of_sale</span>
+                    Cerrar Caja
+                </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto bg-surface-container-lowest p-8">
+<div class="max-w-7xl mx-auto">
+<!-- Welcome & Cashier Status -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+<div>
+<h1 class="font-jakarta text-4xl font-extrabold text-on-surface tracking-tight">¡Buenos días, Mateo!</h1>
+<p class="text-on-surface-variant mt-2 font-medium">El aroma del café Huila te acompaña hoy.</p>
+</div>
+<!-- Cash Register Control -->
+<div class="bg-surface-container-high p-4 rounded-lg flex items-center gap-6 shadow-sm">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-secondary uppercase tracking-wider">Estado de Caja</span>
+<span class="text-lg font-bold text-on-surface">Abierta • $1,240,000</span>
+</div>
+<div class="flex gap-2">
+<button class="p-3 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+</button>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-full font-bold text-sm shadow-md transition-transform active:scale-95">
+                                Arqueo Rápido
+                            </button>
+</div>
+</div>
+</div>
+<!-- Tables Grid (Bento Style) -->
+<div class="mb-12">
+<div class="flex justify-between items-end mb-6">
+<h2 class="font-jakarta text-2xl font-bold text-on-surface">Mapa de Mesas</h2>
+<span class="text-secondary font-semibold">12 Mesas Activas</span>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+<!-- Table Card - Active -->
+<div class="bg-secondary-container/30 p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary-container/50 transition-all border-2 border-secondary/20">
+<span class="material-symbols-outlined text-4xl text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">table_restaurant</span>
+<span class="font-jakarta font-bold text-secondary">Mesa #01</span>
+<span class="text-xs font-bold text-on-secondary-container mt-1">$45.000</span>
+<div class="mt-3 flex -space-x-2">
+<img class="w-6 h-6 rounded-full border-2 border-white" data-alt="close-up portrait of a man with a friendly expression in soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNAGUP4gS1015TpAzQvuCAympifTopz23ZELjweENyFTWK-weKUgvkVIMP35ktRiOoorsUa6-JWWxd7AdjQfUuMM7yuYv0NavcnHfoG-ymZHH2lBejeH3KSnuJNfikfg0y9MfNkfQMTBfGWbfdlZAweon_ULq4ANEwb3AB1UQnHUb_5eMyv7BMthAzLefH9RzLggdE95dmz8H0eTEU3dvsIBYNf2sBpkrDyhDV9ZcXUDfegm1rMg9b4tpY4DY6m0FHaAVishZHuO7r"/>
+<div class="w-6 h-6 rounded-full bg-secondary text-[10px] flex items-center justify-center text-white border-2 border-white">+2</div>
+</div>
+</div>
+<!-- Table Card - Available -->
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-4xl text-stone-300 mb-2">table_restaurant</span>
+<span class="font-jakarta font-bold text-on-surface-variant">Mesa #02</span>
+<span class="text-xs text-stone-400 mt-1 italic">Disponible</span>
+</div>
+<!-- Table Card - Active -->
+<div class="bg-secondary-container/30 p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary-container/50 transition-all border-2 border-secondary/20">
+<span class="material-symbols-outlined text-4xl text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">table_restaurant</span>
+<span class="font-jakarta font-bold text-secondary">Mesa #03</span>
+<span class="text-xs font-bold text-on-secondary-container mt-1">$128.900</span>
+</div>
+<!-- Table Card - Available -->
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-4xl text-stone-300 mb-2">table_restaurant</span>
+<span class="font-jakarta font-bold text-on-surface-variant">Mesa #04</span>
+<span class="text-xs text-stone-400 mt-1 italic">Disponible</span>
+</div>
+<!-- Table Card - Available -->
+<div class="bg-surface-container-low p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-4xl text-stone-300 mb-2">table_restaurant</span>
+<span class="font-jakarta font-bold text-on-surface-variant">Mesa #05</span>
+<span class="text-xs text-stone-400 mt-1 italic">Disponible</span>
+</div>
+<!-- Table Card - Active -->
+<div class="bg-secondary-container/30 p-6 rounded-lg flex flex-col items-center justify-center text-center cursor-pointer hover:bg-secondary-container/50 transition-all border-2 border-secondary/20">
+<span class="material-symbols-outlined text-4xl text-secondary mb-2" style="font-variation-settings: 'FILL' 1;">table_restaurant</span>
+<span class="font-jakarta font-bold text-secondary">Mesa #06</span>
+<span class="text-xs font-bold text-on-secondary-container mt-1">$32.000</span>
+</div>
+</div>
+</div>
+<!-- Active Orders & Quick Stats -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Orders Tray -->
+<div class="lg:col-span-2">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-jakarta text-xl font-bold text-on-surface">Pedidos Recientes</h3>
+<button class="text-primary font-bold text-sm">Ver todos</button>
+</div>
+<div class="space-y-4">
+<!-- Order Item -->
+<div class="bg-surface-container-low hover:bg-surface-container p-4 rounded-lg flex items-center justify-between transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-white overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="close-up of a latte with intricate latte art heart in a ceramic cup on a wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCikHot1I-ndkdn8o724JkXZ_TQCFBkrpwBmxLCDhFC5QyLSzxRj_KMrghvmTGHmM5aTLsNEArD3orcI-CmOHTPTyDYUdOSIa8clGSmhWikbuPHzDqGwdSkO69niqcVAqW7dW-AgbiWC-gzktaApXJ25OOmw5NHTITAeT5LWEd9FQes2luGR4VPgLwpkTQ1S6VLgQYwJQtT_TM__rdMhjJGyGlHYJS4lhcVmHKY7OSQtHIfTF0KOqbkDlR6-73qifcDHe-ue5NaPu2O"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Capuchino Tradicional (x2)</p>
+<p class="text-xs text-on-surface-variant">Mesa #01 • Hace 5 min</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-jakarta font-bold text-lg text-primary">$18.400</p>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        Preparando
+                                    </span>
+</div>
+</div>
+<!-- Order Item -->
+<div class="bg-surface-container-low hover:bg-surface-container p-4 rounded-lg flex items-center justify-between transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-white overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="artisan pastries and croissants arranged on a minimalist white plate with soft morning light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGy_IbDLS3nFcN1pHoO38Z7SgAjTRa4SkSYCPQqNxyzVK_CYiRUyt_7oirOvAmTs2VgaUjh4O0h3nYsyTgRSjz_ZD_QmozTvj1W5YcWReTjlM0NT1RhroqMHXx_0VssXR0hSkOo2LJ4UOLVwipmPF1A7OUOsPFurSp3xM-yljXMZe72_MhLsbvGw1blxk96fgnKYK9vwG32jcMwKTk68vJzZBVH09HhhGvfRdNbQ2Bf9swqT0YhM8pXo2yzFAkjiFPvcRJlcGwIgqG"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Torta de Café y Almojábana</p>
+<p class="text-xs text-on-surface-variant">Mesa #03 • Hace 12 min</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-jakarta font-bold text-lg text-primary">$24.500</p>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Entregado
+                                    </span>
+</div>
+</div>
+<!-- Order Item -->
+<div class="bg-surface-container-low hover:bg-surface-container p-4 rounded-lg flex items-center justify-between transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-white overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="glass of cold brew coffee with ice cubes melting, dark moody lighting with coffee beans scattered" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWc8fKykuU9xlDgzYSokoW83fKSghDf4r_9xyRt0bHSGCgxIq7pADxXu92NUEQjIl8tgg1GGxfiilZF5j3NozyEcKTLNOobh6zDv6cTKIx0T562wcluXPiYVHQ-tyBquGf-vjPl3kf9VDJdCkkhW_vq0g9TK7hXoOSqvooq45hgLoDqng-uhginHuwjV1FeUUIj0MkLWwPmeGT0NQjYvIqD9YP80XeeFNAec8IxXbSOx6xWd8g9NzloJTeyEQzJ2YQ0g8lAvwKF60h"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Cold Brew Huila Especial</p>
+<p class="text-xs text-on-surface-variant">Mesa #06 • Hace 18 min</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-jakarta font-bold text-lg text-primary">$12.000</p>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Entregado
+                                    </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Summary / Quick Actions -->
+<div class="space-y-6">
+<h3 class="font-jakarta text-xl font-bold text-on-surface">Resumen de Ventas</h3>
+<div class="bg-surface-container rounded-lg p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Ventas Totales</span>
+<span class="font-bold text-on-surface">$1,450,200</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Transacciones</span>
+<span class="font-bold text-on-surface">42</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant">Ticket Promedio</span>
+<span class="font-bold text-on-surface">$34,528</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/30">
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div class="bg-primary h-2 rounded-full w-3/4"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-2 font-bold uppercase tracking-widest">75% Meta Diaria Alcanzada</p>
+</div>
+</div>
+<!-- Special Action Card -->
+<div class="relative overflow-hidden rounded-lg bg-secondary text-white p-6 shadow-xl">
+<div class="relative z-10">
+<h4 class="font-jakarta font-bold text-lg mb-2">Inventario Crítico</h4>
+<p class="text-sm text-secondary-fixed/80 mb-4">Quedan 2kg de Café Especial Huila Premium. ¿Deseas solicitar reposición?</p>
+<button class="bg-secondary-fixed text-on-secondary-fixed px-4 py-2 rounded-full text-xs font-extrabold uppercase tracking-wider">Solicitar Ahora</button>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]">inventory</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-2xl flex justify-around items-center py-3 px-2 z-50 border-t border-stone-100">
+<a class="flex flex-col items-center gap-1 text-orange-900 font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">table_restaurant</span>
+<span class="text-[10px]">Mesas</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-400" href="#">
+<span class="material-symbols-outlined">local_cafe</span>
+<span class="text-[10px]">Menú</span>
+</a>
+<button class="bg-primary text-white p-4 rounded-full -mt-10 shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+<a class="flex flex-col items-center gap-1 text-stone-400" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="text-[10px]">Caja</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-stone-400" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px]">Perfil</span>
+</a>
+</nav>
+</body></html>

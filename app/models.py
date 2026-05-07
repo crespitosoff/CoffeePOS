@@ -5,7 +5,7 @@ import decimal
 import enum
 import uuid
 
-from sqlalchemy import CheckConstraint, Column, DateTime, Enum, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, UniqueConstraint, Uuid, text
+from sqlalchemy import CheckConstraint, Column, DateTime, Enum, ForeignKey, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class GenericStatus(str, enum.Enum):
@@ -68,22 +68,6 @@ class Category(db.Model):
     products: Mapped[list['Product']] = relationship('Product', back_populates='category')
 
 
-class Modifier(db.Model):
-    __tablename__ = 'modifiers'
-    __table_args__ = (
-        PrimaryKeyConstraint('id', name='modifiers_pkey'),
-    )
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    price_adjustment: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False, server_default=text('0'))
-    group_name: Mapped[str] = mapped_column(String(100), nullable=False, server_default=text("'General'::character varying"))
-    status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
-
-    products: Mapped[list['Product']] = relationship('Product', secondary='product_modifiers', back_populates='modifiers')
-    order_item_modifiers: Mapped[list['OrderItemModifier']] = relationship('OrderItemModifier', back_populates='modifier')
-
-
 class StoreSetting(db.Model):
     __tablename__ = 'store_settings'
     __table_args__ = (
@@ -114,15 +98,19 @@ class Table(db.Model):
     __tablename__ = 'tables'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='tables_pkey'),
-        UniqueConstraint('name', name='tables_name_key')
+        UniqueConstraint('name', name='tables_name_key'),
+        ForeignKeyConstraint(['current_order_id'], ['orders.id'], name='tables_current_order_id_fkey')
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     capacity: Mapped[Optional[int]] = mapped_column(Integer, server_default=text('2'))
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
+    current_order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, nullable=True)
 
-    orders: Mapped[list['Order']] = relationship('Order', back_populates='table')
+    current_order: Mapped[Optional['Order']] = relationship('Order', foreign_keys=[current_order_id], post_update=True)
+
+    orders: Mapped[list['Order']] = relationship('Order',foreign_keys='Order.table_id', back_populates='table', overlaps='current_order')
 
 
 class User(db.Model):
@@ -140,36 +128,13 @@ class User(db.Model):
     last_name: Mapped[Optional[str]] = mapped_column(String(80))
     phone: Mapped[Optional[str]] = mapped_column(String(30))
     email: Mapped[Optional[str]] = mapped_column(String(120))
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(255))
     status: Mapped[Optional[UserStatus]] = mapped_column(Enum(UserStatus, values_callable=lambda cls: [member.value for member in cls], name='user_status'), server_default=text("'active'::user_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
 
-    accounting_ledger: Mapped[list['AccountingLedger']] = relationship('AccountingLedger', back_populates='user')
     register_sessions_closed_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.closed_by]', back_populates='user')
     register_sessions_opened_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.opened_by]', back_populates='user_')
-    cash_movements: Mapped[list['CashMovement']] = relationship('CashMovement', back_populates='user')
     orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
-
-
-class AccountingLedger(db.Model):
-    __tablename__ = 'accounting_ledger'
-    __table_args__ = (
-        CheckConstraint('credit >= 0::numeric', name='accounting_ledger_credit_check'),
-        CheckConstraint('debit >= 0::numeric', name='accounting_ledger_debit_check'),
-        ForeignKeyConstraint(['created_by'], ['users.id'], name='accounting_ledger_created_by_fkey'),
-        PrimaryKeyConstraint('id', name='accounting_ledger_pkey')
-    )
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
-    account_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
-    transaction_date: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
-    debit: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
-    credit: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
-    reference_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    reference_type: Mapped[Optional[str]] = mapped_column(String(50))
-    created_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-
-    user: Mapped[Optional['User']] = relationship('User', back_populates='accounting_ledger')
 
 
 class Product(db.Model):
@@ -197,7 +162,6 @@ class Product(db.Model):
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
 
-    modifiers: Mapped[list['Modifier']] = relationship('Modifier', secondary='product_modifiers', back_populates='products')
     category: Mapped[Optional['Category']] = relationship('Category', back_populates='products')
     order_items: Mapped[list['OrderItem']] = relationship('OrderItem', back_populates='product')
 
@@ -224,31 +188,8 @@ class RegisterSession(db.Model):
 
     user: Mapped[Optional['User']] = relationship('User', foreign_keys=[closed_by], back_populates='register_sessions_closed_by')
     user_: Mapped[Optional['User']] = relationship('User', foreign_keys=[opened_by], back_populates='register_sessions_opened_by')
-    cash_movements: Mapped[list['CashMovement']] = relationship('CashMovement', back_populates='register_session')
     orders: Mapped[list['Order']] = relationship('Order', back_populates='register_session')
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='register_session')
-
-
-class CashMovement(db.Model):
-    __tablename__ = 'cash_movements'
-    __table_args__ = (
-        CheckConstraint('amount > 0::numeric', name='cash_movements_amount_check'),
-        ForeignKeyConstraint(['created_by'], ['users.id'], name='cash_movements_created_by_fkey'),
-        ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], name='cash_movements_register_session_id_fkey'),
-        PrimaryKeyConstraint('id', name='cash_movements_pkey'),
-        Index('idx_cash_movements_session', 'register_session_id')
-    )
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
-    type: Mapped[MovementType] = mapped_column(Enum(MovementType, values_callable=lambda cls: [member.value for member in cls], name='movement_type'), nullable=False)
-    amount: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    reason: Mapped[str] = mapped_column(Text, nullable=False)
-    register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    created_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
-
-    user: Mapped[Optional['User']] = relationship('User', back_populates='cash_movements')
-    register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='cash_movements')
 
 
 class Order(db.Model):
@@ -265,7 +206,7 @@ class Order(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
     register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    table_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    table_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('tables.id'), nullable=True)
     customer_name: Mapped[Optional[str]] = mapped_column(String(100))
     subtotal: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
     tax: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
@@ -276,17 +217,10 @@ class Order(db.Model):
     closed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='orders')
-    table: Mapped[Optional['Table']] = relationship('Table', back_populates='orders')
+    table: Mapped[Optional['Table']] = relationship('Table', foreign_keys=[table_id], back_populates='orders', overlaps='current_order')
     user: Mapped[Optional['User']] = relationship('User', back_populates='orders')
     order_items: Mapped[list['OrderItem']] = relationship('OrderItem', back_populates='order')
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='order')
-
-
-t_product_modifiers = db.Table(
-    'product_modifiers',
-    db.Column('product_id', Uuid, db.ForeignKey('products.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('modifier_id', Uuid, db.ForeignKey('modifiers.id', ondelete='CASCADE'), primary_key=True)
-)
 
 
 class OrderItem(db.Model):
@@ -309,7 +243,6 @@ class OrderItem(db.Model):
 
     order: Mapped[Optional['Order']] = relationship('Order', back_populates='order_items')
     product: Mapped[Optional['Product']] = relationship('Product', back_populates='order_items')
-    order_item_modifiers: Mapped[list['OrderItemModifier']] = relationship('OrderItemModifier', back_populates='order_item')
 
 
 class Payment(db.Model):
@@ -332,20 +265,3 @@ class Payment(db.Model):
 
     order: Mapped[Optional['Order']] = relationship('Order', back_populates='payments')
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='payments')
-
-
-class OrderItemModifier(db.Model):
-    __tablename__ = 'order_item_modifiers'
-    __table_args__ = (
-        ForeignKeyConstraint(['modifier_id'], ['modifiers.id'], name='order_item_modifiers_modifier_id_fkey'),
-        ForeignKeyConstraint(['order_item_id'], ['order_items.id'], ondelete='CASCADE', name='order_item_modifiers_order_item_id_fkey'),
-        PrimaryKeyConstraint('id', name='order_item_modifiers_pkey')
-    )
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
-    historical_price_adjustment: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    order_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    modifier_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-
-    modifier: Mapped[Optional['Modifier']] = relationship('Modifier', back_populates='order_item_modifiers')
-    order_item: Mapped[Optional['OrderItem']] = relationship('OrderItem', back_populates='order_item_modifiers')

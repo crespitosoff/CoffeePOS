@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CoffeePOS - Order Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#f2dfd6",
+                        "inverse-primary": "#ffb691",
+                        "outline": "#897267",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#f2dfd6",
+                        "secondary-container": "#fecf9e",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#c2d6ff",
+                        "on-secondary-fixed-variant": "#60401b",
+                        "surface-container-high": "#f8e4dc",
+                        "primary": "#763000",
+                        "surface": "#fff8f6",
+                        "inverse-on-surface": "#ffede6",
+                        "surface-dim": "#e9d6ce",
+                        "outline-variant": "#ddc1b4",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#2c1700",
+                        "on-tertiary-fixed-variant": "#00468d",
+                        "surface-container-low": "#fcfaf8",
+                        "primary-fixed-dim": "#ffb691",
+                        "primary-fixed": "#ffdbcb",
+                        "on-secondary-container": "#79562f",
+                        "surface-tint": "#9e4302",
+                        "surface-bright": "#fff8f6",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#7a5730",
+                        "on-primary-fixed-variant": "#793100",
+                        "tertiary": "#00448a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#231915",
+                        "on-background": "#151c27",
+                        "inverse-surface": "#392e29",
+                        "on-tertiary-fixed": "#001b3e",
+                        "surface-container": "#f5f1ed",
+                        "tertiary-fixed": "#d6e3ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#aac7ff",
+                        "on-surface-variant": "#564339",
+                        "secondary-fixed-dim": "#ecbe8e",
+                        "background": "#fff8f6",
+                        "primary-container": "#9b4100",
+                        "secondary-fixed": "#ffdcbb",
+                        "on-primary-fixed": "#341100",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#035bb4",
+                        "on-primary-container": "#ffcab1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "touch-target-min": "64px",
+                        "edge-margin": "2rem",
+                        "asymmetric-gap-sm": "1.5rem",
+                        "asymmetric-gap-lg": "2rem",
+                        "vertical-rhythm": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "title-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "display-lg": ["57px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-lg min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col py-edge-margin border-r border-outline-variant/15 bg-surface-container-low w-80 z-20">
+<div class="px-edge-margin mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS Admin</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">The Elevated Harvest</p>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-title-md text-title-md">Dashboard</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-4 my-1 px-4 py-3 flex items-center gap-4 translate-x-1 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">deck</span>
+<span class="font-title-md text-title-md">Tables</span>
+</a>
+<a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-title-md text-title-md">Catalog</span>
+</a>
+<a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-title-md text-title-md">Reports</span>
+</a>
+<a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-title-md text-title-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-2 px-4">
+<button class="bg-primary text-on-primary font-title-md text-title-md rounded-xl h-touch-target-min w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                Open Register
+            </button>
+<div class="mt-4">
+<a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-title-md text-title-md">Logout</span>
+</a>
+<a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-title-md text-title-md">Support</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-80 flex-grow flex w-[calc(100%-20rem)] min-h-screen relative">
+<!-- Left: Catalog (70%) -->
+<div class="flex-grow flex flex-col pt-edge-margin px-edge-margin bg-background pb-32">
+<!-- Header -->
+<div class="flex justify-between items-end mb-asymmetric-gap-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Mesa 3</h2>
+<p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Nueva Orden</p>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high cursor-pointer">search</span>
+</div>
+</div>
+<!-- Categories -->
+<div class="flex gap-6 overflow-x-auto pb-4 mb-asymmetric-gap-sm no-scrollbar border-b border-outline-variant/15">
+<button class="font-title-md text-title-md text-primary border-b-2 border-primary pb-2 whitespace-nowrap">Café</button>
+<button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Bebidas Frías</button>
+<button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Postres</button>
+<button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Panadería</button>
+<button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Extras</button>
+</div>
+<!-- Products Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-asymmetric-gap-sm">
+<!-- Product 1 -->
+<div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group">
+<img class="w-full h-40 object-cover rounded-[1.5rem]" data-alt="A meticulously crafted espresso drink, like a flat white, served in an artisanal ceramic cup on a wooden table. The lighting is soft and natural, emphasizing the rich amber crema and perfectly poured latte art. The setting is a minimalist, modern coffee shop with a warm, organic aesthetic. Light and airy mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnoNiW15jCnfnZ3f1uzJtIbqKWRfOEZctX_gZ3VkSZdXWNRLm-WI5j8nMnnmIT39nihGQ87NlM-Rl-MFmUqa0SiSTS0fVuO4HqwzYcQFX29vj2TX10i-3SNVucgBGQRYmrL32XY-8hranzebUpRlD7HMw9yhsRxruAOKV4wQSdqqghBaKf5LWyOz2J2VRH0fNWvPw4y0v7XEnc3OstzS-vXsMUiqBZRtiUN19KMK0SHOFZA44dFLkpLTPmgJVrfJzWWhM5vvArJkU"/>
+<div class="flex flex-col gap-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Espresso Doble</h3>
+<div class="flex justify-between items-center mt-2">
+<span class="font-headline-md text-headline-md text-primary">$4,500</span>
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock: 45</span>
+</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Product 2 -->
+<div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group">
+<img class="w-full h-40 object-cover rounded-[1.5rem]" data-alt="A tall glass of iced coffee with a gentle swirl of milk cascading through the dark brew, condensation clearly visible on the glass. It sits on a smooth, light-colored stone counter. Soft, diffuse lighting highlights the refreshing nature of the drink. The environment feels clean, bright, and distinctly modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuW7XwUA4sEi93WN87bqTrymRSSaMgP2TagB-avyBsgvcOJornJ5RPnPjWNPVpeqnz8PgS7707xpuQ-eyqN1ABzwdfWLiMtV84nQW9qmIJCYfYY5kdwhyVc2_GBOf0UtneCxJeRkpwdjPpkhsnEzV2S9QsBE5h41w1Trj0XFkRUBq_arLpDVXu3o2ZtFAlXbYkki1sF_GbrNwSAiBi2FRhrFctEQ4rJbJ08G3_tA-tOgLTkW12I738e8jPaEDl2ZlDP0d8INkl0-8"/>
+<div class="flex flex-col gap-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Americano</h3>
+<div class="flex justify-between items-center mt-2">
+<span class="font-headline-md text-headline-md text-primary">$3,800</span>
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock: 120</span>
+</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Product 3 -->
+<div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group">
+<img class="w-full h-40 object-cover rounded-[1.5rem]" data-alt="A perfectly textured latte in a shallow, wide-brimmed cup, resting on a matching saucer. The focus is on the intricate rosetta latte art pattern in the foam. The background is softly blurred, showing hints of a bright cafe interior. The overall tone is warm, inviting, and premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1LnYw4xCjJJUtO4ZGkq05aiadX6fm6f6V7QELrnf1Bkf5UVL4iQ4f_4ljawd_Wie22RFS5oHA5NV6OpIpDIwwLjWMx09CtP1T8dj2QtjkhGNFvfY27KkN4du9SHcLxmPFG7mR4GHRth9OvrNANDopoP5xuaqk3USZ7FoqoYgytlLh-CeCBa9X_FEfyJmjsHUPYtpkxzMCP56yM-12aRnPF33bBcKQebHmuVT6bDQ4NQkPrUvZY5EFqRFetMNe55qFOjG-iOaeaJA"/>
+<div class="flex flex-col gap-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Latte</h3>
+<div class="flex justify-between items-center mt-2">
+<span class="font-headline-md text-headline-md text-primary">$5,200</span>
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock: 80</span>
+</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<!-- Product 4 -->
+<div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group">
+<img class="w-full h-40 object-cover rounded-[1.5rem]" data-alt="A rich, dark mocha topped with a dollop of fresh whipped cream and a dusting of cocoa powder. Served in a thick-walled, rustic mug. The setting implies a cozy, yet refined atmosphere, perhaps near a window with soft, natural daylight pouring in. The colors are earthy and deep." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1VkGkp8xFNjVkB2DojyyQ6N1HrZkE8syV13_8VP6EOyUYX4h5ThondWq0VNu-OAef4AAVJAIsloWGJc85kTIDppw0B9DnLpG3d5q03kJHBhMHGqdTW-o2H6pfeMZoAqJpcVLH9tWxtJwv9mgv43t0q34kxt_f7pAfXcoB3ePlRxpV1XfAccPAXpeJTiq1jMDILaZDEHcJVPIn9w1PisVTT_DDg-htQ6BI_h6F6xmEa98qb8YxOi6HtVZ60gaA1SPNCyCsbi5zDXE"/>
+<div class="flex flex-col gap-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Mocha</h3>
+<div class="flex justify-between items-center mt-2">
+<span class="font-headline-md text-headline-md text-primary">$5,800</span>
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock: 30</span>
+</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Bottom Scroll Fade -->
+<div class="fixed bottom-0 left-80 right-96 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10"></div>
+</div>
+<!-- Right: Sticky Cart (30%) -->
+<aside class="w-96 min-w-[24rem] bg-surface-container-low border-l border-outline-variant/15 flex flex-col h-screen sticky top-0 z-20">
+<div class="p-edge-margin border-b border-outline-variant/15">
+<h2 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-4">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+                    Carrito
+                </h2>
+</div>
+<!-- Cart Items -->
+<div class="flex-grow overflow-y-auto p-6 flex flex-col gap-6">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.04)]">
+<div class="flex justify-between items-start">
+<h4 class="font-title-lg text-title-lg text-on-surface">Espresso Doble</h4>
+<button class="text-outline hover:text-error transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-4 bg-surface-container-high rounded-full p-1">
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<span class="font-title-md text-title-md text-on-surface w-4 text-center">2</span>
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+<span class="font-title-lg text-title-lg text-primary">$9,000</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.04)]">
+<div class="flex justify-between items-start">
+<h4 class="font-title-lg text-title-lg text-on-surface">Croissant</h4>
+<button class="text-outline hover:text-error transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-4 bg-surface-container-high rounded-full p-1">
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<span class="font-title-md text-title-md text-on-surface w-4 text-center">1</span>
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+<span class="font-title-lg text-title-lg text-primary">$3,500</span>
+</div>
+</div>
+</div>
+<!-- Cart Footer -->
+<div class="p-edge-margin bg-surface-container-lowest border-t border-outline-variant/15 shadow-[0px_-12px_32px_rgba(35,25,21,0.06)]">
+<div class="flex justify-between items-center mb-6">
+<span class="font-title-lg text-title-lg text-on-surface-variant">Total</span>
+<span class="font-headline-lg text-headline-lg text-primary font-bold">$12,500</span>
+</div>
+<div class="flex flex-col gap-4">
+<button class="bg-primary hover:bg-primary-container text-on-primary font-title-lg text-title-lg h-touch-target-min rounded-xl transition-all shadow-md active:scale-95">
+                        Proceder a Pago
+                    </button>
+<button class="bg-transparent text-error font-title-md text-title-md py-4 hover:bg-error-container/20 rounded-xl transition-all">
+                        Cancelar Orden
+                    </button>
+</div>
+</div>
+</aside>
+</main>
+</body></html>

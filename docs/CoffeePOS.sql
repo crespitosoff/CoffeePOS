@@ -1,22 +1,21 @@
 -- =====================================================
--- COFFEEPOS v1.0 FINAL (PostgreSQL PRO Edition)
--- Enfoque: Cafeterías / POS pequeños negocios
--- Escalable, limpio, producción real
+-- COFFEEPOS DB
 -- =====================================================
 
+-- EXTENSIÓN NECESARIA PARA UUID
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- =====================================================
 -- ENUMS
 -- =====================================================
 
+-- Roles de usuario
 CREATE TYPE user_role AS ENUM (
   'admin',
-  'manager',
-  'cashier',
-  'barista'
+  'cashier'
 );
 
+-- Estado de usuario
 CREATE TYPE user_status AS ENUM (
   'active',
   'inactive',
@@ -24,12 +23,14 @@ CREATE TYPE user_status AS ENUM (
   'terminated'
 );
 
+-- Estado genérico (productos, categorías, mesas)
 CREATE TYPE generic_status AS ENUM (
   'active',
   'inactive',
   'archived'
 );
 
+-- Estado de órdenes
 CREATE TYPE order_status AS ENUM (
   'open',
   'preparing',
@@ -38,24 +39,21 @@ CREATE TYPE order_status AS ENUM (
   'cancelled'
 );
 
+-- Métodos de pago
 CREATE TYPE payment_method AS ENUM (
   'cash',
   'card',
   'transfer'
 );
 
+-- Estado de caja
 CREATE TYPE register_status AS ENUM (
   'open',
   'closed'
 );
 
-CREATE TYPE movement_type AS ENUM (
-  'income',
-  'expense'
-);
-
 -- =====================================================
--- STORE SETTINGS
+-- CONFIGURACIÓN DEL NEGOCIO
 -- =====================================================
 
 CREATE TABLE store_settings (
@@ -70,13 +68,16 @@ CREATE TABLE store_settings (
   email VARCHAR(120),
   website VARCHAR(150),
 
+  -- Configuración regional
   currency VARCHAR(10) DEFAULT 'COP',
   language VARCHAR(10) DEFAULT 'es-CO',
   timezone VARCHAR(60) DEFAULT 'America/Bogota',
   country_code VARCHAR(5) DEFAULT 'CO',
 
-  tax_percentage NUMERIC(5,2) DEFAULT 19.00,
+  -- Impuestos
+  tax_percentage NUMERIC(5,2) DEFAULT 19 CHECK (tax_percentage >= 0),
 
+  -- Facturación
   invoice_prefix VARCHAR(20) DEFAULT 'FAC',
   next_invoice_number INT DEFAULT 1,
 
@@ -87,7 +88,7 @@ CREATE TABLE store_settings (
 );
 
 -- =====================================================
--- USERS
+-- USUARIOS
 -- =====================================================
 
 CREATE TABLE users (
@@ -108,7 +109,7 @@ CREATE TABLE users (
 );
 
 -- =====================================================
--- CATEGORIES
+-- CATEGORÍAS
 -- =====================================================
 
 CREATE TABLE categories (
@@ -123,7 +124,7 @@ CREATE TABLE categories (
 );
 
 -- =====================================================
--- PRODUCTS
+-- PRODUCTOS
 -- =====================================================
 
 CREATE TABLE products (
@@ -148,34 +149,12 @@ CREATE TABLE products (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
--- MODIFIERS
--- =====================================================
-
-CREATE TABLE modifiers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  group_name VARCHAR(100) NOT NULL DEFAULT 'General',
-  name VARCHAR(100) NOT NULL,
-  price_adjustment NUMERIC(12,2) DEFAULT 0 NOT NULL,
-
-  status generic_status DEFAULT 'active'
-  
-);
+-- Índices útiles
+CREATE INDEX idx_products_name ON products(name);
+CREATE INDEX idx_products_status ON products(status);
 
 -- =====================================================
--- PRODUCT <-> MODIFIERS
--- =====================================================
-
-CREATE TABLE product_modifiers (
-  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-  modifier_id UUID REFERENCES modifiers(id) ON DELETE CASCADE,
-
-  PRIMARY KEY (product_id, modifier_id)
-);
-
--- =====================================================
--- TABLES (Mesas físicas)
+-- MESAS
 -- =====================================================
 
 CREATE TABLE tables (
@@ -188,7 +167,7 @@ CREATE TABLE tables (
 );
 
 -- =====================================================
--- REGISTER SESSIONS (Caja)
+-- SESIONES DE CAJA
 -- =====================================================
 
 CREATE TABLE register_sessions (
@@ -197,7 +176,7 @@ CREATE TABLE register_sessions (
   opened_by UUID REFERENCES users(id),
   closed_by UUID REFERENCES users(id),
 
-  opening_amount NUMERIC(12,2) NOT NULL,
+  opening_amount NUMERIC(12,2) NOT NULL CHECK (opening_amount >= 0),
   closing_amount NUMERIC(12,2),
   expected_amount NUMERIC(12,2),
   difference NUMERIC(12,2),
@@ -208,12 +187,13 @@ CREATE TABLE register_sessions (
   closed_at TIMESTAMPTZ
 );
 
+-- 🔥 Solo permite UNA caja abierta al mismo tiempo
 CREATE UNIQUE INDEX idx_single_open_register
-ON register_sessions(status)
+ON register_sessions (status)
 WHERE status = 'open';
 
 -- =====================================================
--- ORDERS
+-- ÓRDENES
 -- =====================================================
 
 CREATE TABLE orders (
@@ -221,14 +201,13 @@ CREATE TABLE orders (
 
   user_id UUID REFERENCES users(id),
   register_session_id UUID REFERENCES register_sessions(id),
-
   table_id UUID REFERENCES tables(id),
 
   customer_name VARCHAR(100),
 
-  subtotal NUMERIC(12,2) DEFAULT 0,
-  tax NUMERIC(12,2) DEFAULT 0,
-  total NUMERIC(12,2) DEFAULT 0,
+  subtotal NUMERIC(12,2) DEFAULT 0 CHECK (subtotal >= 0),
+  tax NUMERIC(12,2) DEFAULT 0 CHECK (tax >= 0),
+  total NUMERIC(12,2) DEFAULT 0 CHECK (total >= 0),
 
   notes TEXT,
 
@@ -238,8 +217,12 @@ CREATE TABLE orders (
   closed_at TIMESTAMPTZ
 );
 
+-- Índices para consultas rápidas
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_created_at ON orders(created_at);
+
 -- =====================================================
--- ORDER ITEMS
+-- DETALLE DE ÓRDENES
 -- =====================================================
 
 CREATE TABLE order_items (
@@ -250,29 +233,16 @@ CREATE TABLE order_items (
 
   quantity INT NOT NULL CHECK (quantity > 0),
 
-  base_price NUMERIC(12,2) NOT NULL,
-  historical_cost NUMERIC(12,2) DEFAULT 0,
+  base_price NUMERIC(12,2) NOT NULL CHECK (base_price >= 0),
+  historical_cost NUMERIC(12,2) DEFAULT 0 CHECK (historical_cost >= 0),
 
-  subtotal NUMERIC(12,2) NOT NULL,
+  subtotal NUMERIC(12,2) NOT NULL CHECK (subtotal >= 0),
 
   notes TEXT
 );
 
 -- =====================================================
--- ORDER ITEM MODIFIERS
--- =====================================================
-
-CREATE TABLE order_item_modifiers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  order_item_id UUID REFERENCES order_items(id) ON DELETE CASCADE,
-  modifier_id UUID REFERENCES modifiers(id),
-
-  historical_price_adjustment NUMERIC(12,2) NOT NULL
-);
-
--- =====================================================
--- PAYMENTS
+-- PAGOS
 -- =====================================================
 
 CREATE TABLE payments (
@@ -286,59 +256,11 @@ CREATE TABLE payments (
   amount_paid NUMERIC(12,2) NOT NULL CHECK (amount_paid > 0),
   reference VARCHAR(100),
 
-  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
--- =====================================================
--- CASH MOVEMENTS
--- =====================================================
-
-CREATE TABLE cash_movements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  register_session_id UUID REFERENCES register_sessions(id),
-
-  type movement_type NOT NULL,
-  amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
-
-  reason TEXT NOT NULL,
-
-  created_by UUID REFERENCES users(id),
+  -- opcional pero recomendado para futuro
+  status VARCHAR(20) DEFAULT 'paid',
 
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
--- =====================================================
--- ACCOUNTING LEDGER (Opcional avanzado)
--- =====================================================
-
-CREATE TABLE accounting_ledger (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  transaction_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-
-  account_name VARCHAR(100) NOT NULL,
-  description TEXT NOT NULL,
-
-  debit NUMERIC(12,2) DEFAULT 0 CHECK (debit >= 0),
-  credit NUMERIC(12,2) DEFAULT 0 CHECK (credit >= 0),
-
-  reference_id UUID,
-  reference_type VARCHAR(50),
-
-  created_by UUID REFERENCES users(id)
-);
-
--- =====================================================
--- INDEXES IMPORTANTES
--- =====================================================
-
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_created_at ON orders(created_at);
-
+-- Índice para consultas por orden
 CREATE INDEX idx_payments_order_id ON payments(order_id);
-
-CREATE INDEX idx_products_name ON products(name);
-CREATE INDEX idx_products_status ON products(status);
-
-CREATE INDEX idx_cash_movements_session ON cash_movements(register_session_id);

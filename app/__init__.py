@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Flask
+from flask import Flask, render_template
 from config import Config
 from app.extensions import db, migrate
 from flask_login import LoginManager
@@ -30,5 +30,10 @@ def create_app():
     # Registrar blueprints
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
+
+    # Manejo de errores personalizados
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('errors/403.html'), 403
 
     return app

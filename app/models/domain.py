@@ -5,6 +5,8 @@ import decimal
 import enum
 import uuid
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from sqlalchemy import CheckConstraint, Column, DateTime, Enum, ForeignKey, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -131,6 +133,12 @@ class User(db.Model):
     register_sessions_closed_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.closed_by]', back_populates='user')
     register_sessions_opened_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.opened_by]', back_populates='user_')
     orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
+
+    def set_password(self, password: str):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self.password_hash, password)
 
 
 class Product(db.Model):

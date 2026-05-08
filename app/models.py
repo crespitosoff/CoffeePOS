@@ -99,18 +99,14 @@ class Table(db.Model):
     __table_args__ = (
         PrimaryKeyConstraint('id', name='tables_pkey'),
         UniqueConstraint('name', name='tables_name_key'),
-        ForeignKeyConstraint(['current_order_id'], ['orders.id'], name='tables_current_order_id_fkey')
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     capacity: Mapped[Optional[int]] = mapped_column(Integer, server_default=text('2'))
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
-    current_order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, nullable=True)
 
-    current_order: Mapped[Optional['Order']] = relationship('Order', foreign_keys=[current_order_id], post_update=True)
-
-    orders: Mapped[list['Order']] = relationship('Order',foreign_keys='Order.table_id', back_populates='table', overlaps='current_order')
+    orders: Mapped[list['Order']] = relationship('Order', back_populates='table')
 
 
 class User(db.Model):
@@ -142,7 +138,6 @@ class Product(db.Model):
     __table_args__ = (
         CheckConstraint('price >= 0::numeric', name='products_price_check'),
         CheckConstraint('unit_cost >= 0::numeric', name='products_unit_cost_check'),
-        ForeignKeyConstraint(['category_id'], ['categories.id'], name='products_category_id_fkey'),
         PrimaryKeyConstraint('id', name='products_pkey'),
         UniqueConstraint('sku', name='products_sku_key'),
         Index('idx_products_name', 'name'),
@@ -152,7 +147,7 @@ class Product(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     price: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('categories.id'))
     sku: Mapped[Optional[str]] = mapped_column(String(60))
     description: Mapped[Optional[str]] = mapped_column(Text)
     unit_cost: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
@@ -169,16 +164,14 @@ class Product(db.Model):
 class RegisterSession(db.Model):
     __tablename__ = 'register_sessions'
     __table_args__ = (
-        ForeignKeyConstraint(['closed_by'], ['users.id'], name='register_sessions_closed_by_fkey'),
-        ForeignKeyConstraint(['opened_by'], ['users.id'], name='register_sessions_opened_by_fkey'),
         PrimaryKeyConstraint('id', name='register_sessions_pkey'),
         Index('idx_single_open_register', 'status', postgresql_where="(status = 'open'::register_status)", unique=True)
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     opening_amount: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    opened_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    closed_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    opened_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('users.id'))
+    closed_by: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('users.id'))
     closing_amount: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2))
     expected_amount: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2))
     difference: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2))
@@ -195,17 +188,14 @@ class RegisterSession(db.Model):
 class Order(db.Model):
     __tablename__ = 'orders'
     __table_args__ = (
-        ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], name='orders_register_session_id_fkey'),
-        ForeignKeyConstraint(['table_id'], ['tables.id'], name='orders_table_id_fkey'),
-        ForeignKeyConstraint(['user_id'], ['users.id'], name='orders_user_id_fkey'),
         PrimaryKeyConstraint('id', name='orders_pkey'),
         Index('idx_orders_created_at', 'created_at'),
         Index('idx_orders_status', 'status')
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('users.id'))
+    register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('register_sessions.id'))
     table_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('tables.id'), nullable=True)
     customer_name: Mapped[Optional[str]] = mapped_column(String(100))
     subtotal: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
@@ -217,7 +207,7 @@ class Order(db.Model):
     closed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='orders')
-    table: Mapped[Optional['Table']] = relationship('Table', foreign_keys=[table_id], back_populates='orders', overlaps='current_order')
+    table: Mapped[Optional['Table']] = relationship('Table', back_populates='orders')
     user: Mapped[Optional['User']] = relationship('User', back_populates='orders')
     order_items: Mapped[list['OrderItem']] = relationship('OrderItem', back_populates='order')
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='order')
@@ -227,8 +217,6 @@ class OrderItem(db.Model):
     __tablename__ = 'order_items'
     __table_args__ = (
         CheckConstraint('quantity > 0', name='order_items_quantity_check'),
-        ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE', name='order_items_order_id_fkey'),
-        ForeignKeyConstraint(['product_id'], ['products.id'], name='order_items_product_id_fkey'),
         PrimaryKeyConstraint('id', name='order_items_pkey')
     )
 
@@ -236,8 +224,8 @@ class OrderItem(db.Model):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     base_price: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     subtotal: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    product_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('orders.id', ondelete='CASCADE'))
+    product_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('products.id'))
     historical_cost: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
     notes: Mapped[Optional[str]] = mapped_column(Text)
 
@@ -249,8 +237,6 @@ class Payment(db.Model):
     __tablename__ = 'payments'
     __table_args__ = (
         CheckConstraint('amount_paid > 0::numeric', name='payments_amount_paid_check'),
-        ForeignKeyConstraint(['order_id'], ['orders.id'], name='payments_order_id_fkey'),
-        ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], name='payments_register_session_id_fkey'),
         PrimaryKeyConstraint('id', name='payments_pkey'),
         Index('idx_payments_order_id', 'order_id')
     )
@@ -258,8 +244,8 @@ class Payment(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod, values_callable=lambda cls: [member.value for member in cls], name='payment_method'), nullable=False)
     amount_paid: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
-    register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    order_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('orders.id'))
+    register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('register_sessions.id'))
     reference: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
 

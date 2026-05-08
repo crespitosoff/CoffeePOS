@@ -31,6 +31,12 @@ def create_app():
     from app.routes.auth import auth_bp
     app.register_blueprint(auth_bp)
 
+    from app.routes.admin import admin_bp
+    app.register_blueprint(admin_bp)
+    
+    from app.routes.pos import pos_bp
+    app.register_blueprint(pos_bp)
+
     # Manejo de errores personalizados
     @app.errorhandler(403)
     def forbidden_error(error):

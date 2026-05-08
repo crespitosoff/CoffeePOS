@@ -1,7 +1,20 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, render_template_string, jsonify
+from flask_login import login_required
+from app.utils.decorators import cashier_required
 from app.services.product_service import ProductService
 
-pos_bp = Blueprint('pos', __name__)
+pos_bp = Blueprint('pos', __name__, url_prefix='/pos')
+
+@pos_bp.route('/dashboard')
+@login_required
+@cashier_required
+def dashboard():
+    # Usamos render_template_string para una prueba rápida sin crear archivos HTML extra aún
+    return render_template_string("""
+        <h1>Pantalla de Ventas (Caja)</h1>
+        <p>Si ves esto, puedes procesar pedidos.</p>
+        <a href="/logout">Cerrar Sesión</a>
+    """)
 
 @pos_bp.route('/menu', methods=['GET'])
 def get_menu():

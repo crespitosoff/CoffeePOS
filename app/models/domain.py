@@ -18,8 +18,11 @@ class GenericStatus(str, enum.Enum):
 
 
 class MovementType(str, enum.Enum):
-    INCOME = 'income'
-    EXPENSE = 'expense'
+    OPENING = 'opening'
+    CLOSING = 'closing'
+    WITHDRAWAL = 'withdrawal'
+    DEPOSIT = 'deposit'
+    ADJUSTMENT = 'adjustment'
 
 
 class OrderStatus(str, enum.Enum):
@@ -134,6 +137,7 @@ class User(db.Model, UserMixin):
     register_sessions_closed_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.closed_by]', back_populates='user')
     register_sessions_opened_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.opened_by]', back_populates='user_')
     orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
+    cash_movements: Mapped[list['CashMovement']] = relationship('CashMovement', back_populates='user')
 
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
@@ -192,6 +196,7 @@ class RegisterSession(db.Model):
     user_: Mapped[Optional['User']] = relationship('User', foreign_keys=[opened_by], back_populates='register_sessions_opened_by')
     orders: Mapped[list['Order']] = relationship('Order', back_populates='register_session')
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='register_session')
+    cash_movements: Mapped[list['CashMovement']] = relationship('CashMovement', back_populates='register_session')
 
 
 class Order(db.Model):
@@ -260,3 +265,30 @@ class Payment(db.Model):
 
     order: Mapped[Optional['Order']] = relationship('Order', back_populates='payments')
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='payments')
+
+
+class CashMovement(db.Model):
+    __tablename__ = 'cash_movements'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='cash_movements_pkey'),
+        Index('idx_cash_movements_session', 'register_session_id'),
+        Index('idx_cash_movements_created_at', 'created_at')
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
+    register_session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('register_sessions.id'), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('users.id'), nullable=False)
+    movement_type: Mapped[MovementType] = mapped_column(Enum(MovementType, values_callable=lambda cls: [member.value for member in cls], name='movement_type'), nullable=False)
+    amount: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    
+    reference_type: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    reference_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    
+    balance_before: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    balance_after: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+
+    # Relaciones
+    user: Mapped['User'] = relationship('User', back_populates='cash_movements')
+    register_session: Mapped['RegisterSession'] = relationship('RegisterSession', back_populates='cash_movements')

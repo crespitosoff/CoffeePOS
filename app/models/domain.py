@@ -5,6 +5,7 @@ import decimal
 import enum
 import uuid
 
+from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from sqlalchemy import CheckConstraint, Column, DateTime, Enum, ForeignKey, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, UniqueConstraint, Uuid, text
@@ -111,7 +112,7 @@ class Table(db.Model):
     orders: Mapped[list['Order']] = relationship('Order', back_populates='table')
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='users_pkey'),

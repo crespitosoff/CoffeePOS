@@ -37,6 +37,9 @@ def create_app():
     from app.routes.pos import pos_bp
     app.register_blueprint(pos_bp)
 
+    from app.routes.cash import cash_bp
+    app.register_blueprint(cash_bp)
+
     # Manejo de errores personalizados
     @app.errorhandler(403)
     def forbidden_error(error):

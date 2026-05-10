@@ -1,34 +1,228 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - CoffeePOS</title>
-</head>
-<body>
-    <h2>Iniciar Sesión</h2>
-    
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul style="color: red;">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
 
-    <form method="POST" action="/login">
-        <div>
-            <label for="username">Usuario:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <br>
-        <div>
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <br>
-        <button type="submit">Ingresar</button>
-    </form>
-</body>
-</html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CoffeePOS - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#f2dfd6",
+                      "inverse-primary": "#ffb691",
+                      "outline": "#897267",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#f2dfd6",
+                      "secondary-container": "#fecf9e",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-container": "#c2d6ff",
+                      "on-secondary-fixed-variant": "#60401b",
+                      "surface-container-high": "#f8e4dc",
+                      "primary": "#763000",
+                      "surface": "#fff8f6",
+                      "inverse-on-surface": "#ffede6",
+                      "surface-dim": "#e9d6ce",
+                      "outline-variant": "#ddc1b4",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed": "#2c1700",
+                      "on-tertiary-fixed-variant": "#00468d",
+                      "surface-container-low": "#fcfaf8",
+                      "primary-fixed-dim": "#ffb691",
+                      "primary-fixed": "#ffdbcb",
+                      "on-secondary-container": "#79562f",
+                      "surface-tint": "#9e4302",
+                      "surface-bright": "#fff8f6",
+                      "on-tertiary": "#ffffff",
+                      "secondary": "#7a5730",
+                      "on-primary-fixed-variant": "#793100",
+                      "tertiary": "#00448a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#231915",
+                      "on-background": "#151c27",
+                      "inverse-surface": "#392e29",
+                      "on-tertiary-fixed": "#001b3e",
+                      "surface-container": "#f5f1ed",
+                      "tertiary-fixed": "#d6e3ff",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#aac7ff",
+                      "on-surface-variant": "#564339",
+                      "secondary-fixed-dim": "#ecbe8e",
+                      "background": "#fff8f6",
+                      "primary-container": "#9b4100",
+                      "secondary-fixed": "#ffdcbb",
+                      "on-primary-fixed": "#341100",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#035bb4",
+                      "on-primary-container": "#ffcab1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "touch-target-min": "64px",
+                      "edge-margin": "2rem",
+                      "asymmetric-gap-sm": "1.5rem",
+                      "asymmetric-gap-lg": "2rem",
+                      "vertical-rhythm": "1.5rem"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "title-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "title-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "title-lg": [
+                              "22px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.5px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "57px",
+                              {
+                                      "lineHeight": "64px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ambient-shadow {
+            box-shadow: 0px 12px 32px rgba(35, 25, 21, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg min-h-screen flex flex-col justify-center items-center relative overflow-hidden">
+<!-- Background Decoration -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+<div class="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-surface-variant opacity-40 blur-[100px]"></div>
+<div class="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-secondary-container opacity-30 blur-[120px]"></div>
+</div>
+<!-- Login Card Canvas -->
+<main class="relative z-10 w-full max-w-md px-edge-margin">
+<div class="glass-panel rounded-xl ambient-shadow border border-outline-variant/15 flex flex-col items-center pt-12 pb-8 px-8 lg:px-12">
+<!-- Brand / Logo Area -->
+<div class="flex flex-col items-center mb-10 text-center">
+<div class="w-20 h-20 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-outline-variant/20 ambient-shadow">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">
+                        local_cafe
+                    </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2 tracking-tight">CoffeePOS</h1>
+<p class="font-title-md text-title-md text-on-surface-variant">Sistema de Punto de Venta</p>
+</div>
+<!-- Login Form -->
+<form class="w-full flex flex-col gap-6">
+<!-- Input: Usuario -->
+<div class="relative flex flex-col">
+<label class="sr-only" for="username">Usuario</label>
+<div class="relative flex items-center bg-surface-container-high rounded-lg overflow-hidden group focus-within:ring-2 focus-within:ring-primary/30 transition-all duration-200">
+<span class="material-symbols-outlined text-outline absolute left-4 pointer-events-none group-focus-within:text-primary transition-colors">
+                            person
+                        </span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-body-lg text-body-lg pl-12 pr-4 py-4 min-h-[56px] placeholder:text-outline-variant" id="username" placeholder="Usuario" type="text"/>
+</div>
+</div>
+<!-- Input: Contraseña -->
+<div class="relative flex flex-col">
+<label class="sr-only" for="password">Contraseña</label>
+<div class="relative flex items-center bg-surface-container-high rounded-lg overflow-hidden group focus-within:ring-2 focus-within:ring-primary/30 transition-all duration-200">
+<span class="material-symbols-outlined text-outline absolute left-4 pointer-events-none group-focus-within:text-primary transition-colors">
+                            lock
+                        </span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-body-lg text-body-lg pl-12 pr-12 py-4 min-h-[56px] placeholder:text-outline-variant" id="password" placeholder="Contraseña" type="password"/>
+<button class="absolute right-4 text-outline hover:text-on-surface-variant transition-colors focus:outline-none" type="button">
+<span class="material-symbols-outlined">
+                                visibility
+                            </span>
+</button>
+</div>
+</div>
+<!-- Spacer -->
+<div class="h-2"></div>
+<!-- Submit Button -->
+<button class="w-full min-h-[touch-target-min] rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-title-lg text-title-lg flex items-center justify-center ambient-shadow hover:from-surface-tint hover:to-primary-container transition-all active:scale-[0.98] active:shadow-none" type="submit">
+                    Iniciar Sesión
+                </button>
+</form>
+<!-- Footer / Version -->
+<div class="mt-10 pt-6 border-t border-outline-variant/15 w-full text-center">
+<span class="font-label-md text-label-md text-outline">v1.0</span>
+</div>
+</div>
+</main>
+</body></html>

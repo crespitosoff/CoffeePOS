@@ -1,145 +1,55 @@
-<!DOCTYPE html>
+{% extends 'layout/base.html' %}
 
-<html class="light" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Apertura de Caja - CoffeePOS</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                      "surface-variant": "#f2dfd6",
-                      "inverse-primary": "#ffb691",
-                      "outline": "#897267",
-                      "on-primary": "#ffffff",
-                      "surface-container-highest": "#f2dfd6",
-                      "secondary-container": "#fecf9e",
-                      "on-error-container": "#93000a",
-                      "on-tertiary-container": "#c2d6ff",
-                      "on-secondary-fixed-variant": "#60401b",
-                      "surface-container-high": "#f8e4dc",
-                      "primary": "#763000",
-                      "surface": "#fff8f6",
-                      "inverse-on-surface": "#ffede6",
-                      "surface-dim": "#e9d6ce",
-                      "outline-variant": "#ddc1b4",
-                      "on-secondary": "#ffffff",
-                      "on-secondary-fixed": "#2c1700",
-                      "on-tertiary-fixed-variant": "#00468d",
-                      "surface-container-low": "#fcfaf8",
-                      "primary-fixed-dim": "#ffb691",
-                      "primary-fixed": "#ffdbcb",
-                      "on-secondary-container": "#79562f",
-                      "surface-tint": "#9e4302",
-                      "surface-bright": "#fff8f6",
-                      "on-tertiary": "#ffffff",
-                      "secondary": "#7a5730",
-                      "on-primary-fixed-variant": "#793100",
-                      "tertiary": "#00448a",
-                      "surface-container-lowest": "#ffffff",
-                      "on-surface": "#231915",
-                      "on-background": "#151c27",
-                      "inverse-surface": "#392e29",
-                      "on-tertiary-fixed": "#001b3e",
-                      "surface-container": "#f5f1ed",
-                      "tertiary-fixed": "#d6e3ff",
-                      "error-container": "#ffdad6",
-                      "tertiary-fixed-dim": "#aac7ff",
-                      "on-surface-variant": "#564339",
-                      "secondary-fixed-dim": "#ecbe8e",
-                      "background": "#fff8f6",
-                      "primary-container": "#9b4100",
-                      "secondary-fixed": "#ffdcbb",
-                      "on-primary-fixed": "#341100",
-                      "on-error": "#ffffff",
-                      "error": "#ba1a1a",
-                      "tertiary-container": "#035bb4",
-                      "on-primary-container": "#ffcab1"
-              },
-              "borderRadius": {
-                      "DEFAULT": "1rem",
-                      "lg": "2rem",
-                      "xl": "3rem",
-                      "full": "9999px"
-              },
-              "spacing": {
-                      "touch-target-min": "64px",
-                      "edge-margin": "2rem",
-                      "asymmetric-gap-sm": "1.5rem",
-                      "asymmetric-gap-lg": "2rem",
-                      "vertical-rhythm": "1.5rem"
-              },
-              "fontFamily": {
-                      "body-lg": ["Inter"],
-                      "title-md": ["Inter"],
-                      "title-lg": ["Inter"],
-                      "headline-md": ["Plus Jakarta Sans"],
-                      "label-md": ["Inter"],
-                      "headline-lg": ["Plus Jakarta Sans"],
-                      "display-lg": ["Plus Jakarta Sans"]
-              },
-              "fontSize": {
-                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                      "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
-                      "title-lg": ["22px", {"lineHeight": "28px", "fontWeight": "600"}],
-                      "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
-                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.5px", "fontWeight": "500"}],
-                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
-                      "display-lg": ["57px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
-              }
-            }
-          }
-        }
-    </script>
-</head>
-<body class="bg-surface text-on-surface font-body-lg min-h-screen flex items-center justify-center p-edge-margin">
+{% block title %}Apertura de Caja - CoffeePOS{% endblock %}
+
+{% block body_class %}flex items-center justify-center p-edge-margin{% endblock %}
+
+{% block content %}
 <main class="w-full max-w-[500px]">
-<div class="bg-surface-container-lowest rounded-xl p-asymmetric-gap-lg flex flex-col gap-vertical-rhythm shadow-[0px_12px_32px_rgba(35,25,21,0.06)] border border-outline-variant/15">
-<header class="flex flex-col items-center text-center gap-4">
-<div class="w-16 h-16 bg-primary-container/20 rounded-full flex items-center justify-center text-primary">
-<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
-</div>
-<div>
-<h1 class="font-headline-lg text-headline-lg text-primary">Apertura de Caja</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Cuenta el efectivo inicial en la caja registradora para comenzar el turno.</p>
-</div>
-</header>
-<div class="flex justify-between items-center bg-surface-container-low rounded-lg p-4 mt-2">
-<div class="flex items-center gap-2 text-on-surface-variant">
-<span class="material-symbols-outlined">calendar_today</span>
-<span class="font-title-md text-title-md">24 de Octubre, 2023</span>
-</div>
-<div class="flex items-center gap-2 text-on-surface-variant">
-<span class="material-symbols-outlined">schedule</span>
-<span class="font-title-md text-title-md">08:00 AM</span>
-</div>
-</div>
-<div class="flex flex-col gap-2 mt-4">
-<label class="font-title-md text-title-md text-on-surface" for="initial-amount">Monto Inicial</label>
-<div class="relative flex items-center">
-<span class="absolute left-6 font-headline-md text-headline-md text-on-surface-variant">$</span>
-<input class="w-full h-[80px] pl-16 pr-6 bg-surface-container-high rounded-lg font-headline-lg text-headline-lg text-on-surface border-none focus:ring-2 focus:ring-primary/30 outline-none transition-all placeholder:text-on-surface-variant/50" id="initial-amount" name="initial-amount" placeholder="0.00" step="0.01" type="number"/>
-</div>
-</div>
-<div class="bg-tertiary-container/20 rounded-lg p-4 flex gap-4 items-start mt-4 border border-tertiary/10">
-<span class="material-symbols-outlined text-tertiary shrink-0">info</span>
-<p class="font-body-lg text-body-lg text-on-surface-variant text-sm">Este registro es permanente y marca el inicio de la jornada fiscal. Asegúrate de verificar físicamente el monto antes de confirmar.</p>
-</div>
-<div class="pt-6">
-<button class="w-full min-h-touch-target-min bg-gradient-to-b from-primary to-primary-container text-on-primary font-title-lg text-title-lg rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm hover:shadow-md" type="button">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock_open</span>
+    <div class="bg-surface-container-lowest rounded-xl p-asymmetric-gap-lg flex flex-col gap-vertical-rhythm shadow-[0px_12px_32px_rgba(35,25,21,0.06)] border border-outline-variant/15">
+        <header class="flex flex-col items-center text-center gap-4">
+            <div class="w-16 h-16 bg-primary-container/20 rounded-full flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+            </div>
+            <div>
+                <h1 class="font-headline-lg text-headline-lg text-primary">Apertura de Caja</h1>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Cuenta el efectivo inicial en la caja registradora para comenzar el turno.</p>
+            </div>
+        </header>
+
+        <div class="flex justify-between items-center bg-surface-container-low rounded-lg p-4 mt-2">
+            <div class="flex items-center gap-2 text-on-surface-variant">
+                <span class="material-symbols-outlined">calendar_today</span>
+                <span class="font-title-md text-title-md">{{ current_date|default('Hoy') }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-on-surface-variant">
+                <span class="material-symbols-outlined">schedule</span>
+                <span class="font-title-md text-title-md">{{ current_time|default('Ahora') }}</span>
+            </div>
+        </div>
+
+        <form action="{{ url_for('pos.open_register') }}" method="POST" class="flex flex-col gap-2 mt-4">
+            <label class="font-title-md text-title-md text-on-surface" for="initial-amount">Monto Inicial</label>
+            <div class="relative flex items-center">
+                <span class="absolute left-6 font-headline-md text-headline-md text-on-surface-variant">$</span>
+                <input class="w-full h-[80px] pl-16 pr-6 bg-surface-container-high rounded-lg font-headline-lg text-headline-lg text-on-surface border-none focus:ring-2 focus:ring-primary/30 outline-none transition-all placeholder:text-on-surface-variant/50" id="initial-amount" name="opening_cash" placeholder="0.00" step="0.01" type="number" required/>
+            </div>
+
+            <div class="bg-tertiary-container/20 rounded-lg p-4 flex gap-4 items-start mt-4 border border-tertiary/10">
+                <span class="material-symbols-outlined text-tertiary shrink-0">info</span>
+                <p class="font-body-lg text-body-lg text-on-surface-variant text-sm">Este registro es permanente y marca el inicio de la jornada fiscal. Asegúrate de verificar físicamente el monto antes de confirmar.</p>
+            </div>
+
+            <div class="pt-6">
+                <button class="w-full min-h-[touch-target-min] bg-gradient-to-b from-primary to-primary-container text-on-primary font-title-lg text-title-lg rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm hover:shadow-md" type="submit">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">lock_open</span>
                     Abrir Caja
                 </button>
-<button class="w-full min-h-[48px] mt-4 text-primary font-title-md text-title-md rounded-lg flex items-center justify-center transition-colors hover:bg-surface-container-high" type="button">
+                <a href="{{ url_for('pos.dashboard') }}" class="w-full min-h-[48px] mt-4 text-primary font-title-md text-title-md rounded-lg flex items-center justify-center transition-colors hover:bg-surface-container-high">
                     Cancelar
-                </button>
-</div>
-</div>
+                </a>
+            </div>
+        </form>
+    </div>
 </main>
-</body></html>
+{% endblock %}

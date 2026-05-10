@@ -5,6 +5,8 @@ from app.services.order_service import OrderService
 from app.services.payment_service import PaymentService
 from app.services.register_service import RegisterService
 from app.services.product_service import ProductService
+from app.models.domain import Order, OrderStatus, Product, Table
+from app.extensions import db
 import decimal
 
 pos_bp = Blueprint('pos', __name__, url_prefix='/pos')
@@ -13,7 +15,8 @@ pos_bp = Blueprint('pos', __name__, url_prefix='/pos')
 @login_required
 @cashier_required
 def dashboard():
-    return render_template('pos/dashboard.html')
+    tables = db.session.query(Table).order_by(Table.name).all()
+    return render_template('pos/dashboard.html', tables=tables)
 
 # --- Gestión de Caja (Apertura y Cierre) ---
 @pos_bp.route('/register/open', methods=['GET'])
@@ -49,12 +52,52 @@ def close_register_form():
     try:
         session = RegisterService.get_active_session()
         if not session:
-            flash('No hay una sesión de caja abierta.', 'warning')
+            flash('No hay una sesión activa para cerrar.', 'warning')
             return redirect(url_for('pos.dashboard'))
-        summary = RegisterService.get_session_summary(str(session.id))
-        return render_template('pos/register_close.html', summary=summary)
+
+        from app.models.domain import Order, OrderStatus, Payment, PaymentMethod
+        import decimal
+
+        # Obtener todas las órdenes pagadas en esta sesión
+        ventas_turno = db.session.query(Order).filter_by(
+            register_session_id=session.id,
+            status=OrderStatus.PAID
+        ).all()
+
+        # Desglose de pagos por método
+        pagos_efectivo = decimal.Decimal('0.00')
+        pagos_tarjeta = decimal.Decimal('0.00')
+        pagos_transferencia = decimal.Decimal('0.00')
+
+        for orden in ventas_turno:
+            # Se asume que cada orden tiene un pago asociado
+            pago = db.session.query(Payment).filter_by(order_id=orden.id).first()
+            if pago:
+                if pago.method == PaymentMethod.CASH:
+                    pagos_efectivo += orden.total
+                elif pago.method == PaymentMethod.CARD:
+                    pagos_tarjeta += orden.total
+                elif pago.method == PaymentMethod.TRANSFER:
+                    pagos_transferencia += orden.total
+
+        total_vendido = pagos_efectivo + pagos_tarjeta + pagos_transferencia
+        # El efectivo esperado es únicamente: Fondo Inicial + Ventas en Efectivo
+        efectivo_esperado = session.opening_amount + pagos_efectivo
+
+        summary = {
+            'opening_cash': session.opening_amount,
+            'sales_total': total_vendido,
+            'cash_sales': pagos_efectivo,
+            'card_sales': pagos_tarjeta,
+            'transfer_sales': pagos_transferencia,
+            'expected_cash': efectivo_esperado
+        }
+
+        return render_template('pos/register_close.html', 
+                               session=session, 
+                               summary=summary)
     except Exception as e:
-        flash(str(e), 'danger')
+        flash(f"Error al cargar resumen: {str(e)}", 'danger')
         return redirect(url_for('pos.dashboard'))
 
 @pos_bp.route('/register/close', methods=['POST'])
@@ -109,12 +152,46 @@ def create_order():
         flash(str(e), 'danger')
         return redirect(url_for('pos.dashboard'))
 
-@pos_bp.route('/order/<table_id>', methods=['GET'])
+@pos_bp.route('/order/table/<table_id>', methods=['GET'])
 @login_required
 @cashier_required
 def view_order(table_id):
     try:
-        return render_template('pos/order.html', table_id=table_id)
+        session = RegisterService.get_active_session()
+        if not session:
+            flash('Debe abrir caja antes de tomar pedidos.', 'warning')
+            return redirect(url_for('pos.open_register_form'))
+
+        from app.models.domain import Order, OrderStatus, Product, Table
+
+        # Interceptar 'takeaway' para evitar errores de tipo UUID en PostgreSQL
+        db_table_id = None if table_id == 'takeaway' else table_id
+        table_name = "Para llevar"
+
+        if db_table_id:
+            table_obj = db.session.get(Table, db_table_id)
+            table_name = table_obj.name if table_obj else "Desconocida"
+
+        order = db.session.query(Order).filter_by(
+            table_id=db_table_id,
+            register_session_id=session.id,
+            status=OrderStatus.OPEN
+        ).first()
+
+        if not order:
+            order = OrderService.create_order(
+                user_id=str(current_user.id),
+                register_session_id=str(session.id),
+                table_id=db_table_id
+            )
+
+        products = ProductService.get_all_products(is_active=True)
+        
+        return render_template('pos/order.html', 
+                               order=order, 
+                               products=products, 
+                               table_name=table_name,
+                               table_id=table_id)
     except Exception as e:
         flash(str(e), 'danger')
         return redirect(url_for('pos.dashboard'))

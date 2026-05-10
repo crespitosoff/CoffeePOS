@@ -1,0 +1,409 @@
+Resumen,Clave de incidencia,ID de la incidencia,Tipo de Incidencia,Estado,Clave del proyecto,Nombre del proyecto,Tipo de proyecto,Responsable del proyecto,ID del responsable del proyecto,Descripción del proyecto,Prioridad,Resolución,Persona asignada,ID de la persona asignada,Informador,ID del informador,Creador,ID del creador,Creada,Actualizada,Vista por Última Vez,Resuelta,Fecha de vencimiento,Votos,Descripción,Entorno,Interesados,ID de los interesados,Estimación original,Trabajo restante estimado,Tiempo Trabajado,Relación de trabajo,Σ Estimación original,Σ Trabajo restante estimado,Σ Tiempo empleado,Nivel de Seguridad,Campo personalizado (Issue color),Campo personalizado (Metas),Campo personalizado (Rank),Sprint,Campo personalizado (Start date),Campo personalizado (Story point estimate),Campo personalizado (Team),Campo personalizado (Vulnerability),Campo personalizado (development),Categoría de estado,Categoría de estado cambiada,Principal,Clave principal,Parent summary
+ÉPICA 1: Concepción e Inicio del Proyecto,COF-14,10254,Epic,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 10:11 AM,05/may/26 10:25 AM,,,0,"h3. Objetivo
+
+Establecer la base del proyecto con documentación, diseño y configuración inicial.",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000hz:,,,,,,{},Por hacer,05/may/26 10:11 AM,,,
+ÉPICA 2: Arquitectura Backend y Lógica de Negocio,COF-15,10255,Epic,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 10:11 AM,08/may/26 3:20 PM,,,0,"h3. Objetivo
+
+Implementar toda la lógica del servidor, rutas API, modelos y servicios.",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000i7:,,,,,,{},Por hacer,05/may/26 10:11 AM,,,
+ÉPICA 3: Frontend Modular (SPA),COF-16,10256,Epic,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 10:11 AM,08/may/26 12:22 AM,,,0,"h3. Objetivo
+
+Implementar todas las interfaces de usuario con templates Jinja2, CSS y JavaScript.",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000if:,,,,,,{},Por hacer,05/may/26 10:11 AM,,,
+"ÉPICA 4: Integración, Pruebas y Verificación",COF-17,10257,Epic,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 10:11 AM,,,,0,"h3. Objetivo
+
+Testear el sistema completo, corregir bugs y pulir la experiencia.",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000in:,,,,,,{},Por hacer,05/may/26 10:11 AM,,,
+ÉPICA 5: Cierre del Proyecto,COF-18,10258,Epic,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 10:11 AM,,,,0,"h3. Objetivo
+
+Documentar, preparar entrega y finalizar el proyecto.",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000iv:,,,,,,{},Por hacer,05/may/26 10:11 AM,,,
+Backend: Servicio de gestión de productos,COF-29,10269,Historia,Finalizada,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,Listo,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,08/may/26 3:48 PM,08/may/26 3:20 PM,08/may/26 3:48 PM,,0,"h3. Descripcion
+
+Como desarrollador, necesito un servicio para encapsular la lógica de negocio de productos (CRUD).
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/services/product_service.py` creado
+* Función `get_all_products(category_id=None, is_active=True)`:
+* Función `get_product_by_id(product_id)`:
+* Función `create_product(data)`:
+* Función `update_product(product_id, data)`:
+* Función `delete_product(product_id)`:
+* Función `update_stock(product_id, quantity_change)`:
+* Todas las funciones manejan excepciones y retornan errores claros
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:n,Tablero Sprint 3,,,,,"{pullrequest={dataType=pullrequest, state=MERGED, stateCount=1}, json={""cachedValue"":{""errors"":[],""summary"":{""pullrequest"":{""overall"":{""count"":1,""lastUpdated"":""2026-05-08T15:28:09.000-0500"",""stateCount"":1,""state"":""MERGED"",""dataType"":""pullrequest"",""open"":false},""byInstanceType"":{""GitHub"":{""count"":1,""name"":""GitHub""}}}}},""isStale"":true}}",Listo,08/may/26 3:48 PM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Blueprint Admin - CRUD de productos,COF-30,10270,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:13 PM,08/may/26 3:19 PM,,,0,"h3. Descripcion
+
+Como administrador, quiero gestionar productos (crear, editar, eliminar, ver) desde el panel admin.
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/routes/admin.py` con blueprint `admin_bp`
+* Ruta `GET /admin/products` protegida con `@admin_required`:
+* Ruta `GET /admin/products/new`:
+* Ruta `POST /admin/products`:
+* Ruta `GET /admin/products/<id>/edit`:
+* Ruta `POST /admin/products/<id>/update`:
+* Ruta `POST /admin/products/<id>/delete`:
+* Validaciones de formulario (Flask-WTF o manual)
+* Indicador visual si stock < 10 (alerta de stock bajo)
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 8",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:v,Tablero Sprint 3,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Servicio de gestión de usuarios,COF-31,10271,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como desarrollador, necesito un servicio para gestionar usuarios del sistema.
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/services/user_service.py` creado
+* Función `get_all_users(is_active=True)`:
+* Función `get_user_by_id(user_id)`:
+* Función `create_user(data)`:
+* Función `update_user(user_id, data)`:
+* Función `delete_user(user_id)`:
+* Función `change_password(user_id, new_password)`:
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:x,Tablero Sprint 3,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Blueprint Admin - CRUD de usuarios,COF-32,10272,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como administrador, quiero gestionar usuarios (crear admin/cashier, editar, desactivar) desde el panel admin.
+
+h3. Criterios de Aceptacion
+
+* Ruta `GET /admin/users`:
+* Ruta `GET /admin/users/new`:
+* Ruta `POST /admin/users`:
+* Ruta `GET /admin/users/<id>/edit`:
+* Ruta `POST /admin/users/<id>/update`:
+* Ruta `POST /admin/users/<id>/deactivate`:
+* Templates: `templates/admin/users.html`, `templates/admin/user_form.html`
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:y,Tablero Sprint 3,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Servicio de gestión de órdenes,COF-33,10273,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como desarrollador, necesito un servicio para manejar el ciclo de vida completo de una orden (crear, agregar items, calcular total, pagar).
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/services/order_service.py` creado
+* Función `create_order(table_id, user_id)`:
+* Función `get_order_by_id(order_id)`:
+* Función `add_item_to_order(order_id, product_id, quantity)`:
+* Función `remove_item_from_order(order_item_id)`:
+* Función `update_item_quantity(order_item_id, new_quantity)`:
+* Función `calculate_order_total(order_id)`:
+* Función `cancel_order(order_id)`:
+* Todas las operaciones son transaccionales (db.session.commit() o rollback)
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 8",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:z,Tablero Sprint 3,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Blueprint POS - Crear y gestionar orden,COF-34,10274,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,05/may/26 12:17 PM,,,0,"h3. Descripcion
+
+Como cajero, quiero crear una orden para una mesa, agregar productos y ver el carrito actualizado.
+
+h3. Criterios de Aceptacion
+
+* Ruta `GET /pos/order/<table_id>`:
+* Ruta `POST /pos/order/<order_id>/add-item`:
+* Ruta `POST /pos/order-item/<item_id>/remove`:
+* Ruta `POST /pos/order-item/<item_id>/update-quantity`:
+* JavaScript en template para:
+* Botón ""Proceder a Pago"" visible solo si hay items
+* Validación: no permitir cantidad > stock disponible
+
+h3. Detalles
+
+*Sprint:* Sprint 2 (10 mar - 23 mar)
+
+*Story Points:* 8",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zi,Tablero Sprint 3,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Servicio de gestión de pagos,COF-35,10275,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,05/may/26 11:03 AM,,,0,"h3. Descripcion
+
+Como desarrollador, necesito un servicio para procesar pagos y completar órdenes.
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/services/payment_service.py` creado
+* Función `process_payment(order_id, payment_method, amount_received)`:
+* Función `get_payment_methods()`:
+* Función `generate_receipt(order_id)`:
+* Validación: solo órdenes con status='pending' pueden pagarse
+
+h3. Detalles
+
+*Sprint:* Sprint 3 (24 mar - 30 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zr,Tablero Sprint 4,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Blueprint POS - Proceso de pago,COF-36,10276,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero procesar el pago de una orden, seleccionar método de pago, calcular cambio e imprimir recibo.
+
+h3. Criterios de Aceptacion
+
+* Ruta `GET /pos/order/<order_id>/payment`:
+* Ruta `POST /pos/order/<order_id>/pay`:
+* Ruta `GET /pos/receipt/<order_id>`:
+* Validaciones:
+* Recibo incluye:
+* CSS para impresión (tamaño ticket 80mm)
+
+h3. Detalles
+
+*Sprint:* Sprint 3 (24 mar - 30 mar)
+
+*Story Points:* 8",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zv,Tablero Sprint 4,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Servicio de control de caja,COF-37,10277,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como desarrollador, necesito un servicio para gestionar la apertura y cierre de caja (RegisterSession).
+
+h3. Criterios de Aceptacion
+
+* Archivo `app/services/register_service.py` creado
+* Función `open_register(user_id, opening_cash)`:
+* Función `get_active_session(user_id)`:
+* Función `close_register(session_id, closing_cash)`:
+* Función `get_session_summary(session_id)`:
+
+h3. Detalles
+
+*Sprint:* Sprint 3 (24 mar - 30 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zx,Tablero Sprint 4,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Blueprint Admin - Apertura y cierre de caja,COF-38,10278,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero abrir mi caja al inicio del turno y cerrarla al final con el conteo de efectivo.
+
+h3. Criterios de Aceptacion
+
+* Ruta `GET /pos/register/open`:
+* Ruta `POST /pos/register/open`:
+* Ruta `GET /pos/register/close`:
+* Ruta `POST /pos/register/close`:
+* Validación: cajero debe abrir caja antes de crear órdenes
+* Middleware/decorator que verifica sesión abierta en rutas POS
+
+h3. Detalles
+
+*Sprint:* Sprint 3 (24 mar - 30 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zy,Tablero Sprint 4,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Backend: Importación masiva de productos desde CSV,COF-39,10279,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:11 AM,05/may/26 12:14 PM,05/may/26 11:03 AM,,,0,"h3. Descripcion
+
+Como administrador, quiero importar productos masivamente desde un archivo CSV para agilizar la carga inicial.
+
+h3. Criterios de Aceptacion
+
+* Ruta `GET /admin/products/import`:
+* Ruta `GET /admin/products/template`:
+* Ruta `POST /admin/products/import`:
+* Validaciones:
+* Función en `app/services/import_service.py`:
+
+h3. Detalles
+
+*Sprint:* Sprint 3 (24 mar - 30 mar)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zz,Tablero Sprint 4,,,,,{},Por hacer,05/may/26 10:11 AM,10255,COF-15,ÉPICA 2: Arquitectura Backend y Lógica de Negocio
+Frontend: Sistema de templates base y componentes,COF-40,10280,Tarea,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como desarrollador, necesito crear un sistema de templates base con layouts reutilizables y componentes comunes.
+
+h3. Criterios de Aceptacion
+
+* Archivo `templates/base.html`:
+* Archivo `templates/components/navbar.html`:
+* Archivo `templates/components/flash_messages.html`:
+* Archivo `static/css/custom.css`:
+* Archivo `static/js/main.js`:
+* Todos los templates heredan de base.html: `{% extends ""base.html"" %}`
+
+h3. Detalles
+
+*Sprint:* Sprint 4 (31 mar - 13 abr)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzi,Tablero Sprint 5,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Pantalla de login,COF-41,10281,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como usuario, quiero ver una pantalla de login atractiva y funcional.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/auth/login.html`:
+* CSS específico:
+* Validación JavaScript (opcional):
+* Accesibilidad:
+
+h3. Detalles
+
+*Sprint:* Sprint 4 (31 mar - 13 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzr,Tablero Sprint 5,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Dashboard POS - Vista de mesas mejorada,COF-42,10282,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero ver un dashboard visual de mesas con colores que indiquen disponibilidad.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/dashboard.html`:
+* CSS con Tailwind:
+* JavaScript:
+* Botón ""Cerrar Caja"" en navbar (solo si tiene sesión abierta)
+
+h3. Detalles
+
+*Sprint:* Sprint 4 (31 mar - 13 abr)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzv,Tablero Sprint 5,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Catálogo de productos con categorías,COF-43,10283,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,05/may/26 11:03 AM,,,0,"h3. Descripcion
+
+Como cajero, quiero ver productos organizados por categorías para agregarlos rápidamente a la orden.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/order.html`:
+* JavaScript:
+* Responsive:
+
+h3. Detalles
+
+*Sprint:* Sprint 4 (31 mar - 13 abr)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzx,Tablero Sprint 5,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de pago mejorada,COF-44,10284,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero una interfaz de pago clara con cálculo automático de cambio.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/payment.html`:
+* JavaScript:
+* Diseño:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzy,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Recibo de venta imprimible,COF-45,10285,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero generar un recibo imprimible después de procesar el pago.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/receipt.html`:
+* CSS para impresión:
+* JavaScript:
+* Diseño:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzz,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Panel admin - Dashboard y navegación,COF-46,10286,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como administrador, quiero un dashboard con resumen de estadísticas y acceso rápido a funciones.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/admin/dashboard.html`:
+* Ruta `GET /admin/dashboard`:
+* Diseño:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzi,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de gestión de productos (refinamiento),COF-47,10287,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como administrador, quiero una interfaz de gestión de productos con tabla interactiva, filtros y búsqueda.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/admin/products.html`:
+* JavaScript:
+* Template `templates/admin/product_form.html`:
+* Validaciones frontend:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 5",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzr,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de gestión de usuarios (refinamiento),COF-48,10288,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como administrador, quiero gestionar usuarios con una interfaz clara y segura.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/admin/users.html`:
+* Template `templates/admin/user_form.html`:
+* Validaciones:
+* Confirmación al desactivar usuario
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzv,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de importación CSV,COF-49,10289,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:14 PM,,,,0,"h3. Descripcion
+
+Como administrador, quiero una interfaz clara para importar productos desde CSV con retroalimentación de errores.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/admin/product_import.html`:
+* JavaScript:
+* Diseño:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzx,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de apertura de caja,COF-50,10290,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:15 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero una interfaz simple para abrir mi caja al inicio del turno.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/register_open.html`:
+* Validación:
+* Después de abrir:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 2",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzy,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)
+Frontend: Interfaz de cierre de caja,COF-51,10291,Historia,Tareas por hacer,COF,CoffeePOS,software,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,Medium,,Julian Cortes Perdomo,712020:1f57063f-91fa-4608-af42-4a6383bfed81,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,05/may/26 10:12 AM,05/may/26 12:15 PM,,,,0,"h3. Descripcion
+
+Como cajero, quiero cerrar mi caja viendo el resumen de ventas y diferencia de efectivo.
+
+h3. Criterios de Aceptacion
+
+* Template `templates/pos/register_close.html`:
+* Validaciones:
+
+h3. Detalles
+
+*Sprint:* Sprint 5 (14 abr - 27 abr)
+
+*Story Points:* 3",,Jhoan Sebastian Montealegre Vargas,712020:9b3d260f-0ef8-4134-95ed-4d77f60513bf,,,,,,,,,,,0|i000qe:zzzz,Tablero Sprint 6,,,,,{},Por hacer,05/may/26 10:12 AM,10256,COF-16,ÉPICA 3: Frontend Modular (SPA)

@@ -46,9 +46,7 @@ class RegisterStatus(str, enum.Enum):
 
 class UserRole(str, enum.Enum):
     ADMIN = 'admin'
-    MANAGER = 'manager'
     CASHIER = 'cashier'
-    BARISTA = 'barista'
 
 
 class UserStatus(str, enum.Enum):

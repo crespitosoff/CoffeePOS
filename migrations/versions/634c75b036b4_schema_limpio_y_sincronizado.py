@@ -1,8 +1,8 @@
-"""MVP Schema Limpio
+"""Schema limpio y sincronizado
 
-Revision ID: 7be5b50510c2
+Revision ID: 634c75b036b4
 Revises: 
-Create Date: 2026-05-07 23:22:19.424824
+Create Date: 2026-05-10 00:51:22.914732
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7be5b50510c2'
+revision = '634c75b036b4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -60,7 +60,7 @@ def upgrade():
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
     sa.Column('password_hash', sa.String(length=255), nullable=False),
-    sa.Column('role', sa.Enum('admin', 'manager', 'cashier', 'barista', name='user_role'), nullable=False),
+    sa.Column('role', sa.Enum('admin', 'cashier', name='user_role'), nullable=False),
     sa.Column('first_name', sa.String(length=80), nullable=True),
     sa.Column('last_name', sa.String(length=80), nullable=True),
     sa.Column('phone', sa.String(length=30), nullable=True),
@@ -111,6 +111,26 @@ def upgrade():
     )
     with op.batch_alter_table('register_sessions', schema=None) as batch_op:
         batch_op.create_index('idx_single_open_register', ['status'], unique=True, postgresql_where="(status = 'open'::register_status)")
+
+    op.create_table('cash_movements',
+    sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
+    sa.Column('register_session_id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('movement_type', sa.Enum('opening', 'closing', 'withdrawal', 'deposit', 'adjustment', name='movement_type'), nullable=False),
+    sa.Column('amount', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('reference_type', sa.String(length=50), nullable=True),
+    sa.Column('reference_id', sa.Uuid(), nullable=True),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('balance_before', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('balance_after', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id', name='cash_movements_pkey')
+    )
+    with op.batch_alter_table('cash_movements', schema=None) as batch_op:
+        batch_op.create_index('idx_cash_movements_created_at', ['created_at'], unique=False)
+        batch_op.create_index('idx_cash_movements_session', ['register_session_id'], unique=False)
 
     op.create_table('orders',
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
@@ -179,6 +199,11 @@ def downgrade():
         batch_op.drop_index('idx_orders_created_at')
 
     op.drop_table('orders')
+    with op.batch_alter_table('cash_movements', schema=None) as batch_op:
+        batch_op.drop_index('idx_cash_movements_session')
+        batch_op.drop_index('idx_cash_movements_created_at')
+
+    op.drop_table('cash_movements')
     with op.batch_alter_table('register_sessions', schema=None) as batch_op:
         batch_op.drop_index('idx_single_open_register', postgresql_where="(status = 'open'::register_status)")
 

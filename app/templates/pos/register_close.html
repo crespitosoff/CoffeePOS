@@ -2,15 +2,15 @@
 
 {% block title %}Cierre de Caja - CoffeePOS{% endblock %}
 
-{% block body_class %}bg-background flex items-center justify-center p-edge-margin{% endblock %}
+{% block body_class %}bg-background flex items-center justify-center p-4 md:p-8{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-[700px] bg-surface-container-low rounded-xl p-asymmetric-gap-lg shadow-[0_12px_32px_rgba(35,25,21,0.06)] relative overflow-hidden">
+<div class="w-full max-w-2xl bg-surface-container-low rounded-xl p-6 md:p-10 shadow-[0_12px_32px_rgba(35,25,21,0.06)] relative overflow-hidden">
     <!-- Subtle Top Accent -->
     <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-primary-container"></div>
     
     <!-- Header -->
-    <div class="flex items-center justify-between mb-vertical-rhythm pb-asymmetric-gap-sm border-b border-outline-variant/15">
+    <div class="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant/15">
         <div>
             <h1 class="font-headline-lg text-headline-lg text-primary">Cierre de Caja</h1>
             <p class="text-on-surface-variant font-title-md mt-1">Resumen del Turno - {{ summary.date | default('Hoy') }}</p>
@@ -19,19 +19,19 @@
     </div>
 
     <!-- Shift Summary Cards -->
-    <div class="grid grid-cols-2 gap-asymmetric-gap-sm mb-vertical-rhythm">
-        <div class="bg-surface-container-lowest rounded-lg p-asymmetric-gap-sm">
+    <div class="grid grid-cols-2 gap-4 md:gap-6 mb-6">
+        <div class="bg-surface-container-lowest rounded-lg p-4 md:p-6">
             <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Monto Inicial</p>
             <p class="font-headline-md text-headline-md text-on-surface">${{ summary.opening_cash | default('50,000') }}</p>
         </div>
-        <div class="bg-surface-container-lowest rounded-lg p-asymmetric-gap-sm">
+        <div class="bg-surface-container-lowest rounded-lg p-4 md:p-6">
             <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mb-2">Total Vendido</p>
             <p class="font-headline-md text-headline-md text-on-surface">${{ summary.total_sales | default('485,000') }}</p>
         </div>
     </div>
 
     <!-- Payment Breakdown -->
-    <div class="bg-surface-container-highest rounded-lg p-asymmetric-gap-sm mb-vertical-rhythm">
+    <div class="bg-surface-container-highest rounded-lg p-4 md:p-6 mb-6">
         <h3 class="font-title-lg text-title-lg text-on-surface mb-4">Desglose de Pagos</h3>
         <div class="space-y-4">
             <div class="flex justify-between items-center bg-surface-container-lowest p-4 rounded-lg">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Expected Cash & Input -->
-    <div class="bg-[#bcf0b4] rounded-lg p-asymmetric-gap-sm mb-vertical-rhythm flex items-center justify-between">
+    <div class="bg-[#bcf0b4] rounded-lg p-4 md:p-6 mb-6 flex items-center justify-between">
         <div>
             <p class="font-label-md text-label-md text-[#002204] uppercase tracking-wider mb-1">Efectivo Esperado</p>
             <p class="font-headline-md text-headline-md text-[#002204]">${{ summary.expected_cash | default('370,000') }}</p>
@@ -69,7 +69,7 @@
     </div>
 
     <form action="{{ url_for('pos.close_register') }}" method="POST">
-        <div class="mb-vertical-rhythm">
+        <div class="mb-6">
             <label class="block font-title-md text-title-md text-on-surface mb-2" for="closing_cash">Conteo de Efectivo en Caja</label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 font-title-lg text-title-lg text-on-surface-variant">$</span>

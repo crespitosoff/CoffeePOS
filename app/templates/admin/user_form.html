@@ -1,0 +1,47 @@
+{% extends "layout/base.html" %}
+
+{% block title %}Nuevo Usuario - Admin{% endblock %}
+
+{% block content %}
+<main class="flex-1 w-full max-w-2xl mx-auto p-4 md:p-8 flex flex-col gap-6">
+    <div>
+        <h1 class="font-headline-lg text-headline-lg text-primary">Nuevo Usuario</h1>
+        <p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Añadir al Sistema</p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-outline-variant/15">
+        <form action="{{ url_for('admin.create_user') }}" method="POST" class="flex flex-col gap-6">
+            <label class="flex flex-col gap-2">
+                <span class="font-title-md text-title-md text-on-surface">Nombre de Usuario (Username)</span>
+                <input name="username" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="text" placeholder="Ej. jdoe" required/>
+            </label>
+
+            <label class="flex flex-col gap-2">
+                <span class="font-title-md text-title-md text-on-surface">Contraseña</span>
+                <input name="password" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="password" placeholder="Min. 6 caracteres" required/>
+            </label>
+
+            <label class="flex flex-col gap-2">
+                <span class="font-title-md text-title-md text-on-surface">Rol del Sistema</span>
+                <div class="relative">
+                    <select name="role" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none appearance-none" required>
+                        <option value="" disabled selected>Selecciona un rol</option>
+                        <option value="cashier">Cajero (Cashier)</option>
+                        <option value="admin">Administrador (Admin)</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+                </div>
+            </label>
+
+            <div class="flex justify-end gap-4 mt-4">
+                <a href="{{ url_for('admin.dashboard') if 'admin.dashboard' in request.endpoint else '#' }}" class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-primary bg-transparent hover:bg-surface-container transition-colors flex items-center justify-center">
+                    Cancelar
+                </a>
+                <button type="submit" class="min-h-[48px] px-8 rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center justify-center shadow-sm">
+                    Guardar Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

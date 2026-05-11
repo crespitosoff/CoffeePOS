@@ -5,8 +5,14 @@
     <title>Acceso Denegado</title>
 </head>
 <body>
-    <h1>Error 403 - Acceso Denegado</h1>
-    <p>No tienes permisos suficientes para ver esta página.</p>
-    <a href="/login">Volver al inicio</a>
+    <div class="flex min-h-screen items-center justify-center bg-surface p-4 text-on-surface">
+        <div class="max-w-lg w-full bg-surface-container-low p-8 rounded-lg shadow-md">
+            <h1 class="text-2xl font-semibold mb-4">Acceso Denegado</h1>
+            <p class="text-on-surface-variant mb-6">No tienes permisos para acceder a esta página o función.</p>
+            <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-primary-container hover:bg-primary-container/8 rounded-md px-4 py-2">
+                Volver al inicio
+            </a>
+        </div>
+    </div>
 </body>
 </html>

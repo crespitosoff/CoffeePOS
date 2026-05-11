@@ -150,6 +150,13 @@ class OrderService:
             )
 
         try:
+            # Buscar si el producto ya está en la orden
+            item = db.session.query(OrderItem).filter_by(
+                order_id=order_id, 
+                product_id=product_id
+            ).first()
+
+            # Convertir a decimal y calcular subtotales
             base_price = decimal.Decimal(str(product.price))
             qty_decimal = decimal.Decimal(quantity)
             item_subtotal = base_price * qty_decimal
@@ -159,16 +166,23 @@ class OrderService:
                 else decimal.Decimal("0")
             )
 
-            item = OrderItem(
-                order_id=order_id,
-                product_id=product_id,
-                quantity=quantity,
-                base_price=base_price,
-                subtotal=item_subtotal,
-                historical_cost=historical_cost * qty_decimal,
-                notes=notes,
-            )
-            db.session.add(item)
+            if item:
+                # Si el item ya existe, incrementar la cantidad y recalcular subtotales
+                item.quantity += quantity
+                item.subtotal = item.base_price * decimal.Decimal(item.quantity)
+                item.historical_cost += historical_cost * qty_decimal
+            else:
+                # Si no existe el item, se crea uno nuevo
+                item = OrderItem(
+                    order_id=order_id,
+                    product_id=product_id,
+                    quantity=quantity,
+                    base_price=base_price,
+                    subtotal=item_subtotal,
+                    historical_cost=historical_cost * qty_decimal,
+                    notes=notes,
+                )
+                db.session.add(item)
 
             # Descontar stock
             product.stock = (product.stock or 0) - quantity

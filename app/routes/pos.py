@@ -196,7 +196,7 @@ def view_order(table_id):
         flash(str(e), 'danger')
         return redirect(url_for('pos.dashboard'))
 
-@pos_bp.route('/order/<order_id>/add-item', methods=['POST'])
+@pos_bp.route('/order/<order_id>/add', methods=['POST'])
 @login_required
 @cashier_required
 def add_item(order_id):

@@ -6,43 +6,52 @@
 
 {% block content %}
 <!-- SideNavBar -->
-<nav class="fixed left-0 top-0 h-full flex flex-col py-edge-margin border-r border-outline-variant/15 bg-surface-container-low w-80 z-20">
-    <div class="px-edge-margin mb-8">
+<nav
+    class="fixed left-0 top-0 h-full flex flex-col py-4 md:py-6 border-r border-outline-variant/15 bg-surface-container-low w-64 z-20 hidden md:flex">
+    <div class="px-4 md:px-6 mb-8">
         <h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS Admin</h1>
         <p class="font-body-lg text-body-lg text-on-surface-variant">The Elevated Harvest</p>
     </div>
-    <div class="flex flex-col gap-2 flex-grow">
-        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="{{ url_for('pos.dashboard') }}">
+    <div class="flex flex-col gap-2 flex-grow overflow-y-auto">
+        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+            href="{{ url_for('pos.dashboard') }}">
             <span class="material-symbols-outlined">dashboard</span>
             <span class="font-title-md text-title-md">Dashboard</span>
         </a>
-        <a class="bg-secondary-container text-on-secondary-container rounded-lg mx-4 my-1 px-4 py-3 flex items-center gap-4 translate-x-1 transition-transform duration-150" href="{{ url_for('pos.dashboard') }}">
+        <a class="bg-secondary-container text-on-secondary-container rounded-lg mx-4 my-1 px-4 py-3 flex items-center gap-4 translate-x-1 transition-transform duration-150"
+            href="{{ url_for('pos.dashboard') }}">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">deck</span>
             <span class="font-title-md text-title-md">Tables</span>
         </a>
-        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+            href="#">
             <span class="material-symbols-outlined">menu_book</span>
             <span class="font-title-md text-title-md">Catalog</span>
         </a>
-        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+            href="#">
             <span class="material-symbols-outlined">analytics</span>
             <span class="font-title-md text-title-md">Reports</span>
         </a>
-        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+            href="#">
             <span class="material-symbols-outlined">settings</span>
             <span class="font-title-md text-title-md">Settings</span>
         </a>
     </div>
     <div class="mt-auto flex flex-col gap-2 px-4">
-        <a href="{{ url_for('pos.open_register_form') }}" class="bg-primary text-on-primary font-title-md text-title-md rounded-xl h-[64px] w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+        <a href="{{ url_for('pos.open_register_form') }}"
+            class="bg-primary text-on-primary font-title-md text-title-md rounded-xl h-[64px] w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
             Open Register
         </a>
         <div class="mt-4">
-            <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="{{ url_for('auth.logout') if 'auth.logout' in request.endpoint else '#' }}">
+            <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+                href="{{ url_for('auth.logout') if 'auth.logout' in request.endpoint else '#' }}">
                 <span class="material-symbols-outlined">logout</span>
                 <span class="font-title-md text-title-md">Logout</span>
             </a>
-            <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all" href="#">
+            <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
+                href="#">
                 <span class="material-symbols-outlined">help</span>
                 <span class="font-title-md text-title-md">Support</span>
             </a>
@@ -51,114 +60,231 @@
 </nav>
 
 <!-- Main Content Area -->
-<main class="ml-80 flex-grow flex w-[calc(100%-20rem)] min-h-screen relative">
-    <!-- Left: Catalog (70%) -->
-    <div class="flex-grow flex flex-col pt-edge-margin px-edge-margin bg-background pb-32">
+<main class="md:ml-64 flex-1 flex flex-col lg:flex-row min-h-screen relative w-full md:w-[calc(100%-16rem)]">
+    <!-- Left: Catalog -->
+    <div class="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-background pb-32 max-w-screen-2xl mx-auto w-full">
         <!-- Header -->
-        <div class="flex justify-between items-end mb-asymmetric-gap-lg">
-            <div>
-                <h2 class="font-headline-lg text-headline-lg text-primary">Mesa {{ table_name | default('Takeaway') }}</h2>
-                <p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Nueva Orden</p>
-            </div>
+        <div class="flex justify-between items-end mb-6 md:mb-8">
+            
             <div class="flex gap-4">
-                <span class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high cursor-pointer">search</span>
+                <span
+                    class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high cursor-pointer">search</span>
             </div>
         </div>
 
         <!-- Categories -->
-        <div class="flex gap-6 overflow-x-auto pb-4 mb-asymmetric-gap-sm no-scrollbar border-b border-outline-variant/15">
-            <button class="font-title-md text-title-md text-primary border-b-2 border-primary pb-2 whitespace-nowrap">Café</button>
-            <button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Bebidas Frías</button>
-            <button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Postres</button>
-            <button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Panadería</button>
-            <button class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Extras</button>
+        <div class="flex gap-4 md:gap-6 overflow-x-auto pb-4 mb-6 no-scrollbar border-b border-outline-variant/15">
+            <button
+                class="font-title-md text-title-md text-primary border-b-2 border-primary pb-2 whitespace-nowrap">Café</button>
+            <button
+                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Bebidas
+                Frías</button>
+            <button
+                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Postres</button>
+            <button
+                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Panadería</button>
+            <button
+                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Extras</button>
         </div>
 
         <!-- Products Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-asymmetric-gap-sm">
-            {% set default_products = [
-                {'id': '1', 'name': 'Espresso Doble', 'price': 4500, 'stock': 45, 'image_url': 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnoNiW15jCnfnZ3f1uzJtIbqKWRfOEZctX_gZ3VkSZdXWNRLm-WI5j8nMnnmIT39nihGQ87NlM-Rl-MFmUqa0SiSTS0fVuO4HqwzYcQFX29vj2TX10i-3SNVucgBGQRYmrL32XY-8hranzebUpRlD7HMw9yhsRxruAOKV4wQSdqqghBaKf5LWyOz2J2VRH0fNWvPw4y0v7XEnc3OstzS-vXsMUiqBZRtiUN19KMK0SHOFZA44dFLkpLTPmgJVrfJzWWhM5vvArJkU'},
-                {'id': '2', 'name': 'Americano', 'price': 3800, 'stock': 120, 'image_url': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCuW7XwUA4sEi93WN87bqTrymRSSaMgP2TagB-avyBsgvcOJornJ5RPnPjWNPVpeqnz8PgS7707xpuQ-eyqN1ABzwdfWLiMtV84nQW9qmIJCYfYY5kdwhyVc2_GBOf0UtneCxJeRkpwdjPpkhsnEzV2S9QsBE5h41w1Trj0XFkRUBq_arLpDVXu3o2ZtFAlXbYkki1sF_GbrNwSAiBi2FRhrFctEQ4rJbJ08G3_tA-tOgLTkW12I738e8jPaEDl2ZlDP0d8INkl0-8'},
-                {'id': '3', 'name': 'Latte', 'price': 5200, 'stock': 80, 'image_url': 'https://lh3.googleusercontent.com/aida-public/AB6AXuA1LnYw4xCjJJUtO4ZGkq05aiadX6fm6f6V7QELrnf1Bkf5UVL4iQ4f_4ljawd_Wie22RFS5oHA5NV6OpIpDIwwLjWMx09CtP1T8dj2QtjkhGNFvfY27KkN4du9SHcLxmPFG7mR4GHRth9OvrNANDopoP5xuaqk3USZ7FoqoYgytlLh-CeCBa9X_FEfyJmjsHUPYtpkxzMCP56yM-12aRnPF33bBcKQebHmuVT6bDQ4NQkPrUvZY5EFqRFetMNe55qFOjG-iOaeaJA'},
-                {'id': '4', 'name': 'Mocha', 'price': 5800, 'stock': 30, 'image_url': 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1VkGkp8xFNjVkB2DojyyQ6N1HrZkE8syV13_8VP6EOyUYX4h5ThondWq0VNu-OAef4AAVJAIsloWGJc85kTIDppw0B9DnLpG3d5q03kJHBhMHGqdTW-o2H6pfeMZoAqJpcVLH9tWxtJwv9mgv43t0q34kxt_f7pAfXcoB3ePlRxpV1XfAccPAXpeJTiq1jMDILaZDEHcJVPIn9w1PisVTT_DDg-htQ6BI_h6F6xmEa98qb8YxOi6HtVZ60gaA1SPNCyCsbi5zDXE'}
-            ] %}
-            
-            {% for product in products|default(default_products) %}
-            <div class="bg-surface-container-lowest rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group">
-                <img class="w-full h-40 object-cover rounded-[1.5rem]" alt="{{ product.name }}" src="{{ product.image_url }}"/>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            {% for product in products %}
+            <button data-product-id="{{ product.id }}" class="bg-surface-container-lowest rounded-[1.5rem] md:rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group hover:scale-[1.02]">
+                <img class="w-full h-40 object-cover rounded-[1.5rem]" alt="{{ product.name }}"
+                    src="{{ product.image_url }}" />
                 <div class="flex flex-col gap-1">
-                    <h3 class="font-title-lg text-title-lg text-on-surface">{{ product.name }}</h3>
                     <div class="flex justify-between items-center mt-2">
-                        <span class="font-headline-md text-headline-md text-primary">${{ product.price }}</span>
-                        <span class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock: {{ product.stock }}</span>
+                        <h3 class="font-title-lg text-title-lg text-on-surface">{{ product.name }}</h3>
+                        <span
+                            class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock:
+                            {{ product.stock }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-headline-md text-headline-md text-primary">${{ "{:,.2f}".format(product.price)
+                            }}</span>
+                        <div data-product-id="{{ product.id }}" class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                            <span class="material-symbols-outlined">add</span>
+                        </div>
                     </div>
                 </div>
-                <button data-product-id="{{ product.id }}" class="absolute bottom-4 right-4 bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0" onclick="/* TODO: Hook to JS for pos.add_item */">
-                    <span class="material-symbols-outlined">add</span>
-                </button>
-            </div>
+            </button>
             {% endfor %}
         </div>
 
         <!-- Bottom Scroll Fade -->
-        <div class="fixed bottom-0 left-80 right-96 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10"></div>
+        <div
+            class="fixed bottom-0 left-0 md:left-64 right-0 lg:right-80 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none z-10">
+        </div>
     </div>
 
-    <!-- Right: Sticky Cart (30%) -->
-    <aside class="w-96 min-w-[24rem] bg-surface-container-low border-l border-outline-variant/15 flex flex-col h-screen sticky top-0 z-20">
-        <div class="p-edge-margin border-b border-outline-variant/15">
+    <!-- Right: Sticky Cart -->
+    <aside
+        class="w-full lg:w-80 lg:min-w-[20rem] bg-surface-container-low border-t lg:border-t-0 lg:border-l border-outline-variant/15 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 z-20">
+        <div class="p-4 md:p-6 border-b border-outline-variant/15">
             <h2 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-4">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
-                Carrito
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt</span>
+                {{ table_name | default('Takeaway') }}
             </h2>
         </div>
 
         <!-- Cart Items -->
         <div class="flex-grow overflow-y-auto p-6 flex flex-col gap-6" id="cart-items-container">
-            {% set default_items = [
-                {'id': 'item1', 'name': 'Espresso Doble', 'quantity': 2, 'price': 9000},
-                {'id': 'item2', 'name': 'Croissant', 'quantity': 1, 'price': 3500}
-            ] %}
-            
-            {% for item in cart_items|default(default_items) %}
+            {% for item in order.order_items %}
             <div class="bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.04)]">
                 <div class="flex justify-between items-start">
-                    <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.name }}</h4>
-                    <button class="text-outline hover:text-error transition-colors" data-action="remove" data-item-id="{{ item.id }}">
+                    <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.product.name }}</h4>
+                    <button class="text-outline hover:text-error transition-colors" data-action="remove"
+                        data-item-id="{{ item.id }}">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-4 bg-surface-container-high rounded-full p-1">
-                        <button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm" data-action="decrease" data-item-id="{{ item.id }}">
+                        <button
+                            class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface shadow-sm"
+                            data-action="decrease" data-item-id="{{ item.id }}">
                             <span class="material-symbols-outlined text-sm">remove</span>
                         </button>
-                        <span class="font-title-md text-title-md text-on-surface w-4 text-center">{{ item.quantity }}</span>
-                        <button class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm" data-action="increase" data-item-id="{{ item.id }}">
+                        <span class="font-title-md text-title-md text-on-surface w-4 text-center">{{ item.quantity
+                            }}</span>
+                        <button
+                            class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface shadow-sm"
+                            data-action="increase" data-item-id="{{ item.id }}">
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
                     </div>
-                    <span class="font-title-lg text-title-lg text-primary">${{ item.price }}</span>
+                    <span class="font-title-lg text-title-lg text-primary">${{ "{:,.2f}".format(item.subtotal) }}</span>
                 </div>
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center h-full text-outline opacity-50">
+                <span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+                <p class="font-title-md">Aún no hay productos</p>
             </div>
             {% endfor %}
         </div>
 
         <!-- Cart Footer -->
-        <div class="p-edge-margin bg-surface-container-lowest border-t border-outline-variant/15 shadow-[0px_-12px_32px_rgba(35,25,21,0.06)]">
-            <div class="flex justify-between items-center mb-6">
-                <span class="font-title-lg text-title-lg text-on-surface-variant">Total</span>
-                <span class="font-headline-lg text-headline-lg text-primary font-bold">${{ order.total|default('12,500') }}</span>
+        <div
+            class="p-4 md:p-6 bg-surface-container-lowest border-t border-outline-variant/15 shadow-[0px_-12px_32px_rgba(35,25,21,0.06)]">
+            <div class="flex justify-between items-center mb-4 md:mb-6">
+                <span class="font-body-lg text-body-lg text-on-surface-variant">Subtotal</span>
+                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.subtotal)
+                    }}</span>
+            </div>
+            <div class="flex justify-between items-center mb-4 md:mb-6">
+                <span class="font-body-lg text-body-lg text-on-surface-variant">Impuestos (IVA)</span>
+                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.tax)
+                    }}</span>
             </div>
             <div class="flex flex-col gap-4">
-                <a href="{% if order %}{{ url_for('pos.payment_form', order_id=order.id) }}{% else %}#{% endif %}" class="bg-primary hover:bg-primary-container text-on-primary font-title-lg text-title-lg min-h-[64px] flex items-center justify-center rounded-xl transition-all shadow-md active:scale-95 text-center">
-                    Proceder a Pago
+                <a href="{{ url_for('pos.payment_form', order_id=order.id) }}" class="w-full py-4 rounded-[2rem] font-title-lg text-title-lg flex items-center justify-center gap-3 transition-all
+                   {% if not order.order_items %}
+                       bg-surface-container-highest text-outline cursor-not-allowed pointer-events-none
+                   {% else %}
+                       bg-primary text-on-primary shadow-[0px_12px_32px_rgba(35,25,21,0.12)] hover:scale-[1.02]
+                   {% endif %}">
+                    <span class="material-symbols-outlined">payments</span>
+                    <span class="font-headline-lg text-on-primary">${{ '{:,.2f}'.format(order.total)}}</span>
                 </a>
-                <button class="bg-transparent text-error font-title-md text-title-md py-4 hover:bg-error-container/20 rounded-xl transition-all w-full">
-                    Cancelar Orden
+                <button
+                    class="bg-surface border border-outline/15 text-error font-title-md text-title-md py-4 hover:bg-error-container/20 rounded-xl transition-all w-full hover:scale-[1.02]">
+                    Cancelar
                 </button>
             </div>
         </div>
     </aside>
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Add Items
+        const addButtons = document.querySelectorAll('button[data-product-id]');
+        addButtons.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const productId = btn.getAttribute('data-product-id');
+                const orderId = '{{ order.id if order else "" }}';
+
+                if (!orderId) {
+                    alert('No hay una orden activa para agregar productos.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/pos/order/${orderId}/add`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ product_id: productId, quantity: 1 })
+                    });
+
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Error al agregar producto');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión.');
+                }
+            });
+        });
+
+        // 2 & 3. Update Quantities and Remove
+        const cartContainer = document.getElementById('cart-items-container');
+        if (cartContainer) {
+            cartContainer.addEventListener('click', async (e) => {
+                const btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+
+                const action = btn.getAttribute('data-action');
+                const itemId = btn.getAttribute('data-item-id');
+                if (!itemId) return;
+
+                try {
+                    let url = '';
+                    let body = null;
+
+                    if (action === 'remove') {
+                        url = `/pos/order-item/${itemId}/remove`;
+                    } else if (action === 'increase' || action === 'decrease') {
+                        url = `/pos/order-item/${itemId}/update-quantity`;
+
+                        const qtySpan = btn.parentElement.querySelector('span.text-center');
+                        let currentQty = parseInt(qtySpan.textContent);
+                        let newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+
+                        if (newQty < 1) {
+                            url = `/pos/order-item/${itemId}/remove`;
+                        } else {
+                            body = JSON.stringify({ quantity: newQty });
+                        }
+                    }
+
+                    const fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    };
+                    if (body) fetchOptions.body = body;
+
+                    const response = await fetch(url, fetchOptions);
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Error al actualizar producto');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error de conexión al servidor.');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

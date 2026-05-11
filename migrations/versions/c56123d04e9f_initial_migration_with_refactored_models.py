@@ -1,8 +1,8 @@
-"""Schema limpio y sincronizado
+"""Initial migration with refactored models
 
-Revision ID: 634c75b036b4
+Revision ID: c56123d04e9f
 Revises: 
-Create Date: 2026-05-10 00:51:22.914732
+Create Date: 2026-05-11 17:09:39.990485
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '634c75b036b4'
+revision = 'c56123d04e9f'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,8 +24,17 @@ def upgrade():
     sa.Column('slug', sa.String(length=120), nullable=False),
     sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id', name='categories_pkey'),
     sa.UniqueConstraint('slug', name='categories_slug_key')
+    )
+    op.create_table('restaurant_tables',
+    sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
+    sa.Column('capacity', sa.Integer(), server_default=sa.text('2'), nullable=True),
+    sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
+    sa.PrimaryKeyConstraint('id', name='restaurant_tables_pkey'),
+    sa.UniqueConstraint('name', name='restaurant_tables_name_key')
     )
     op.create_table('store_settings',
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
@@ -48,14 +57,6 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id', name='store_settings_pkey')
     )
-    op.create_table('tables',
-    sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.Column('name', sa.String(length=50), nullable=False),
-    sa.Column('capacity', sa.Integer(), server_default=sa.text('2'), nullable=True),
-    sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
-    sa.PrimaryKeyConstraint('id', name='tables_pkey'),
-    sa.UniqueConstraint('name', name='tables_name_key')
-    )
     op.create_table('users',
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
@@ -68,6 +69,7 @@ def upgrade():
     sa.Column('avatar_url', sa.String(length=255), nullable=True),
     sa.Column('status', sa.Enum('active', 'inactive', 'suspended', 'terminated', name='user_status'), server_default=sa.text("'active'::user_status"), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id', name='users_pkey'),
     sa.UniqueConstraint('username', name='users_username_key')
     )
@@ -84,6 +86,7 @@ def upgrade():
     sa.Column('image_url', sa.Text(), nullable=True),
     sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.CheckConstraint('price >= 0::numeric', name='products_price_check'),
     sa.CheckConstraint('unit_cost >= 0::numeric', name='products_unit_cost_check'),
     sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ),
@@ -136,7 +139,7 @@ def upgrade():
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=True),
     sa.Column('register_session_id', sa.Uuid(), nullable=True),
-    sa.Column('table_id', sa.Uuid(), nullable=True),
+    sa.Column('restaurant_table_id', sa.Uuid(), nullable=True),
     sa.Column('customer_name', sa.String(length=100), nullable=True),
     sa.Column('subtotal', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
     sa.Column('tax', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
@@ -145,8 +148,9 @@ def upgrade():
     sa.Column('status', sa.Enum('open', 'preparing', 'ready', 'paid', 'cancelled', name='order_status'), server_default=sa.text("'open'::order_status"), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('closed_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], ),
-    sa.ForeignKeyConstraint(['table_id'], ['tables.id'], ),
+    sa.ForeignKeyConstraint(['restaurant_table_id'], ['restaurant_tables.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id', name='orders_pkey')
     )
@@ -163,6 +167,8 @@ def upgrade():
     sa.Column('product_id', sa.Uuid(), nullable=True),
     sa.Column('historical_cost', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
     sa.Column('notes', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.CheckConstraint('quantity > 0', name='order_items_quantity_check'),
     sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['product_id'], ['products.id'], ),
@@ -176,6 +182,7 @@ def upgrade():
     sa.Column('register_session_id', sa.Uuid(), nullable=True),
     sa.Column('reference', sa.String(length=100), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('change', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
     sa.CheckConstraint('amount_paid > 0::numeric', name='payments_amount_paid_check'),
     sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
     sa.ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], ),
@@ -214,7 +221,7 @@ def downgrade():
 
     op.drop_table('products')
     op.drop_table('users')
-    op.drop_table('tables')
     op.drop_table('store_settings')
+    op.drop_table('restaurant_tables')
     op.drop_table('categories')
     # ### end Alembic commands ###

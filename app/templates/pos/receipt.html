@@ -2,17 +2,20 @@
 
 {% block title %}Recibo - CoffeePOS{% endblock %}
 
-{% block body_class %}bg-surface-container flex flex-col items-center justify-center min-h-screen p-4 md:p-8{% endblock %}
+{% block body_class %}bg-surface-container flex flex-col items-center justify-center min-h-screen p-4 md:p-8{% endblock
+%}
 
 {% block content %}
 <main class="w-full max-w-sm flex flex-col items-center gap-6">
     <!-- Action buttons above the receipt -->
     <div class="w-full flex justify-between gap-4 no-print">
-        <button onclick="window.print()" class="flex-1 min-h-[48px] rounded-xl font-title-md text-title-md text-on-surface bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 shadow-sm border border-outline-variant/15">
+        <button onclick="window.print()"
+            class="flex-1 min-h-[48px] rounded-xl font-title-md text-title-md text-on-surface bg-surface-container-high hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2 shadow-sm border border-outline-variant/15">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">print</span>
             Imprimir
         </button>
-        <a href="{{ url_for('pos.dashboard') }}" class="flex-1 min-h-[48px] rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-sm">
+        <a href="{{ url_for('pos.dashboard') }}"
+            class="flex-1 min-h-[48px] rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-sm">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
             Dashboard
         </a>
@@ -20,7 +23,8 @@
 
     <!-- The 80mm Receipt Card -->
     <!-- 80mm is ~302px. We use max-w-[320px] to simulate. -->
-    <div class="bg-surface-container-lowest text-on-surface w-full max-w-[320px] rounded-sm p-6 shadow-md border border-outline-variant/15 print:shadow-none print:border-none print:p-0 print:w-[80mm] print:max-w-none">
+    <div
+        class="bg-surface-container-lowest text-on-surface w-full max-w-[320px] rounded-sm p-6 shadow-md border border-outline-variant/15 print:shadow-none print:border-none print:p-0 print:w-[80mm] print:max-w-none">
         <!-- Store Info -->
         <div class="text-center mb-6">
             <h1 class="font-bold text-xl uppercase tracking-wider mb-1">{{ receipt.store.business_name }}</h1>
@@ -41,14 +45,18 @@
         <div class="text-sm mb-4">
             <div class="flex justify-between">
                 <span>Orden:</span>
-                <span class="font-mono">#{{ receipt.order.id[:8] }}</span>
+                <span class="font-mono">#{{ receipt.store.invoice_prefix + "-" + receipt.order.id[:8] }}</span>
             </div>
             <div class="flex justify-between">
-                <span>Fecha:</span>
-                <span>{{ receipt.order.closed_at.strftime('%Y-%m-%d %H:%M') if receipt.order.closed_at else '' }}</span>
+                <span>Tiempo Creación:</span>
+                <span>{{ receipt.order.created_at}}</span>
             </div>
             <div class="flex justify-between">
-                <span>Cajero:</span>
+                <span>Tiempo Pago:</span>
+                <span>{{ receipt.order.closed_at}}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Empleado:</span>
                 <span>{{ receipt.order.cashier }}</span>
             </div>
             {% if receipt.order.table %}
@@ -114,10 +122,22 @@
                 <span>Pagó con:</span>
                 <span>${{ "{:,.2f}".format(receipt.payment.amount_paid) }}</span>
             </div>
+            {% if receipt.payment.change > 0 %}
+            <div class="flex justify-between">
+                <span>Cambio:</span>
+                <span>${{ "{:,.2f}".format(receipt.payment.change) }}</span>
+            </div>
+            {% endif %}
             {% if receipt.payment.reference %}
             <div class="flex justify-between mt-1">
+                <!-- TODO: por el momento se deja hardcodeado, despues se puede cambiar por un archivo de configuracion -->
                 <span>Ref:</span>
                 <span class="font-mono">{{ receipt.payment.reference }}</span>
+            </div>
+            {% endif %}
+            {% if receipt.order.notes %}
+            <div class="mt-4 text-sm text-outline">
+                <p>Notas: {{ receipt.order.notes }}</p>
             </div>
             {% endif %}
         </div>
@@ -130,26 +150,31 @@
 </main>
 
 <style>
-@media print {
-    /* Hide everything except the receipt */
-    body * {
-        visibility: hidden;
+    @media print {
+
+        /* Hide everything except the receipt */
+        body * {
+            visibility: hidden;
+        }
+
+        .print\:max-w-none,
+        .print\:max-w-none * {
+            visibility: visible;
+        }
+
+        .print\:max-w-none {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Hide the UI buttons */
+        .no-print {
+            display: none !important;
+        }
     }
-    .print\:max-w-none, .print\:max-w-none * {
-        visibility: visible;
-    }
-    .print\:max-w-none {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 80mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    /* Hide the UI buttons */
-    .no-print {
-        display: none !important;
-    }
-}
 </style>
 {% endblock %}

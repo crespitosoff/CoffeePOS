@@ -2,6 +2,7 @@
 from __future__ import annotations
 import datetime
 import decimal
+from datetime import timezone
 from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError
 from app.extensions import db
@@ -72,7 +73,7 @@ class PaymentService:
             db.session.add(payment)
 
             order.status = OrderStatus.PAID
-            order.closed_at = datetime.datetime.utcnow()
+            order.closed_at = datetime.datetime.now(timezone.utc)
 
             if method == PaymentMethod.CASH and order.register_session_id:
                 PaymentService._record_cash_income(
@@ -116,6 +117,17 @@ class PaymentService:
             for item in order.order_items
         ]
 
+        # Convertir la fecha al formato correcto
+        utc_time_created_at = order.created_at.replace(tzinfo=timezone.utc)
+        formatted_date_created_at = utc_time_created_at.strftime("%d-%m-%Y %H:%M")
+
+        utc_time_closed_at = order.closed_at.replace(tzinfo=timezone.utc)
+        formatted_date_closed_at = utc_time_closed_at.strftime("%d-%m-%Y %H:%M")
+
+        amount_paid = decimal.Decimal(str(payment.amount_paid)) if payment else decimal.Decimal("0")
+        total_order = decimal.Decimal(str(order.total))
+        change = amount_paid - total_order if amount_paid > total_order else decimal.Decimal("0")
+
         return {
             "store": {
                 "business_name":  setting.business_name  if setting else "CoffeePOS",
@@ -124,6 +136,7 @@ class PaymentService:
                 "tax_id":         setting.tax_id          if setting else "",
                 "receipt_footer": setting.receipt_footer  if setting else "",
                 "currency":       setting.currency        if setting else "COP",
+                "invoice_prefix": setting.invoice_prefix  if setting else "",
             },
             "order": {
                 "id":            str(order.id),
@@ -133,14 +146,15 @@ class PaymentService:
                 "subtotal":      decimal.Decimal(str(order.subtotal)),
                 "tax":           decimal.Decimal(str(order.tax)),
                 "total":         decimal.Decimal(str(order.total)),
-                "created_at":    order.created_at,
-                "closed_at":     order.closed_at,
+                "created_at":    formatted_date_created_at,
+                "closed_at":     formatted_date_closed_at,
                 "notes":         order.notes,
             },
             "payment": {
                 "method":      payment.method.value if payment else "N/A",
-                "amount_paid": decimal.Decimal(str(payment.amount_paid)) if payment else decimal.Decimal("0"),
+                "amount_paid": amount_paid,
                 "reference":   payment.reference if payment else None,
+                "change":      change,
             },
             "items": items_data,
         }

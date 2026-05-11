@@ -112,19 +112,8 @@
         </div>
 
         <!-- Bento Grid of Tables -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% set default_tables = [
-                {'id': '1', 'name': 'Mesa 1', 'status': 'available', 'info': '4 personas'},
-                {'id': '2', 'name': 'Mesa 2', 'status': 'occupied', 'info': 'Ocupada (2h)'},
-                {'id': '3', 'name': 'Mesa 3', 'status': 'available', 'info': '2 personas'},
-                {'id': '4', 'name': 'Mesa 4', 'status': 'available', 'info': '4 personas'},
-                {'id': '5', 'name': 'Mesa 5', 'status': 'occupied', 'info': 'Ocupada (45m)'},
-                {'id': '6', 'name': 'Mesa 6', 'status': 'available', 'info': '6 personas'},
-                {'id': '7', 'name': 'Mesa 7', 'status': 'available', 'info': '2 personas'},
-                {'id': '8', 'name': 'Mesa 8', 'status': 'available', 'info': '4 personas'}
-            ] %}
-            
-            {% for table in tables|default(default_tables) %}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">            
+            {% for table in tables %}
                 {% if table.status == 'occupied' %}
                 <a href="{{ url_for('pos.view_order', table_id=table.id) }}" class="bg-surface-variant p-6 rounded-xl flex flex-col items-center justify-center gap-4 relative overflow-hidden group min-h-[160px] border border-outline-variant/30 hover:shadow-[0_12px_32px_rgba(35,25,21,0.06)] block">
                     <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-[#EF4444]"></div>

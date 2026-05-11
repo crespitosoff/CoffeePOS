@@ -13,7 +13,6 @@ from app.models.domain import (
     MovementType,
     Order,
     OrderStatus,
-    Payment,
     PaymentMethod,
     RegisterSession,
     RegisterStatus,

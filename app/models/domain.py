@@ -8,7 +8,7 @@ import uuid
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from sqlalchemy import CheckConstraint, Column, DateTime, Enum, ForeignKey, ForeignKeyConstraint, Index, Integer, Numeric, PrimaryKeyConstraint, String, Table, Text, UniqueConstraint, Uuid, text
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, Integer, Numeric, PrimaryKeyConstraint, Table, String, Text, UniqueConstraint, Uuid, text  # noqa: F401
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class GenericStatus(str, enum.Enum):
@@ -68,6 +68,7 @@ class Category(db.Model):
     slug: Mapped[str] = mapped_column(String(120), nullable=False)
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    update_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
     products: Mapped[list['Product']] = relationship('Product', back_populates='category')
 
@@ -98,11 +99,11 @@ class StoreSetting(db.Model):
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
 
 
-class Table(db.Model):
-    __tablename__ = 'tables'
+class RestaurantTable(db.Model):
+    __tablename__ = 'restaurant_tables'
     __table_args__ = (
-        PrimaryKeyConstraint('id', name='tables_pkey'),
-        UniqueConstraint('name', name='tables_name_key'),
+        PrimaryKeyConstraint('id', name='restaurant_tables_pkey'),
+        UniqueConstraint('name', name='restaurant_tables_name_key'),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
@@ -110,7 +111,7 @@ class Table(db.Model):
     capacity: Mapped[Optional[int]] = mapped_column(Integer, server_default=text('2'))
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
 
-    orders: Mapped[list['Order']] = relationship('Order', back_populates='table')
+    orders: Mapped[list['Order']] = relationship('Order', back_populates='restaurant_table')
 
 
 class User(db.Model, UserMixin):
@@ -131,6 +132,7 @@ class User(db.Model, UserMixin):
     avatar_url: Mapped[Optional[str]] = mapped_column(String(255))
     status: Mapped[Optional[UserStatus]] = mapped_column(Enum(UserStatus, values_callable=lambda cls: [member.value for member in cls], name='user_status'), server_default=text("'active'::user_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    update_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
     register_sessions_closed_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.closed_by]', back_populates='user')
     register_sessions_opened_by: Mapped[list['RegisterSession']] = relationship('RegisterSession', foreign_keys='[RegisterSession.opened_by]', back_populates='user_')
@@ -167,6 +169,7 @@ class Product(db.Model):
     image_url: Mapped[Optional[str]] = mapped_column(Text)
     status: Mapped[Optional[GenericStatus]] = mapped_column(Enum(GenericStatus, values_callable=lambda cls: [member.value for member in cls], name='generic_status'), server_default=text("'active'::generic_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    update_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
     category: Mapped[Optional['Category']] = relationship('Category', back_populates='products')
     order_items: Mapped[list['OrderItem']] = relationship('OrderItem', back_populates='product')
@@ -208,7 +211,7 @@ class Order(db.Model):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))
     user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('users.id'))
     register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('register_sessions.id'))
-    table_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('tables.id'), nullable=True)
+    restaurant_table_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('restaurant_tables.id'), nullable=True)
     customer_name: Mapped[Optional[str]] = mapped_column(String(100))
     subtotal: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
     tax: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
@@ -216,10 +219,11 @@ class Order(db.Model):
     notes: Mapped[Optional[str]] = mapped_column(Text)
     status: Mapped[Optional[OrderStatus]] = mapped_column(Enum(OrderStatus, values_callable=lambda cls: [member.value for member in cls], name='order_status'), server_default=text("'open'::order_status"))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
-    closed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    closed_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True),)
+    update_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='orders')
-    table: Mapped[Optional['Table']] = relationship('Table', back_populates='orders')
+    restaurant_table: Mapped[Optional['RestaurantTable']] = relationship('RestaurantTable', back_populates='orders')
     user: Mapped[Optional['User']] = relationship('User', back_populates='orders')
     order_items: Mapped[list['OrderItem']] = relationship('OrderItem', back_populates='order')
     payments: Mapped[list['Payment']] = relationship('Payment', back_populates='order')
@@ -240,6 +244,8 @@ class OrderItem(db.Model):
     product_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('products.id'))
     historical_cost: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
     notes: Mapped[Optional[str]] = mapped_column(Text)
+    created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    update_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'), onupdate=text('CURRENT_TIMESTAMP'))
 
     order: Mapped[Optional['Order']] = relationship('Order', back_populates='order_items')
     product: Mapped[Optional['Product']] = relationship('Product', back_populates='order_items')
@@ -260,6 +266,7 @@ class Payment(db.Model):
     register_session_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey('register_sessions.id'))
     reference: Mapped[Optional[str]] = mapped_column(String(100))
     created_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True), server_default=text('CURRENT_TIMESTAMP'))
+    change: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2), server_default=text('0'))
 
     order: Mapped[Optional['Order']] = relationship('Order', back_populates='payments')
     register_session: Mapped[Optional['RegisterSession']] = relationship('RegisterSession', back_populates='payments')

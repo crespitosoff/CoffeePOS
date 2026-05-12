@@ -50,6 +50,12 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 - Desglose por método de pago
 - Diferencias de caja
 
+**Configuración y Auditoría:**
+- Parámetros globales del negocio (Store Settings) incluyendo prefijos de facturación (ej. FAC-) y datos de contacto.
+- Trazabilidad y auditoría en base de datos con columnas `created_at`, `updated_at` y `closed_at`.
+- Registro persistente del cálculo de cambio (`change`) en los pagos.
+- Manejo estandarizado de zonas horarias (America/Bogota) en transacciones.
+
 ### 1.4 QUÉ NO INCLUYE EL PROYECTO
 
 **Funcionalidades Excluidas:**
@@ -392,48 +398,72 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 
 ## 6. ESTRUCTURA DEL PROYECTO
 ```
-coffee_pos/
-├── app/
-│   ├── init.py              # Inicialización Flask, SQLAlchemy, Login
-│   ├── models/
-│   │   ├── init.py
-│   │   ├── user.py
-│   │   ├── product.py
-│   │   ├── order.py
-│   │   └── ...
-│   ├── routes/                   # Blueprints
-│   │   ├── init.py
-│   │   ├── auth.py              # Login/Logout
-│   │   ├── pos.py               # Punto de venta
-│   │   └── admin.py             # Panel admin
-│   ├── services/                 # Lógica de negocio
-│   │   ├── init.py
-│   │   ├── product_service.py
+├── .github
+│   └── CODEOWNERS
+├── app
+│   ├── models
+│   │   ├── __init__.py
+│   │   └── domain.py
+│   ├── routes
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── auth.py
+│   │   ├── cash.py
+│   │   └── pos.py
+│   ├── services
+│   │   ├── __init__.py
+│   │   ├── auth_service.py
+│   │   ├── cash_movement_service.py
 │   │   ├── order_service.py
 │   │   ├── payment_service.py
-│   │   ├── user_service.py
-│   │   └── register_service.py
-│   ├── templates/                # Jinja2 templates
-│   │   ├── base.html
-│   │   ├── auth/
-│   │   ├── pos/
-│   │   └── admin/
-│   ├── static/                   # CSS, JS, imágenes
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── img/
-│   └── utils/                    # Utilidades
-│       └── decorators.py
-├── migrations/                   # Flask-Migrate
-├── tests/                        # Tests con pytest
-├── docs/                         # Documentación
-├── config.py                     # Configuración
-├── requirements.txt              # Dependencias
-├── .env                          # Variables de entorno (no en git)
+│   │   ├── product_service.py
+│   │   ├── register_service.py
+│   │   └── user_service.py
+│   ├── templates
+│   │   ├── admin
+│   │   │   ├── dashboard.html
+│   │   │   ├── product_form.html
+│   │   │   ├── products.html
+│   │   │   ├── user_form.html
+│   │   │   └── users.html
+│   │   ├── auth
+│   │   │   └── login.html
+│   │   ├── errors
+│   │   │   └── 403.html
+│   │   ├── layout
+│   │   │   └── base.html
+│   │   └── pos
+│   │       ├── dashboard.html
+│   │       ├── order.html
+│   │       ├── payment.html
+│   │       ├── receipt.html
+│   │       ├── register_close.html
+│   │       └── register_open.html
+│   ├── utils
+│   │   └── decorators.py
+│   ├── __init__.py
+│   └── extensions.py
+├── docs
+│   ├── stitch_coffeepos_login_interface
+│   │   ├── the_elevated_harvest_design_system
+│   │   │   └── DESIGN.md
+│   │   └── design.md
+│   ├── CoffeePOS.sql
+│   ├── diagram.png
+│   └── seed_flask_shell.py
+├── migrations
+│   ├── versions
+│   │   └── 64d1cfeb4f4b_initial_migration_with_refactored_models.py
+│   ├── README
+│   ├── alembic.ini
+│   ├── env.py
+│   └── script.py.mako
 ├── .gitignore
-├── seed.py                       # Script de datos de prueba
-├── run.py                        # Punto de entrada
-└── README.md
+├── JiraTodasLasActividades.csv
+├── README.md
+├── config.py
+├── run.py
+└── seed.py
 ```
 
 ---

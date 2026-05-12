@@ -79,10 +79,10 @@ def close_register_form():
 
         total_vendido = pagos_efectivo + pagos_tarjeta + pagos_transferencia
         # El efectivo esperado es únicamente: Fondo Inicial + Ventas en Efectivo
-        efectivo_esperado = session.opening_cash + pagos_efectivo
+        efectivo_esperado = session.opening_amount + pagos_efectivo
 
         summary = {
-            'opening_cash': session.opening_cash,
+            'opening_cash': session.opening_amount,
             'sales_total': total_vendido,
             'cash_sales': pagos_efectivo,
             'card_sales': pagos_tarjeta,

@@ -1,123 +1,142 @@
 {% extends "layout/base.html" %}
 
-{% block title %}Dashboard - CoffeePOS{% endblock %}
+{% block title %}Panel POS - CoffeePOS{% endblock %}
 
 {% block body_class %}bg-background flex font-body-lg{% endblock %}
 
 {% block content %}
-<!-- SideNavBar -->
-<nav
-    class="bg-surface-container-low dark:bg-surface-container-lowest font-title-md text-title-md docked h-screen left-0 w-64 fixed flex flex-col py-4 md:py-6 border-r border-outline-variant/15 hidden md:flex z-50">
+<!-- Barra Lateral -->
+<nav class="bg-surface-container-low font-title-md text-title-md h-screen left-0 w-64 fixed flex flex-col py-4 md:py-6 border-r border-outline-variant/15 hidden md:flex z-50">
     <div class="px-4 md:px-6 mb-8">
-        <h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">CoffeePOS</h1>
-        <p class="text-on-surface-variant dark:text-outline-variant text-label-md mt-1">Panel POS</p>
+        <h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS</h1>
+        <p class="text-on-surface-variant text-label-md mt-1">Panel POS</p>
     </div>
-    <div class="flex-1 overflow-y-auto space-y-2 px-2">
-        <a class="text-on-surface-variant dark:text-outline-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all"
+
+    <div class="flex-1 overflow-y-auto space-y-1 px-2">
+        <!-- Panel Principal (activo) -->
+        <a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 my-1 px-4 py-3 flex items-center gap-4 transition-all"
             href="{{ url_for('pos.dashboard') }}">
-            <span class="material-symbols-outlined">dashboard</span>
-            Dashboard
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            Panel Principal
         </a>
-        <a class="bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container rounded-lg mx-4 my-1 px-4 py-3 flex items-center gap-4 translate-x-1 transition-transform duration-150"
+        <!-- Mesas -->
+        <a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
             href="{{ url_for('pos.dashboard') }}">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">deck</span>
-            Tables
-        </a>
-        <a class="text-on-surface-variant dark:text-outline-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all"
-            href="#">
-            <span class="material-symbols-outlined">menu_book</span>
-            Catalog
-        </a>
-        <a class="text-on-surface-variant dark:text-outline-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all"
-            href="#">
-            <span class="material-symbols-outlined">analytics</span>
-            Reports
-        </a>
-        <a class="text-on-surface-variant dark:text-outline-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all"
-            href="#">
-            <span class="material-symbols-outlined">settings</span>
-            Settings
+            <span class="material-symbols-outlined">deck</span>
+            Mesas
         </a>
     </div>
-    <div class="px-6 mt-auto space-y-4">
+
+    <div class="px-4 mt-auto space-y-3">
+        <!-- Abrir/Cerrar Caja según estado de sesión -->
+        {% if session %}
+        <a href="{{ url_for('pos.close_register_form') }}"
+            class="w-full bg-secondary text-on-secondary font-title-md text-title-md min-h-[56px] rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined">lock</span>
+            Cerrar Caja
+        </a>
+        {% else %}
         <a href="{{ url_for('pos.open_register_form') }}"
-            class="w-full bg-primary text-on-primary font-title-md text-title-md min-h-[64px] rounded-xl flex items-center justify-center bg-gradient-to-br from-primary to-primary-container hover:opacity-90 transition-opacity">
-            Open Register
+            class="w-full bg-primary text-on-primary font-title-md text-title-md min-h-[56px] rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined">lock_open</span>
+            Abrir Caja
         </a>
-        <div class="space-y-2 mt-4 pt-4 border-t border-outline-variant/15">
-            <a class="text-on-surface-variant dark:text-outline-variant flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all px-4 py-2"
-                href="{{ url_for('auth.logout') if 'auth.logout' in request.endpoint else '/logout' }}">
-                <span class="material-symbols-outlined">logout</span>
-                Logout
-            </a>
-            <a class="text-on-surface-variant dark:text-outline-variant flex items-center gap-4 hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg transition-all px-4 py-2"
-                href="#">
-                <span class="material-symbols-outlined">help</span>
-                Support
+        {% endif %}
+
+        <div class="border-t border-outline-variant/15 pt-3 space-y-1">
+            <!-- Perfil del cajero -->
+            <div class="flex items-center gap-3 px-2 py-2">
+                <img alt="Profile"
+                    class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
+                    src="{{ current_user.avatar_url }}" />
+                <div class="flex-1 min-w-0">
+                    <p class="font-title-md text-title-md text-on-surface truncate">{{ current_user.username }}</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant">{{ current_user.role.name }}</p>
+                </div>
+            </div>
+            <!-- Cerrar Sesión -->
+            <a class="text-on-surface-variant flex items-center gap-3 hover:bg-surface-container-high rounded-lg transition-all px-3 py-2"
+                href="{{ url_for('auth.logout') }}">
+                <span class="material-symbols-outlined text-base">logout</span>
+                Cerrar Sesión
             </a>
         </div>
     </div>
 </nav>
 
-<!-- Main Content Area -->
+<!-- Área Principal -->
 <main class="flex-1 flex flex-col md:ml-64 min-h-screen">
-    <!-- TopAppBar -->
-    <header
-        class="bg-surface dark:bg-surface-dim font-headline-lg text-headline-lg dark:text-inverse-on-surface docked full-width top-0 bg-surface-container-low dark:bg-surface-container-high flat no shadows flex justify-between items-center w-full px-4 md:px-6 py-4 max-w-full z-40 sticky">
-        <div class="flex items-center gap-4 md:hidden">
-            <span
-                class="font-display-lg text-display-lg tracking-tight text-primary dark:text-primary-fixed-dim">CoffeePOS</span>
-        </div>
+    <!-- Barra Superior -->
+    <header class="bg-surface border-b border-outline-variant/15 flex justify-between items-center w-full px-4 md:px-6 py-4 sticky top-0 z-40">
+        <!-- Fecha y hora -->
         <div class="hidden md:flex items-center gap-2 text-on-surface-variant font-title-md text-title-md">
-            <span class="material-symbols-outlined">calendar_today</span>
-            <span>{{ current_date | default('Oct 24, 2023') }} - {{ current_time | default('10:45 AM') }}</span>
+            <span class="material-symbols-outlined text-base">calendar_today</span>
+            <span id="header-datetime"></span>
         </div>
-        <div class="flex items-center gap-6">
-            <button
-                class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-inverse-surface transition-colors p-2 rounded-full">
-                <span class="material-symbols-outlined">notifications</span>
-            </button>
-            <button
-                class="text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-highest dark:hover:bg-inverse-surface transition-colors p-2 rounded-full">
-                <span class="material-symbols-outlined">account_balance_wallet</span>
-            </button>
+        <!-- Título en móvil -->
+        <div class="flex items-center gap-3 md:hidden">
+            <span class="font-headline-md text-headline-md text-primary">CoffeePOS</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Nueva Orden para llevar -->
             <a href="{{ url_for('pos.view_order', table_id='takeaway') }}"
-                class="bg-primary text-on-primary font-title-md text-title-md px-6 py-3 rounded-lg hover:opacity-90 transition-opacity hidden md:block">
-                New Order
+                class="bg-primary text-on-primary font-title-md text-title-md px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity hidden md:flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">add</span>
+                Nueva Orden
             </a>
-            <div class="flex items-center gap-3 pl-4 border-l border-outline-variant/30">
-                <img alt="Profile"
-                    class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
-                    src="{{ current_user.avatar_url }}" />
-                <div class="hidden md:block">
-                    <p class="font-title-md text-title-md text-on-surface">{{ current_user.username }}</p>
-                    <p class="font-label-md text-label-md text-on-surface-variant">{{ current_user.role.name }}</p>
-                </div>
-            </div>
         </div>
     </header>
 
-    <!-- Canvas -->
-    <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 max-w-screen-2xl mx-auto w-full">
-        <!-- Info Banner -->
-        <div
-            class="bg-tertiary-fixed text-on-tertiary-fixed p-4 rounded-lg flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined">info</span>
-                <span class="font-title-md text-title-md">Caja abierta - Monto inicial: ${{ session.opening_amount |
-                    default('50,000') }} - 8:30 AM</span>
-            </div>
-            <button
-                class="bg-surface text-primary font-title-md text-title-md px-4 py-2 rounded-full hover:bg-surface-variant transition-colors">
-                Ver Detalles
-            </button>
-        </div>
+    <!-- Contenido -->
+    <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 max-w-screen-2xl mx-auto w-full">
 
-        <div class="flex justify-between items-end mb-6">
+        <!-- ── Banner de Estado de Caja (dinámico) ── -->
+        {% if session %}
+        <div class="bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">point_of_sale</span>
+                <div>
+                    <span class="font-title-md text-title-md text-on-surface">
+                        Caja abierta · Monto inicial:
+                        <strong>${{ "{:,.0f}".format(session.opening_amount) }}</strong>
+                    </span>
+                    <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">
+                        Desde {{ session.opened_at.strftime('%H:%M') if session.opened_at else '—' }}
+                        · Cajero: {{ current_user.username }}
+                    </p>
+                </div>
+            </div>
+            <a href="{{ url_for('pos.close_register_form') }}"
+               class="bg-surface border border-primary/20 text-primary font-title-md text-title-md px-4 py-2 rounded-full hover:bg-primary/10 transition-colors text-sm whitespace-nowrap">
+                Cerrar Caja
+            </a>
+        </div>
+        {% else %}
+        <div class="bg-secondary-container/40 border border-secondary/20 p-4 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1;">lock_open</span>
+                <div>
+                    <span class="font-title-md text-title-md text-on-surface">No hay caja abierta</span>
+                    <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">
+                        Debes abrir la caja para comenzar a tomar órdenes.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ url_for('pos.open_register_form') }}"
+               class="bg-primary text-on-primary font-title-md text-title-md px-4 py-2 rounded-full hover:opacity-90 transition-opacity text-sm whitespace-nowrap">
+                Abrir Caja
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Encabezado de Mesas -->
+        <div class="flex justify-between items-end">
             <div>
-                <h2 class="font-headline-lg text-headline-lg text-on-surface">Mesas Disponibles</h2>
-                <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Selecciona una mesa para iniciar o ver
-                    la orden.</p>
+                <h2 class="font-headline-lg text-headline-lg text-on-surface">Mesas</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">
+                    Selecciona una mesa para iniciar o ver la orden.
+                </p>
             </div>
             <div class="flex gap-4">
                 <div class="flex items-center gap-2">
@@ -131,48 +150,67 @@
             </div>
         </div>
 
-        <!-- Bento Grid of Tables -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Grilla de Mesas -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {% for table in tables %}
             {% if table.status == 'occupied' %}
             <a href="{{ url_for('pos.view_order', table_id=table.id) }}"
-                class="bg-surface-variant p-6 rounded-xl flex flex-col items-center justify-center gap-4 relative overflow-hidden group min-h-[160px] border border-outline-variant/30 hover:shadow-[0_12px_32px_rgba(35,25,21,0.06)] block">
+                class="bg-surface-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group min-h-[150px] border border-outline-variant/30 hover:shadow-md transition-shadow block">
                 <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-[#EF4444]"></div>
-                <span class="material-symbols-outlined text-4xl text-primary">deck</span>
+                <span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings:'FILL' 1;">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1">{{ table.info }}</p>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #EF4444;">{{
-                        table.capacity }} Personas</p>
-                    <p class="font-label-md text-label-md text-primary mt-1" style="color: #EF4444;">{{ table.order |
-                        default("Sin orden") }}</p>
+                    <p class="font-label-md text-label-md mt-1" style="color: #EF4444;">{{ table.capacity }} personas · Ocupada</p>
                 </div>
             </a>
             {% else %}
             <a href="{{ url_for('pos.view_order', table_id=table.id) }}"
-                class="bg-surface-container-lowest p-6 rounded-xl flex flex-col items-center justify-center gap-4 relative overflow-hidden group hover:bg-surface-container-low transition-colors min-h-[160px] border border-outline-variant/15 hover:shadow-[0_12px_32px_rgba(35,25,21,0.06)] block">
+                class="bg-surface-container-lowest p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group hover:bg-surface-container-low transition-colors min-h-[150px] border border-outline-variant/15 hover:shadow-md block">
                 <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-[#10B981]"></div>
-                <span
-                    class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
+                <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{
-                        table.capacity }} Personas</p>
-                    <p class="font-label-md text-label-md text-primary mt-1" style="color: #EF4444;">{{ table.order | default("Sin orden") }}</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{ table.capacity }} personas · Libre</p>
                 </div>
             </a>
             {% endif %}
             {% endfor %}
         </div>
+
+        <!-- Acceso al Panel de Admin (solo admins) -->
+        {% if current_user.role and current_user.role.value == 'admin' %}
+        <div class="mt-4 pt-4 border-t border-outline-variant/15">
+            <a href="{{ url_for('admin.dashboard') }}"
+               class="inline-flex items-center gap-2 text-primary font-title-md text-title-md hover:underline">
+                <span class="material-symbols-outlined text-base">admin_panel_settings</span>
+                Ir al Panel Administrativo
+            </a>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Floating Action Button -->
-    <div class="fixed bottom-8 right-8 z-50">
-        <a href="{{ url_for('pos.close_register_form') }}"
-            class="bg-secondary text-on-secondary font-title-lg text-title-lg px-8 py-4 rounded-xl flex items-center gap-3 shadow-[0_12px_32px_rgba(35,25,21,0.15)] hover:-translate-y-1 transition-transform block">
-            <span class="material-symbols-outlined">lock_open</span>
-            Cerrar Caja
+    <!-- Botón flotante: Nueva Orden (móvil) -->
+    <div class="fixed bottom-6 right-6 z-50 md:hidden">
+        <a href="{{ url_for('pos.view_order', table_id='takeaway') }}"
+            class="bg-primary text-on-primary font-title-md text-title-md w-16 h-16 rounded-full flex items-center justify-center shadow-xl hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined text-2xl">add</span>
         </a>
     </div>
 </main>
+
+<script>
+    // Reloj en tiempo real en el header
+    (function () {
+        const el = document.getElementById('header-datetime');
+        function tick() {
+            if (!el) return;
+            const now = new Date();
+            el.textContent = now.toLocaleDateString('es-CO', {
+                weekday: 'short', day: 'numeric', month: 'short'
+            }) + ' · ' + now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        }
+        tick();
+        setInterval(tick, 30000);
+    })();
+</script>
 {% endblock %}

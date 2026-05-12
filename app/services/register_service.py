@@ -102,15 +102,17 @@ class RegisterService:
         )
 
         withdrawals = sum(
-            abs(Decimal(str(m.amount)))
-            for m in movements
-            if m.movement_type == MovementType.WITHDRAWAL
+            (abs(Decimal(str(m.amount)))
+             for m in movements
+             if m.movement_type == MovementType.WITHDRAWAL),
+            Decimal("0"),
         )
         manual_deposits = sum(
-            Decimal(str(m.amount))
-            for m in movements
-            if m.movement_type == MovementType.DEPOSIT
-            and m.reference_type != "order"  # excluir cobros de ventas
+            (Decimal(str(m.amount))
+             for m in movements
+             if m.movement_type == MovementType.DEPOSIT
+             and m.reference_type != "order"),  # excluir cobros de ventas
+            Decimal("0"),
         )
 
         opening_amount = Decimal(str(session.opening_amount))

@@ -304,7 +304,7 @@ class ReportService:
             )
             .all()
         )
-        total_withdrawals = sum(abs(Decimal(str(w.amount))) for w in withdrawals)
+        total_withdrawals = sum((abs(Decimal(str(w.amount))) for w in withdrawals), Decimal("0"))
         suspicious_withdrawals = [
             w for w in withdrawals if ReportService._is_suspicious_movement(w)
         ]

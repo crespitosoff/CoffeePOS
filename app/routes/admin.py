@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required, current_user
 from app.utils.decorators import admin_required
 from app.services.product_service import ProductService
@@ -8,6 +8,7 @@ from app.services.report_service import ReportService
 from app.models.domain import Category, GenericStatus
 from app.extensions import db
 import datetime
+import io
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -126,6 +127,30 @@ def delete_product(id):
     except Exception as e:
         flash(str(e), 'danger')
     return redirect(url_for('admin.products'))
+
+
+# --- Plantilla CSV de Importación ---
+@admin_bp.route('/products/download-template')
+@login_required
+@admin_required
+def download_csv_template():
+    """
+    Descarga una plantilla CSV vacía con las cabeceras correctas.
+    Usa BOM (\ufeff) para que Excel reconozca el UTF-8 correctamente.
+    """
+    header = 'nombre,categoria,precio,stock,descripcion\n'
+    # Ejemplo de fila para guiar al usuario
+    example = 'Café Americano,Bebidas Calientes,5000,50,Café negro sin leche\n'
+    content = '\ufeff' + header + example   # \ufeff = BOM UTF-8
+
+    buf = io.BytesIO(content.encode('utf-8'))
+    buf.seek(0)
+    return send_file(
+        buf,
+        mimetype='text/csv; charset=utf-8',
+        as_attachment=True,
+        download_name='plantilla_productos.csv',
+    )
 
 
 # --- Importación Masiva de Productos ---

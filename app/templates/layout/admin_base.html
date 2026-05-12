@@ -55,9 +55,15 @@
         {# Info del usuario logueado #}
         <div class="flex items-center gap-3 px-4 py-3 mb-1">
             <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
-                <img alt="Profile"
+            {% if current_user.avatar_url %}
+                <img alt="Foto de perfil"
                     class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
                     src="{{ current_user.avatar_url }}" />
+            {% else %}
+                <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary-fixed-dim text-lg">person</span>
+                </div>
+            {% endif %}
             </div>
             <div class="flex-1 min-w-0">
                 <p class="font-title-md text-title-md text-inverse-on-surface truncate">

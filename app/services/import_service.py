@@ -144,7 +144,7 @@ class ImportService:
                 db.session.add_all(products_to_insert)
                 db.session.commit()
                 imported = len(products_to_insert)
-            except SQLAlchemyError as exc:
+            except SQLAlchemyError:
                 db.session.rollback()
                 # Intentar insertar uno a uno para identificar cuál falla
                 imported, errors = ImportService._insert_one_by_one(

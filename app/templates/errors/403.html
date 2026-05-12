@@ -1,18 +1,21 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Acceso Denegado</title>
-</head>
-<body>
-    <div class="flex min-h-screen items-center justify-center bg-surface p-4 text-on-surface">
-        <div class="max-w-lg w-full bg-surface-container-low p-8 rounded-lg shadow-md">
-            <h1 class="text-2xl font-semibold mb-4">Acceso Denegado</h1>
-            <p class="text-on-surface-variant mb-6">No tienes permisos para acceder a esta página o función.</p>
-            <a href="{{ url_for('auth.login') }}" class="text-primary hover:text-primary-container hover:bg-primary-container/8 rounded-md px-4 py-2">
-                Volver al inicio
-            </a>
-        </div>
+{% extends "layout/base.html" %}
+
+{% block title %}Acceso Denegado{% endblock %}
+
+{% block content %}
+<div class="min-h-screen w-full flex flex-col items-center justify-center bg-surface p-4 text-on-surface">
+    <div class="max-w-lg w-full bg-surface-container-low p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-semibold mb-4 text-error">Acceso Denegado</h1>
+        <p class="text-on-surface-variant mb-6">No tienes permisos para acceder a esta página o función.</p>
+        {% if is_authenticated %}
+        <button class="bg-primary text-on-primary rounded-lg px-4 py-2">
+            <a href="{{ url_for('pos.dashboard') }}">Volver al inicio</a>
+        </button>
+        {% else %}
+        <button class="bg-error text-on-error rounded-lg px-4 py-2">
+            <a href="{{ url_for('auth.login') }}">Volver al inicio</a>
+        </button>
+        {% endif %}
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -5,7 +5,7 @@ from app.services.order_service import OrderService
 from app.services.payment_service import PaymentService
 from app.services.register_service import RegisterService
 from app.services.product_service import ProductService
-from app.models.domain import Order, OrderStatus, Table
+from app.models.domain import Order, OrderStatus, Payment, PaymentMethod, Table
 from app.extensions import db
 import decimal
 
@@ -24,7 +24,7 @@ def dashboard():
 @cashier_required
 def open_register_form():
     try:
-        session = RegisterService.get_active_session()
+        session = RegisterService.get_active_session(user_id=str(current_user.id))
         if session:
             return redirect(url_for('pos.dashboard'))
         return render_template('pos/register_open.html')
@@ -50,13 +50,10 @@ def open_register():
 @cashier_required
 def close_register_form():
     try:
-        session = RegisterService.get_active_session()
+        session = RegisterService.get_active_session(user_id=str(current_user.id))
         if not session:
             flash('No hay una sesión activa para cerrar.', 'warning')
             return redirect(url_for('pos.dashboard'))
-
-        from app.models.domain import Order, OrderStatus, Payment, PaymentMethod
-        import decimal
 
         # Obtener todas las órdenes pagadas en esta sesión
         ventas_turno = db.session.query(Order).filter_by(
@@ -82,10 +79,10 @@ def close_register_form():
 
         total_vendido = pagos_efectivo + pagos_tarjeta + pagos_transferencia
         # El efectivo esperado es únicamente: Fondo Inicial + Ventas en Efectivo
-        efectivo_esperado = session.opening_amount + pagos_efectivo
+        efectivo_esperado = session.opening_cash + pagos_efectivo
 
         summary = {
-            'opening_cash': session.opening_amount,
+            'opening_cash': session.opening_cash,
             'sales_total': total_vendido,
             'cash_sales': pagos_efectivo,
             'card_sales': pagos_tarjeta,
@@ -105,7 +102,7 @@ def close_register_form():
 @cashier_required
 def close_register():
     try:
-        session = RegisterService.get_active_session()
+        session = RegisterService.get_active_session(user_id=str(current_user.id))
         if not session:
             flash('No hay una sesión de caja abierta.', 'warning')
             return redirect(url_for('pos.dashboard'))
@@ -124,7 +121,7 @@ def close_register():
 @cashier_required
 def create_order():
     try:
-        session = RegisterService.get_active_session()
+        session = RegisterService.get_active_session(user_id=str(current_user.id))
         if not session:
             if request.is_json:
                 return jsonify({'error': 'No hay una sesión de caja abierta.'}), 400
@@ -157,7 +154,7 @@ def create_order():
 @cashier_required
 def view_order(table_id):
     try:
-        session = RegisterService.get_active_session()
+        session = RegisterService.get_active_session(user_id=str(current_user.id))
         if not session:
             flash('Debe abrir caja antes de tomar pedidos.', 'warning')
             return redirect(url_for('pos.open_register_form'))

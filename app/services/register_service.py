@@ -26,7 +26,7 @@ class RegisterService:
     Reglas críticas:
       - La tabla register_sessions usa opened_by / closed_by (FK a users.id),
         NO user_id.
-      - opening_cash es NOT NULL.
+      - opening_amount es NOT NULL.
       - Todo flujo de dinero se registra en cash_movements con MovementType.
       - Se opera SIEMPRE con Decimal para valores financieros.
     """
@@ -115,10 +115,10 @@ class RegisterService:
             and m.reference_type != "order"  # excluir cobros de ventas
         )
 
-        opening_cash = Decimal(str(session.opening_cash))
+        opening_amount = Decimal(str(session.opening_amount))
         # Efectivo esperado = apertura + ventas en efectivo + depósitos manuales - retiros
         expected_cash = (
-            opening_cash
+            opening_amount
             + sales_totals[PaymentMethod.CASH.value]
             + manual_deposits
             - withdrawals
@@ -126,16 +126,16 @@ class RegisterService:
 
         return {
             "session": session,
-            "opening_cash": opening_cash,
+            "opening_amount": opening_amount,
             "total_sales": total_sales,
             "sales_by_method": sales_totals,
             "total_orders": len(orders_paid),
             "withdrawals": withdrawals,
             "manual_deposits": manual_deposits,
             "expected_cash": expected_cash.quantize(Decimal("0.01")),
-            "closing_cash": (
-                Decimal(str(session.closing_cash))
-                if session.closing_cash is not None
+            "closing_amount": (
+                Decimal(str(session.closing_amount))
+                if session.closing_amount is not None
                 else None
             ),
             "difference": (
@@ -151,7 +151,7 @@ class RegisterService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def open_register(user_id: str, opening_cash: Decimal) -> RegisterSession:
+    def open_register(user_id: str, opening_amount: Decimal) -> RegisterSession:
         """
         Abre una nueva sesión de caja.
 
@@ -161,8 +161,8 @@ class RegisterService:
 
         Registra automáticamente un movimiento OPENING en cash_movements.
         """
-        opening_cash = Decimal(str(opening_cash))
-        if opening_cash < Decimal("0"):
+        opening_amount = Decimal(str(opening_amount))
+        if opening_amount < Decimal("0"):
             raise ValueError("El monto de apertura no puede ser negativo.")
 
         if RegisterService.get_active_session(user_id):
@@ -174,7 +174,7 @@ class RegisterService:
         try:
             session = RegisterSession(
                 opened_by=user_id,
-                opening_cash=opening_cash,
+                opening_amount=opening_amount,
                 status=RegisterStatus.OPEN,
                 opened_at=datetime.datetime.now(datetime.timezone.utc),
             )
@@ -186,9 +186,9 @@ class RegisterService:
                 register_session_id=str(session.id),
                 user_id=user_id,
                 movement_type=MovementType.OPENING,
-                amount=opening_cash,
+                amount=opening_amount,
                 balance_before=Decimal("0"),
-                balance_after=opening_cash,
+                balance_after=opening_amount,
                 description="Apertura de caja",
             )
             db.session.add(movement)

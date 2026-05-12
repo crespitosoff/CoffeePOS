@@ -179,7 +179,7 @@ class RegisterSession(db.Model):
     __tablename__ = 'register_sessions'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='register_sessions_pkey'),
-        Index('idx_single_open_register', 'status', postgresql_where="(status = 'open'::register_status)", unique=True)
+        Index('idx_single_open_register_per_user', 'opened_by', 'status', postgresql_where="(status = 'open'::register_status)", unique=True)
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, server_default=text('gen_random_uuid()'))

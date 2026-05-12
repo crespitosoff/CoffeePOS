@@ -4,7 +4,6 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 from typing import Optional
-
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.extensions import db
@@ -232,23 +231,25 @@ class RegisterService:
             raise ValueError("Sesión de caja no encontrada.")
         if session.status == RegisterStatus.CLOSED:
             raise ValueError("La sesión de caja ya está cerrada.")
-        if session.opened_by != user_id:
+        # Comparar como string para evitar error de tipos
+        if str(session.opened_by) != str(user_id):
             raise ValueError("No puedes cerrar la caja de otro usuario.")
 
-        # Prevenir cierre si existen órdenes sin finalizar asociadas a esta sesión
-        pending_orders_count = Order.query.filter_by(
-            register_session_id=session.id, status=OrderStatus.OPEN
-        ).count()
+        # # Prevenir cierre si existen órdenes sin finalizar asociadas a esta sesión
+        # pending_orders_count = Order.query.filter_by(
+        #     register_session_id=session.id, status=OrderStatus.OPEN
+        # ).count()
+
+
+        # if pending_orders_count > 0:
+        #     raise ValueError(
+        #         f"No se puede cerrar la caja. Hay {pending_orders_count} órdenes pendientes."
+        #     )
 
         # Calcular expected_cash desde el resumen
         summary = RegisterService.get_session_summary(session_id)
         expected = summary["expected_cash"]
         difference = closing_amount - expected
-
-        if pending_orders_count > 0:
-            raise ValueError(
-                f"No se puede cerrar la caja. Hay {pending_orders_count} órdenes pendientes."
-            )
 
         try:
             # Balance actual (último movimiento)
@@ -285,7 +286,7 @@ class RegisterService:
             session.expected_cash = expected
             session.difference = difference.quantize(Decimal("0.01"))
             session.status = RegisterStatus.CLOSED
-            session.closed_at = datetime.now(datetime.timezone.utc)
+            session.closed_at = datetime.datetime.now(datetime.timezone.utc)
 
             db.session.commit()
             return session

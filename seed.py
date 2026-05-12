@@ -1,6 +1,6 @@
 from app import create_app
 from app.extensions import db
-from app.models import User, Category, Product, RestaurantTable, StoreSetting, UserRole, GenericStatus
+from app.models import User, Category, Product, Table, StoreSetting, UserRole, GenericStatus
 from werkzeug.security import generate_password_hash
 
 app = create_app()
@@ -55,12 +55,12 @@ with app.app_context():
     db.session.add_all(products)
 
     # 4. Crear 8 Mesas
-    restaurant_tables = []
+    tables = []
     for i in range(1, 9):
         # Capacidad aleatoria de 2 o 4 personas
         capacity = 4 if i % 2 == 0 else 2 
-        restaurant_tables.append(RestaurantTable(name=f"Mesa {i}", capacity=capacity, status=GenericStatus.ACTIVE))
-    db.session.add_all(restaurant_tables)
+        tables.append(Table(name=f"Mesa {i}", capacity=capacity, status=GenericStatus.ACTIVE))
+    db.session.add_all(tables)
 
     # 5. Crear 1 StoreSetting
     settings = StoreSetting(

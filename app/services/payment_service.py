@@ -1,8 +1,7 @@
 # app/services/payment_service.py  –  COF-35
 from __future__ import annotations
-import datetime
 import decimal
-from datetime import timezone
+from datetime import datetime, timezone
 from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError
 from app.extensions import db
@@ -73,7 +72,7 @@ class PaymentService:
             db.session.add(payment)
 
             order.status = OrderStatus.PAID
-            order.closed_at = datetime.datetime.now(timezone.utc)
+            order.closed_at = datetime.now(timezone.utc)
 
             if method == PaymentMethod.CASH and order.register_session_id:
                 PaymentService._record_cash_income(

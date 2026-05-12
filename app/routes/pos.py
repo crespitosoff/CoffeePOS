@@ -5,7 +5,7 @@ from app.services.order_service import OrderService
 from app.services.payment_service import PaymentService
 from app.services.register_service import RegisterService
 from app.services.product_service import ProductService
-from app.models.domain import Order, OrderStatus, Product, Table
+from app.models.domain import Order, OrderStatus, Table
 from app.extensions import db
 import decimal
 
@@ -161,8 +161,6 @@ def view_order(table_id):
         if not session:
             flash('Debe abrir caja antes de tomar pedidos.', 'warning')
             return redirect(url_for('pos.open_register_form'))
-
-        from app.models.domain import Order, OrderStatus, Product, Table
 
         # Interceptar 'takeaway' para evitar errores de tipo UUID en PostgreSQL
         db_table_id = None if table_id == 'takeaway' else table_id

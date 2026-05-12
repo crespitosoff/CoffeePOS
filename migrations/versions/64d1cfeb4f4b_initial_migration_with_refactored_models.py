@@ -1,8 +1,8 @@
 """Initial migration with refactored models
 
-Revision ID: c56123d04e9f
+Revision ID: 64d1cfeb4f4b
 Revises: 
-Create Date: 2026-05-11 17:09:39.990485
+Create Date: 2026-05-11 19:38:56.093617
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c56123d04e9f'
+revision = '64d1cfeb4f4b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,14 +27,6 @@ def upgrade():
     sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id', name='categories_pkey'),
     sa.UniqueConstraint('slug', name='categories_slug_key')
-    )
-    op.create_table('restaurant_tables',
-    sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
-    sa.Column('name', sa.String(length=50), nullable=False),
-    sa.Column('capacity', sa.Integer(), server_default=sa.text('2'), nullable=True),
-    sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
-    sa.PrimaryKeyConstraint('id', name='restaurant_tables_pkey'),
-    sa.UniqueConstraint('name', name='restaurant_tables_name_key')
     )
     op.create_table('store_settings',
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
@@ -56,6 +48,14 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id', name='store_settings_pkey')
+    )
+    op.create_table('tables',
+    sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
+    sa.Column('name', sa.String(length=50), nullable=False),
+    sa.Column('capacity', sa.Integer(), server_default=sa.text('2'), nullable=True),
+    sa.Column('status', sa.Enum('active', 'inactive', 'archived', name='generic_status'), server_default=sa.text("'active'::generic_status"), nullable=True),
+    sa.PrimaryKeyConstraint('id', name='tables_pkey'),
+    sa.UniqueConstraint('name', name='tables_name_key')
     )
     op.create_table('users',
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
@@ -139,7 +139,7 @@ def upgrade():
     sa.Column('id', sa.Uuid(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=True),
     sa.Column('register_session_id', sa.Uuid(), nullable=True),
-    sa.Column('restaurant_table_id', sa.Uuid(), nullable=True),
+    sa.Column('table_id', sa.Uuid(), nullable=True),
     sa.Column('customer_name', sa.String(length=100), nullable=True),
     sa.Column('subtotal', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
     sa.Column('tax', sa.Numeric(precision=12, scale=2), server_default=sa.text('0'), nullable=True),
@@ -150,7 +150,7 @@ def upgrade():
     sa.Column('closed_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('update_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.ForeignKeyConstraint(['register_session_id'], ['register_sessions.id'], ),
-    sa.ForeignKeyConstraint(['restaurant_table_id'], ['restaurant_tables.id'], ),
+    sa.ForeignKeyConstraint(['table_id'], ['tables.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id', name='orders_pkey')
     )
@@ -221,7 +221,7 @@ def downgrade():
 
     op.drop_table('products')
     op.drop_table('users')
+    op.drop_table('tables')
     op.drop_table('store_settings')
-    op.drop_table('restaurant_tables')
     op.drop_table('categories')
     # ### end Alembic commands ###

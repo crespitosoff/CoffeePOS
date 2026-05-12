@@ -151,10 +151,11 @@ class OrderService:
 
         try:
             # Buscar si el producto ya está en la orden
-            item = db.session.query(OrderItem).filter_by(
-                order_id=order_id, 
-                product_id=product_id
-            ).first()
+            item = (
+                db.session.query(OrderItem)
+                .filter_by(order_id=order_id, product_id=product_id)
+                .first()
+            )
 
             # Convertir a decimal y calcular subtotales
             base_price = decimal.Decimal(str(product.price))
@@ -250,7 +251,11 @@ class OrderService:
             raise ValueError("Producto asociado no encontrado.")
 
         quantity_diff = new_quantity - item.quantity  # positivo → necesita más stock
-        if quantity_diff > 0 and product.stock is not None and product.stock < quantity_diff:
+        if (
+            quantity_diff > 0
+            and product.stock is not None
+            and product.stock < quantity_diff
+        ):
             raise ValueError(
                 f"Stock insuficiente para '{product.name}'. "
                 f"Disponible: {product.stock}, adicional requerido: {quantity_diff}."
@@ -323,6 +328,7 @@ class OrderService:
                     product.stock += item.quantity
 
             import datetime
+
             order.status = OrderStatus.CANCELLED
             order.closed_at = datetime.datetime.utcnow()
             db.session.commit()

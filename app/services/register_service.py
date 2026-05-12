@@ -44,10 +44,7 @@ class RegisterService:
         """
         return (
             db.session.query(RegisterSession)
-            .filter_by(
-                opened_by=user_id,
-                status=RegisterStatus.OPEN
-            )
+            .filter_by(opened_by=user_id, status=RegisterStatus.OPEN)
             .first()
         )
 
@@ -81,8 +78,8 @@ class RegisterService:
         )
 
         sales_totals: dict[str, Decimal] = {
-            PaymentMethod.CASH.value:     Decimal("0"),
-            PaymentMethod.CARD.value:     Decimal("0"),
+            PaymentMethod.CASH.value: Decimal("0"),
+            PaymentMethod.CARD.value: Decimal("0"),
             PaymentMethod.TRANSFER.value: Decimal("0"),
         }
         total_sales = Decimal("0")
@@ -196,7 +193,9 @@ class RegisterService:
             return session
         except IntegrityError as e:
             db.session.rollback()
-            raise ValueError(f"Error de integridad: Violacón de sesión única activa. - {e}") from e
+            raise ValueError(
+                f"Error de integridad: Violacón de sesión única activa. - {e}"
+            ) from e
         except SQLAlchemyError as e:
             db.session.rollback()
             raise RuntimeError(f"Error al abrir la caja: {e}") from e
@@ -212,20 +211,20 @@ class RegisterService:
     def close_register(
         session_id: str,
         user_id: str,
-        closing_cash: Decimal,
+        closing_amount: Decimal,
     ) -> RegisterSession:
         """
         Cierra una sesión de caja activa.
 
         Calcula:
           - expected_cash: efectivo esperado según movimientos.
-          - difference: closing_cash - expected_cash (positivo = sobrante).
+          - difference: closing_amount - expected_cash (positivo = sobrante).
 
         Registra un movimiento CLOSING en cash_movements.
         Valida que no existan transacciones pendientes o huérfanas en estado OPEN.
         """
-        closing_cash = Decimal(str(closing_cash))
-        if closing_cash < Decimal("0"):
+        closing_amount = Decimal(str(closing_amount))
+        if closing_amount < Decimal("0"):
             raise ValueError("El monto de cierre no puede ser negativo.")
 
         session = RegisterService.get_session_by_id(session_id)
@@ -238,17 +237,18 @@ class RegisterService:
 
         # Prevenir cierre si existen órdenes sin finalizar asociadas a esta sesión
         pending_orders_count = Order.query.filter_by(
-            register_session_id=session.id,
-            status=OrderStatus.OPEN
+            register_session_id=session.id, status=OrderStatus.OPEN
         ).count()
 
         # Calcular expected_cash desde el resumen
         summary = RegisterService.get_session_summary(session_id)
         expected = summary["expected_cash"]
-        difference = closing_cash - expected
+        difference = closing_amount - expected
 
         if pending_orders_count > 0:
-            raise ValueError(f"No se puede cerrar la caja. Hay {pending_orders_count} órdenes pendientes.")
+            raise ValueError(
+                f"No se puede cerrar la caja. Hay {pending_orders_count} órdenes pendientes."
+            )
 
         try:
             # Balance actual (último movimiento)
@@ -268,12 +268,12 @@ class RegisterService:
                 register_session_id=session_id,
                 user_id=user_id,
                 movement_type=MovementType.CLOSING,
-                amount=closing_cash,
+                amount=closing_amount,
                 balance_before=balance_before,
-                balance_after=closing_cash,
+                balance_after=closing_amount,
                 description=(
                     f"Cierre de caja. "
-                    f"Real: {closing_cash} | Esperado: {expected} | "
+                    f"Real: {closing_amount} | Esperado: {expected} | "
                     f"Diferencia: {difference}"
                 ),
             )
@@ -281,7 +281,7 @@ class RegisterService:
 
             # Actualizar estado de la sesión
             session.closed_by = user_id
-            session.closing_cash = closing_cash
+            session.closing_amount = closing_amount
             session.expected_cash = expected
             session.difference = difference.quantize(Decimal("0.01"))
             session.status = RegisterStatus.CLOSED

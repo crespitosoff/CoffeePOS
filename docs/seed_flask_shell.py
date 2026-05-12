@@ -20,7 +20,7 @@ try:
     # 2. Abrir Caja
     opening_amount = decimal.Decimal("100000.00")
     session = RegisterService.open_register(
-        user_id=str(user.id), opening_cash=opening_amount
+        user_id=str(user.id), opening_amount=opening_amount
     )
     print(f"[OK] Caja abierta. ID: {session.id}")
 
@@ -49,7 +49,7 @@ try:
     # 6. Cerrar Caja
     expected_amount = opening_amount + order.total
     closed_session = RegisterService.close_register(
-        session_id=str(session.id), user_id=str(user.id), closing_cash=expected_amount
+        session_id=str(session.id), user_id=str(user.id), closing_amount=expected_amount
     )
     print(f"[OK] Caja cerrada. Diferencia: {closed_session.difference}")
 

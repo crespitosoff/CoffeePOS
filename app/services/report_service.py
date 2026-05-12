@@ -6,15 +6,12 @@ import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from sqlalchemy import func
-
 from app.extensions import db
 from app.models.domain import (
     CashMovement,
     MovementType,
     Order,
     OrderStatus,
-    Payment,
     PaymentMethod,
     RegisterSession,
     RegisterStatus,
@@ -96,17 +93,19 @@ class ReportService:
         orders_detail = []
         for o in orders:
             payment = o.payments[0] if o.payments else None
-            orders_detail.append({
-                "id":            str(o.id),
-                "status":        o.status.value,
-                "customer_name": o.customer_name or "Sin nombre",
-                "table":         o.table.name if o.table else "Para llevar",
-                "total":         Decimal(str(o.total)),
-                "payment_method": payment.method.value if payment else None,
-                "created_at":    o.created_at,
-                "closed_at":     o.closed_at,
-                "cashier":       o.user.username if o.user else "Desconocido",
-            })
+            orders_detail.append(
+                {
+                    "id": str(o.id),
+                    "status": o.status.value,
+                    "customer_name": o.customer_name or "Sin nombre",
+                    "table": o.table.name if o.table else "Para llevar",
+                    "total": Decimal(str(o.total)),
+                    "payment_method": payment.method.value if payment else None,
+                    "created_at": o.created_at,
+                    "closed_at": o.closed_at,
+                    "cashier": o.user.username if o.user else "Desconocido",
+                }
+            )
 
         # Detalle de movimientos de caja
         movements = (
@@ -117,19 +116,21 @@ class ReportService:
         )
         movements_detail = []
         for m in movements:
-            movements_detail.append({
-                "id":             str(m.id),
-                "type":           m.movement_type.value,
-                "amount":         Decimal(str(m.amount)),
-                "balance_before": Decimal(str(m.balance_before)),
-                "balance_after":  Decimal(str(m.balance_after)),
-                "description":    m.description or "",
-                "reference_type": m.reference_type,
-                "reference_id":   str(m.reference_id) if m.reference_id else None,
-                "cashier":        m.user.username if m.user else "Desconocido",
-                "created_at":     m.created_at,
-                "is_suspicious":  ReportService._is_suspicious_movement(m),
-            })
+            movements_detail.append(
+                {
+                    "id": str(m.id),
+                    "type": m.movement_type.value,
+                    "amount": Decimal(str(m.amount)),
+                    "balance_before": Decimal(str(m.balance_before)),
+                    "balance_after": Decimal(str(m.balance_after)),
+                    "description": m.description or "",
+                    "reference_type": m.reference_type,
+                    "reference_id": str(m.reference_id) if m.reference_id else None,
+                    "cashier": m.user.username if m.user else "Desconocido",
+                    "created_at": m.created_at,
+                    "is_suspicious": ReportService._is_suspicious_movement(m),
+                }
+            )
 
         audit["orders"] = orders_detail
         audit["movements_detail"] = movements_detail
@@ -149,7 +150,7 @@ class ReportService:
             target_date = datetime.date.today()
 
         start_dt = datetime.datetime.combine(target_date, datetime.time.min)
-        end_dt   = datetime.datetime.combine(target_date, datetime.time.max)
+        end_dt = datetime.datetime.combine(target_date, datetime.time.max)
 
         paid_orders = (
             db.session.query(Order)
@@ -162,8 +163,8 @@ class ReportService:
         )
 
         totals_by_method: dict[str, Decimal] = {
-            PaymentMethod.CASH.value:     Decimal("0"),
-            PaymentMethod.CARD.value:     Decimal("0"),
+            PaymentMethod.CASH.value: Decimal("0"),
+            PaymentMethod.CARD.value: Decimal("0"),
             PaymentMethod.TRANSFER.value: Decimal("0"),
         }
         grand_total = Decimal("0")
@@ -180,10 +181,10 @@ class ReportService:
 
         # Cajeros activos ese día
         cashiers = (
-            db.session.query(User)
-            .filter(User.id.in_(cashiers_ids))
-            .all()
-        ) if cashiers_ids else []
+            (db.session.query(User).filter(User.id.in_(cashiers_ids)).all())
+            if cashiers_ids
+            else []
+        )
 
         # Sesiones que siguen abiertas (posible olvido de cierre)
         open_sessions = (
@@ -197,11 +198,13 @@ class ReportService:
         )
 
         return {
-            "date":             target_date.isoformat(),
-            "total_orders":     len(paid_orders),
-            "grand_total":      grand_total.quantize(Decimal("0.01")),
-            "totals_by_method": {k: v.quantize(Decimal("0.01")) for k, v in totals_by_method.items()},
-            "cashiers":         [{"id": str(u.id), "username": u.username} for u in cashiers],
+            "date": target_date.isoformat(),
+            "total_orders": len(paid_orders),
+            "grand_total": grand_total.quantize(Decimal("0.01")),
+            "totals_by_method": {
+                k: v.quantize(Decimal("0.01")) for k, v in totals_by_method.items()
+            },
+            "cashiers": [{"id": str(u.id), "username": u.username} for u in cashiers],
             "open_sessions_count": len(open_sessions),
             "open_sessions_alert": len(open_sessions) > 0,
         }
@@ -209,7 +212,7 @@ class ReportService:
     @staticmethod
     def get_suspicious_movements(
         start_date: Optional[datetime.date] = None,
-        end_date:   Optional[datetime.date] = None,
+        end_date: Optional[datetime.date] = None,
     ) -> List[dict]:
         """
         Retorna todos los movimientos de tipo WITHDRAWAL marcados como sospechosos:
@@ -217,32 +220,33 @@ class ReportService:
           - Monto superior al umbral SUSPICIOUS_WITHDRAWAL_THRESHOLD
         Ordenados del más reciente al más antiguo.
         """
-        query = (
-            db.session.query(CashMovement)
-            .filter(CashMovement.movement_type == MovementType.WITHDRAWAL)
+        query = db.session.query(CashMovement).filter(
+            CashMovement.movement_type == MovementType.WITHDRAWAL
         )
 
         if start_date:
             query = query.filter(
-                CashMovement.created_at >= datetime.datetime.combine(start_date, datetime.time.min)
+                CashMovement.created_at
+                >= datetime.datetime.combine(start_date, datetime.time.min)
             )
         if end_date:
             query = query.filter(
-                CashMovement.created_at <= datetime.datetime.combine(end_date, datetime.time.max)
+                CashMovement.created_at
+                <= datetime.datetime.combine(end_date, datetime.time.max)
             )
 
         movements = query.order_by(CashMovement.created_at.desc()).all()
 
         return [
             {
-                "id":               str(m.id),
-                "session_id":       str(m.register_session_id),
-                "cashier":          m.user.username if m.user else "Desconocido",
-                "amount":           abs(Decimal(str(m.amount))),
-                "balance_after":    Decimal(str(m.balance_after)),
-                "description":      m.description or "",
-                "created_at":       m.created_at,
-                "is_suspicious":    ReportService._is_suspicious_movement(m),
+                "id": str(m.id),
+                "session_id": str(m.register_session_id),
+                "cashier": m.user.username if m.user else "Desconocido",
+                "amount": abs(Decimal(str(m.amount))),
+                "balance_after": Decimal(str(m.balance_after)),
+                "description": m.description or "",
+                "created_at": m.created_at,
+                "is_suspicious": ReportService._is_suspicious_movement(m),
             }
             for m in movements
             if ReportService._is_suspicious_movement(m)
@@ -268,8 +272,8 @@ class ReportService:
 
         # Totales de venta de la sesión
         sales_by_method: dict[str, Decimal] = {
-            PaymentMethod.CASH.value:     Decimal("0"),
-            PaymentMethod.CARD.value:     Decimal("0"),
+            PaymentMethod.CASH.value: Decimal("0"),
+            PaymentMethod.CARD.value: Decimal("0"),
             PaymentMethod.TRANSFER.value: Decimal("0"),
         }
         total_sales = Decimal("0")
@@ -325,25 +329,32 @@ class ReportService:
             duration_minutes = int(delta.total_seconds() / 60)
 
         return {
-            "id":                str(session.id),
-            "status":            session.status.value,
-            "opener":            opener.username if opener else "Desconocido",
-            "closer":            closer.username if closer else None,
-            "opened_at":         session.opened_at,
-            "closed_at":         session.closed_at,
-            "duration_minutes":  duration_minutes,
-            "opening_amount":    Decimal(str(session.opening_amount)),
-            "closing_amount":    Decimal(str(session.closing_amount)) if session.closing_amount else None,
-            "expected_amount":   Decimal(str(session.expected_amount)) if session.expected_amount else None,
-            "difference":        difference,
+            "id": str(session.id),
+            "status": session.status.value,
+            "opener": opener.username if opener else "Desconocido",
+            "closer": closer.username if closer else None,
+            "opened_at": session.opened_at,
+            "closed_at": session.closed_at,
+            "duration_minutes": duration_minutes,
+            "opening_amount": Decimal(str(session.opening_amount)),
+            "closing_amount": Decimal(str(session.closing_amount))
+            if session.closing_amount
+            else None,
+            "expected_amount": Decimal(str(session.expected_amount))
+            if session.expected_amount
+            else None,
+            "difference": difference,
             "discrepancy_status": discrepancy_status,
-            "total_sales":       total_sales.quantize(Decimal("0.01")),
-            "sales_by_method":   {k: v.quantize(Decimal("0.01")) for k, v in sales_by_method.items()},
-            "total_orders":      len([o for o in orders if o.status == OrderStatus.PAID]),
-            "cancelled_orders":  cancelled_count,
+            "total_sales": total_sales.quantize(Decimal("0.01")),
+            "sales_by_method": {
+                k: v.quantize(Decimal("0.01")) for k, v in sales_by_method.items()
+            },
+            "total_orders": len([o for o in orders if o.status == OrderStatus.PAID]),
+            "cancelled_orders": cancelled_count,
             "total_withdrawals": total_withdrawals.quantize(Decimal("0.01")),
             "suspicious_withdrawal_count": len(suspicious_withdrawals),
-            "has_alerts":        len(suspicious_withdrawals) > 0 or discrepancy_status == "deficit",
+            "has_alerts": len(suspicious_withdrawals) > 0
+            or discrepancy_status == "deficit",
         }
 
     @staticmethod
@@ -357,8 +368,8 @@ class ReportService:
             return False
         amount = abs(Decimal(str(movement.amount)))
         over_threshold = amount >= SUSPICIOUS_WITHDRAWAL_THRESHOLD
-        no_justification = (
-            not movement.description
-            and movement.reference_type not in ("order", "adjustment")
+        no_justification = not movement.description and movement.reference_type not in (
+            "order",
+            "adjustment",
         )
         return over_threshold or no_justification

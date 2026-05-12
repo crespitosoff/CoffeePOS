@@ -1,7 +1,9 @@
 # app/services/import_service.py  –  COF-39
 # Servicio de importación masiva de productos desde CSV
+# Reescrito sin pandas (Python puro: csv.DictReader)
 from __future__ import annotations
 
+import csv
 import io
 from decimal import Decimal, InvalidOperation
 from typing import Optional
@@ -10,12 +12,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.extensions import db
 from app.models.domain import Category, GenericStatus, Product
-
-try:
-    import pandas as pd
-    PANDAS_AVAILABLE = True
-except ImportError:
-    PANDAS_AVAILABLE = False
 
 
 class ImportService:
@@ -28,90 +24,120 @@ class ImportService:
         stock   – stock inicial (int >= 0)
 
     Columnas opcionales:
-        category  – nombre de categoría (str) – se busca por nombre exacto
-        sku       – código único (str)
+        category    – nombre de categoría (str) – se busca por nombre exacto
+        sku         – código único (str)
         description – descripción larga (str)
-        unit_cost – costo unitario (Decimal >= 0)
-        min_stock – stock mínimo de alerta (int >= 0)
+        unit_cost   – costo unitario (Decimal >= 0)
+        min_stock   – stock mínimo de alerta (int >= 0)
 
     El método process_csv() retorna:
         {
             'imported': int,           # productos insertados correctamente
-            'skipped':  int,           # filas ignoradas por errores
-            'errors':   list[dict],    # detalle de cada fila con error
+            'skipped':  int,           # filas ignoradas por errores fatales
+            'errors':   list[dict],    # detalle de cada fila con error/warning
         }
+
+    Compatible con la plantilla de 5 columnas en español:
+        nombre, categoria, precio, stock, descripcion
     """
 
+    # Columnas en inglés (API original)
     REQUIRED_COLUMNS = {"name", "price", "stock"}
-    OPTIONAL_COLUMNS = {"category", "sku", "description", "unit_cost", "min_stock"}
+
+    # Alias español → inglés para la plantilla de descarga del admin
+    COLUMN_ALIASES: dict[str, str] = {
+        "nombre":      "name",
+        "categoria":   "category",
+        "precio":      "price",
+        "descripcion": "description",
+    }
 
     @staticmethod
     def process_csv(file_stream) -> dict:
         """
-        Punto de entrada principal. Acepta un objeto tipo-fichero (werkzeug FileStorage
-        o cualquier io.BytesIO/io.StringIO) y procesa el CSV completo.
+        Punto de entrada principal. Acepta un objeto tipo-fichero (werkzeug
+        FileStorage o cualquier io.BytesIO / io.StringIO) y procesa el CSV.
         """
-        if not PANDAS_AVAILABLE:
-            raise RuntimeError(
-                "La librería 'pandas' no está instalada. "
-                "Ejecuta: pip install pandas"
-            )
-
-        # ── 1. Leer CSV ──────────────────────────────────────────────────
+        # ── 1. Leer contenido como texto ─────────────────────────────────
         try:
-            # Werkzeug FileStorage expone .stream o se puede leer directamente
             raw = file_stream.read() if hasattr(file_stream, "read") else file_stream
             if isinstance(raw, bytes):
-                raw = raw.decode("utf-8", errors="replace")
-            df = pd.read_csv(io.StringIO(raw))
+                # Eliminar BOM UTF-8 si está presente (generado por Excel)
+                raw = raw.lstrip(b"\xef\xbb\xbf").decode("utf-8", errors="replace")
         except Exception as exc:
-            raise ValueError(f"No se pudo leer el CSV: {exc}") from exc
+            raise ValueError(f"No se pudo leer el archivo: {exc}") from exc
 
-        # ── 2. Validar columnas requeridas ───────────────────────────────
-        df.columns = [c.strip().lower() for c in df.columns]
-        missing = ImportService.REQUIRED_COLUMNS - set(df.columns)
+        # ── 2. Parsear CSV ────────────────────────────────────────────────
+        try:
+            reader = csv.DictReader(io.StringIO(raw))
+            if reader.fieldnames is None:
+                raise ValueError("El archivo está vacío o no tiene encabezados.")
+        except Exception as exc:
+            raise ValueError(f"No se pudo parsear el CSV: {exc}") from exc
+
+        # ── 3. Normalizar y traducir cabeceras ────────────────────────────
+        # Normalizar: strip + lowercase
+        original_fields = [f.strip().lower() for f in reader.fieldnames]
+        # Aplicar alias (ej. "nombre" → "name")
+        normalized_fields = [
+            ImportService.COLUMN_ALIASES.get(f, f) for f in original_fields
+        ]
+
+        # Verificar columnas requeridas
+        missing = ImportService.REQUIRED_COLUMNS - set(normalized_fields)
         if missing:
             raise ValueError(
                 f"El CSV no contiene las columnas requeridas: {', '.join(sorted(missing))}. "
-                f"Columnas encontradas: {', '.join(df.columns.tolist())}"
+                f"Columnas encontradas: {', '.join(original_fields)}"
             )
 
-        # Rellenar NaN con None para facilitar el manejo
-        df = df.where(pd.notnull(df), None)
+        # Construir mapa original → normalizado para reescribir cada fila
+        field_map = dict(zip(original_fields, normalized_fields))
 
-        # ── 3. Construir caché de categorías (nombre → UUID) ─────────────
-        categories = db.session.query(Category).filter(
-            Category.status == GenericStatus.ACTIVE
-        ).all()
+        # ── 4. Construir caché de categorías (nombre → UUID) ─────────────
+        categories = (
+            db.session.query(Category)
+            .filter(Category.status == GenericStatus.ACTIVE)
+            .all()
+        )
         category_map: dict[str, str] = {
             c.name.strip().lower(): str(c.id) for c in categories
         }
 
-        # ── 4. Procesar fila a fila ───────────────────────────────────────
+        # ── 5. Procesar fila a fila ───────────────────────────────────────
         products_to_insert: list[Product] = []
         errors: list[dict] = []
 
-        for row_num, row in enumerate(df.itertuples(index=False), start=2):
-            row_dict = row._asdict()
-            error = ImportService._validate_row(row_num, row_dict)
+        for row_num, raw_row in enumerate(reader, start=2):
+            # Renombrar claves de la fila usando el mapa de normalización
+            row = {
+                field_map.get(k.strip().lower(), k.strip().lower()): (v.strip() if v else "")
+                for k, v in raw_row.items()
+                if k is not None
+            }
+
+            # Validar campos requeridos
+            error = ImportService._validate_row(row_num, row)
             if error:
                 errors.append(error)
                 continue
 
-            # Parsear campos
-            name        = str(row_dict["name"]).strip()
-            price       = Decimal(str(row_dict["price"]))
-            stock       = int(row_dict["stock"])
-            sku         = str(row_dict.get("sku", "") or "").strip() or None
-            description = str(row_dict.get("description", "") or "").strip() or None
-            unit_cost   = ImportService._safe_decimal(row_dict.get("unit_cost"), Decimal("0"))
-            min_stock   = ImportService._safe_int(row_dict.get("min_stock"), 0)
+            # Parsear campos obligatorios
+            name  = row["name"].strip()
+            price = Decimal(str(row["price"]))
+            stock = int(float(row["stock"]))
+
+            # Parsear campos opcionales
+            sku         = row.get("sku", "").strip() or None
+            description = row.get("description", "").strip() or None
+            unit_cost   = ImportService._safe_decimal(row.get("unit_cost"), Decimal("0"))
+            min_stock   = ImportService._safe_int(row.get("min_stock"), 0)
 
             # Resolver categoría por nombre
             category_id: Optional[str] = None
-            raw_category = row_dict.get("category")
+            raw_category = row.get("category", "").strip()
             if raw_category:
-                cat_key = str(raw_category).strip().lower()
+                cat_key = raw_category.lower()
                 category_id = category_map.get(cat_key)
                 if not category_id:
                     errors.append({
@@ -119,7 +145,7 @@ class ImportService:
                         "field":   "category",
                         "value":   raw_category,
                         "reason":  f"Categoría '{raw_category}' no encontrada. Fila importada sin categoría.",
-                        "warning": True,   # es warning, no error fatal
+                        "warning": True,  # advertencia, no error fatal
                     })
 
             product = Product(
@@ -135,7 +161,7 @@ class ImportService:
             )
             products_to_insert.append(product)
 
-        # ── 5. Inserción masiva ───────────────────────────────────────────
+        # ── 6. Inserción masiva ───────────────────────────────────────────
         fatal_errors = [e for e in errors if not e.get("warning")]
         imported = 0
 
@@ -146,7 +172,7 @@ class ImportService:
                 imported = len(products_to_insert)
             except SQLAlchemyError:
                 db.session.rollback()
-                # Intentar insertar uno a uno para identificar cuál falla
+                # Fallback: insertar uno a uno para aislar el producto que falla
                 imported, errors = ImportService._insert_one_by_one(
                     products_to_insert, errors
                 )
@@ -165,10 +191,10 @@ class ImportService:
     @staticmethod
     def _validate_row(row_num: int, row: dict) -> Optional[dict]:
         """
-        Valida una fila del CSV. Retorna un dict de error si la fila es inválida,
-        o None si es correcta.
+        Valida una fila del CSV. Retorna un dict de error si la fila es
+        inválida, o None si es correcta.
         """
-        name = row.get("name")
+        name = row.get("name", "")
         if not name or str(name).strip() == "":
             return {
                 "row":    row_num,
@@ -177,7 +203,7 @@ class ImportService:
                 "reason": "El nombre del producto no puede estar vacío.",
             }
 
-        price = row.get("price")
+        price = row.get("price", "")
         try:
             price_dec = Decimal(str(price))
             if price_dec < Decimal("0"):
@@ -190,7 +216,7 @@ class ImportService:
                 "reason": f"Precio inválido o negativo: '{price}'.",
             }
 
-        stock = row.get("stock")
+        stock = row.get("stock", "")
         try:
             stock_int = int(float(str(stock)))
             if stock_int < 0:
@@ -208,7 +234,7 @@ class ImportService:
     @staticmethod
     def _safe_decimal(value, default: Decimal) -> Decimal:
         """Convierte un valor a Decimal de forma segura."""
-        if value is None:
+        if not value:
             return default
         try:
             result = Decimal(str(value))
@@ -219,7 +245,7 @@ class ImportService:
     @staticmethod
     def _safe_int(value, default: int) -> int:
         """Convierte un valor a int de forma segura."""
-        if value is None:
+        if not value:
             return default
         try:
             result = int(float(str(value)))

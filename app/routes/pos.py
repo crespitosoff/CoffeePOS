@@ -5,7 +5,7 @@ from app.services.order_service import OrderService
 from app.services.payment_service import PaymentService
 from app.services.register_service import RegisterService
 from app.services.product_service import ProductService
-from app.models.domain import Order, OrderStatus, Payment, PaymentMethod, Table
+from app.models.domain import Order, OrderStatus, Payment, PaymentMethod, Table, Category, GenericStatus
 from app.extensions import db
 import decimal
 
@@ -16,8 +16,35 @@ pos_bp = Blueprint("pos", __name__, url_prefix="/pos")
 @login_required
 @cashier_required
 def dashboard():
-    tables = db.session.query(Table).order_by(Table.name).all()
-    session = RegisterService.get_active_session(user_id=str(current_user.id))
+    from app.models.domain import OrderStatus as _OS
+    raw_tables = db.session.query(Table).order_by(Table.name).all()
+    session    = RegisterService.get_active_session(user_id=str(current_user.id))
+
+    # Determinar qué mesas tienen una orden OPEN en la sesión actual
+    occupied_table_ids: set[str] = set()
+    if session:
+        open_orders = (
+            db.session.query(Order)
+            .filter(
+                Order.register_session_id == session.id,
+                Order.status == _OS.OPEN,
+                Order.table_id.isnot(None),
+            )
+            .all()
+        )
+        occupied_table_ids = {str(o.table_id) for o in open_orders}
+
+    # Construir lista enriquecida con estado de ocupación
+    tables = [
+        {
+            "id":       str(t.id),
+            "name":     t.name,
+            "capacity": t.capacity,
+            "status":   "occupied" if str(t.id) in occupied_table_ids else "available",
+        }
+        for t in raw_tables
+    ]
+
     return render_template("pos/dashboard.html", tables=tables, session=session)
 
 
@@ -210,12 +237,23 @@ def view_order(table_id):
 
         products = ProductService.get_all_products(is_active=True)
 
+        # Categorías y mesas para filtros y table switcher
+        categories = (
+            db.session.query(Category)
+            .filter_by(status=GenericStatus.ACTIVE)
+            .order_by(Category.name)
+            .all()
+        )
+        all_tables = db.session.query(Table).order_by(Table.name).all()
+
         return render_template(
             "pos/order.html",
             order=order,
             products=products,
             table_name=table_name,
             table_id=table_id,
+            categories=categories,
+            tables=all_tables,
         )
     except Exception as e:
         flash(str(e), "danger")

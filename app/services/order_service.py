@@ -16,7 +16,6 @@ from app.models.domain import (
     Product,
     StoreSetting,
     GenericStatus,
-    Table,
 )
 
 

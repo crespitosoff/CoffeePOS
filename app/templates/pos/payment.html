@@ -6,225 +6,260 @@
 
 {% block content %}
 <main class="w-full max-w-5xl">
-<div class="bg-surface-container-low w-full rounded-xl p-6 md:p-8 flex flex-col gap-6 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] border border-outline-variant/15">
-    <!-- Header -->
-    <header class="flex justify-between items-center w-full border-b border-outline-variant/15 pb-4">
-        <h1 class="font-headline-md text-headline-md text-primary">Procesar Pago - {{ order.table.name if order.table else 'Para Llevar' }}</h1>
-        <a href="{{ url_for('pos.view_order', table_id=order.table_id|default('takeaway', true)) }}" aria-label="Close" class="text-on-surface-variant hover:text-on-surface transition-colors">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
-        </a>
-    </header>
-    
-    <!-- Main Content Layout -->
-    <div class="flex flex-col md:flex-row gap-6 w-full">
-        <!-- Section 1: Order Summary -->
-        <div class="flex-1 bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-6 shadow-sm border border-outline-variant/15">
-            <h2 class="font-title-lg text-title-lg text-on-surface">Resumen de Orden</h2>
-            <div class="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2">
-                {% for item in order.order_items %}
-                <div class="flex justify-between items-center border-b border-outline-variant/10 pb-2 last:border-0">
-                    <span class="font-body-lg text-body-lg text-on-surface-variant">{{ item.quantity }}x {{ item.product.name }}</span>
-                    <span class="font-title-md text-title-md text-on-surface">${{ "{:,.2f}".format(item.subtotal) }}</span>
+    <div
+        class="bg-surface-container-low w-full rounded-xl p-6 md:p-8 flex flex-col gap-6 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] border border-outline-variant/15">
+        <!-- Header -->
+        <header class="flex justify-between items-center w-full border-b border-outline-variant/15 pb-4">
+            <h1 class="font-headline-md text-headline-md text-primary">Procesar Pago - {{ order.table.name if
+                order.table else 'Para Llevar' }}</h1>
+            <a href="{{ url_for('pos.view_order', table_id=order.table_id|default('takeaway', true)) }}"
+                aria-label="Close" class="text-on-surface-variant hover:text-on-surface transition-colors">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+            </a>
+        </header>
+
+        <!-- Main Content Layout -->
+        <div class="flex flex-col md:flex-row gap-6 w-full">
+            <!-- Section 1: Order Summary -->
+            <div
+                class="flex-1 bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-6 shadow-sm border border-outline-variant/15">
+                <h2 class="font-title-lg text-title-lg text-on-surface">Resumen de Orden</h2>
+                <div class="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2">
+                    {% for item in order.order_items %}
+                    <div
+                        class="flex justify-between items-center border-b border-outline-variant/10 pb-2 last:border-0">
+                        <span class="font-body-lg text-body-lg text-on-surface-variant">{{ item.quantity }}x {{
+                            item.product.name }}</span>
+                        <span class="font-title-md text-title-md text-on-surface">${{ "{:,.2f}".format(item.subtotal)
+                            }}</span>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-            
-            <div class="mt-auto pt-4 flex flex-col gap-2 border-t border-outline-variant/15">
-                <div class="flex justify-between items-end mt-2">
-                    <span class="font-title-lg text-title-lg text-on-surface">Total</span>
-                    <span class="font-headline-md text-headline-md text-primary">${{ "{:,.2f}".format(order.total) }}</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Section 2 & 3: Payment Details -->
-        <div class="flex-[1.5] flex flex-col gap-6">
-            <form action="{{ url_for('pos.pay_order', order_id=order.id) }}" method="POST" id="payment-form" class="flex flex-col gap-6">
-                <input type="hidden" name="reference" id="final_reference">
-                
-                <!-- Payment Method -->
-                <div class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
-                    <h3 class="font-title-md text-title-md text-on-surface">Método de Pago</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <label class="has-radio flex flex-col items-center justify-center p-4 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer transition-all ring-2 ring-primary/30">
-                            <input checked class="hidden" name="payment_method" type="radio" value="cash"/>
-                            <span class="material-symbols-outlined mb-2" style="font-variation-settings: 'FILL' 1;">payments</span>
-                            <span class="font-label-md text-label-md">Efectivo</span>
-                        </label>
-                        <label class="has-radio flex flex-col items-center justify-center p-4 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer transition-all hover:bg-surface-variant">
-                            <input class="hidden" name="payment_method" type="radio" value="card"/>
-                            <span class="material-symbols-outlined mb-2" style="font-variation-settings: 'FILL' 0;">credit_card</span>
-                            <span class="font-label-md text-label-md">Tarjeta</span>
-                        </label>
-                        <label class="has-radio flex flex-col items-center justify-center p-4 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer transition-all hover:bg-surface-variant">
-                            <input class="hidden" name="payment_method" type="radio" value="transfer"/>
-                            <span class="material-symbols-outlined mb-2" style="font-variation-settings: 'FILL' 0;">account_balance</span>
-                            <span class="font-label-md text-label-md">Transferencia</span>
-                        </label>
+
+                <div class="mt-auto pt-4 flex flex-col gap-2 border-t border-outline-variant/15">
+                    <div class="flex justify-between items-end mt-2">
+                        <span class="font-title-lg text-title-lg text-on-surface">Total</span>
+                        <span class="font-headline-md text-headline-md text-primary">${{ "{:,.2f}".format(order.total)
+                            }}</span>
                     </div>
                 </div>
-                
-                <!-- Dynamic Sections -->
-                <div id="dynamic-sections">
-                    <!-- Cash Details -->
-                    <div id="cash_section" class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
-                        <label class="flex flex-col gap-2">
-                            <span class="font-title-md text-title-md text-on-surface">Monto Recibido</span>
-                            <div class="relative flex items-center">
-                                <span class="absolute left-4 font-title-lg text-title-lg text-on-surface-variant">$</span>
-                                <input id="amount_received" name="amount_received" class="w-full min-h-[64px] bg-surface-container-high text-on-surface font-title-lg text-title-lg rounded-lg pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="number" step="0.01" value="{{ order.total }}" required/>
+            </div>
+
+            <!-- Section 2 & 3: Payment Details -->
+            <div class="flex-[1.5] flex flex-col gap-6">
+                <form action="{{ url_for('pos.pay_order', order_id=order.id) }}" method="POST" id="payment-form"
+                    class="flex flex-col gap-6">
+                    <input type="hidden" name="reference" id="final_reference">
+
+                    <!-- Payment Method -->
+                    <div
+                        class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
+                        <h3 class="font-title-md text-title-md text-on-surface">Método de Pago</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label
+                                class="has-radio flex flex-col items-center justify-center p-4 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer transition-all ring-2 ring-primary/30">
+                                <input checked class="hidden" name="payment_method" type="radio" value="cash" />
+                                <span class="material-symbols-outlined mb-2"
+                                    style="font-variation-settings: 'FILL' 1;">payments</span>
+                                <span class="font-label-md text-label-md">Efectivo</span>
+                            </label>
+                            <label
+                                class="has-radio flex flex-col items-center justify-center p-4 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer transition-all hover:bg-surface-variant">
+                                <input class="hidden" name="payment_method" type="radio" value="card" />
+                                <span class="material-symbols-outlined mb-2"
+                                    style="font-variation-settings: 'FILL' 0;">credit_card</span>
+                                <span class="font-label-md text-label-md">Tarjeta</span>
+                            </label>
+                            <label
+                                class="has-radio flex flex-col items-center justify-center p-4 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer transition-all hover:bg-surface-variant">
+                                <input class="hidden" name="payment_method" type="radio" value="transfer" />
+                                <span class="material-symbols-outlined mb-2"
+                                    style="font-variation-settings: 'FILL' 0;">account_balance</span>
+                                <span class="font-label-md text-label-md">Transferencia</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Sections -->
+                    <div id="dynamic-sections">
+                        <!-- Cash Details -->
+                        <div id="cash_section"
+                            class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
+                            <label class="flex flex-col gap-2">
+                                <span class="font-title-md text-title-md text-on-surface">Monto Recibido</span>
+                                <div class="relative flex items-center">
+                                    <span
+                                        class="absolute left-4 font-title-lg text-title-lg text-on-surface-variant">$</span>
+                                    <input id="amount_received" name="amount_received"
+                                        class="w-full min-h-[64px] bg-surface-container-high text-on-surface font-title-lg text-title-lg rounded-lg pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50"
+                                        type="number" step="0.01" value="{{ order.total }}" required />
+                                </div>
+                            </label>
+                            <div class="mt-4 flex items-center justify-between bg-surface-container rounded-lg p-4">
+                                <span class="font-title-md text-title-md text-on-surface-variant">Cambio</span>
+                                <span id="change_amount"
+                                    class="font-headline-lg text-headline-lg text-primary">$0.00</span>
                             </div>
-                        </label>
-                        <div class="mt-4 flex items-center justify-between bg-surface-container rounded-lg p-4">
-                            <span class="font-title-md text-title-md text-on-surface-variant">Cambio</span>
-                            <span id="change_amount" class="font-headline-lg text-headline-lg text-primary">$0.00</span>
+                        </div>
+
+                        <!-- Transfer Details -->
+                        <div id="transfer_section"
+                            class="hidden bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
+                            <span class="font-title-md text-title-md text-on-surface">Entidad Bancaria</span>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label
+                                    class="transfer-radio flex items-center justify-center p-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer ring-2 ring-primary/30 transition-all">
+                                    <input checked class="hidden" name="transfer_entity" type="radio" value="Nequi" />
+                                    <span class="font-label-md text-label-md font-bold">Nequi</span>
+                                </label>
+                                <label
+                                    class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
+                                    <input class="hidden" name="transfer_entity" type="radio" value="MiBancolombia" />
+                                    <span class="font-label-md text-label-md font-bold">MiBancolombia</span>
+                                </label>
+                                <label
+                                    class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
+                                    <input class="hidden" name="transfer_entity" type="radio" value="Nubank" />
+                                    <span class="font-label-md text-label-md font-bold">Nubank</span>
+                                </label>
+                                <label
+                                    class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
+                                    <input class="hidden" name="transfer_entity" type="radio" value="Daviplata" />
+                                    <span class="font-label-md text-label-md font-bold">Daviplata</span>
+                                </label>
+                            </div>
+                            <label class="flex flex-col gap-2 mt-2">
+                                <span class="font-title-md text-title-md text-on-surface">Número de Comprobante</span>
+                                <input id="transfer_ref"
+                                    class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-title-md text-title-md rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50"
+                                    type="text" placeholder="Ej. 123456789" />
+                            </label>
+                        </div>
+
+                        <!-- Card Details -->
+                        <div id="card_section"
+                            class="hidden bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
+                            <span class="font-title-md text-title-md text-on-surface">Franquicia</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label
+                                    class="card-radio flex items-center justify-center p-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer ring-2 ring-primary/30 transition-all">
+                                    <input checked class="hidden" name="card_entity" type="radio" value="Visa" />
+                                    <span class="font-label-md text-label-md font-bold">Visa</span>
+                                </label>
+                                <label
+                                    class="card-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
+                                    <input class="hidden" name="card_entity" type="radio" value="Mastercard" />
+                                    <span class="font-label-md text-label-md font-bold">Mastercard</span>
+                                </label>
+                            </div>
+                            <label class="flex flex-col gap-2 mt-2">
+                                <span class="font-title-md text-title-md text-on-surface">Número de Voucher</span>
+                                <input id="card_ref"
+                                    class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-title-md text-title-md rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50"
+                                    type="text" placeholder="Ej. 000123" />
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Transfer Details -->
-                    <div id="transfer_section" class="hidden bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
-                        <span class="font-title-md text-title-md text-on-surface">Entidad Bancaria</span>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <label class="transfer-radio flex items-center justify-center p-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer ring-2 ring-primary/30 transition-all">
-                                <input checked class="hidden" name="transfer_entity" type="radio" value="Nequi"/>
-                                <span class="font-label-md text-label-md font-bold">Nequi</span>
-                            </label>
-                            <label class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
-                                <input class="hidden" name="transfer_entity" type="radio" value="MiBancolombia"/>
-                                <span class="font-label-md text-label-md font-bold">MiBancolombia</span>
-                            </label>
-                            <label class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
-                                <input class="hidden" name="transfer_entity" type="radio" value="Nubank"/>
-                                <span class="font-label-md text-label-md font-bold">Nubank</span>
-                            </label>
-                            <label class="transfer-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
-                                <input class="hidden" name="transfer_entity" type="radio" value="Daviplata"/>
-                                <span class="font-label-md text-label-md font-bold">Daviplata</span>
-                            </label>
-                        </div>
-                        <label class="flex flex-col gap-2 mt-2">
-                            <span class="font-title-md text-title-md text-on-surface">Número de Comprobante</span>
-                            <input id="transfer_ref" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-title-md text-title-md rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="text" placeholder="Ej. 123456789"/>
-                        </label>
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-4 w-full">
+                        <a href="{{ url_for('pos.view_order', table_id=order.table_id|default('takeaway', true)) }}"
+                            class="min-h-[64px] px-8 rounded-xl font-title-md text-title-md text-primary bg-transparent hover:bg-surface-container transition-colors flex items-center justify-center">
+                            Cancelar
+                        </a>
+                        <button type="submit"
+                            class="min-h-[64px] px-12 rounded-xl font-title-md text-title-md text-on-primary bg-gradient-to-r from-primary to-primary-container hover:from-primary-container hover:to-primary transition-all shadow-md active:scale-95 flex items-center justify-center">
+                            Confirmar Pago
+                        </button>
                     </div>
-
-                    <!-- Card Details -->
-                    <div id="card_section" class="hidden bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-4 shadow-sm border border-outline-variant/15">
-                        <span class="font-title-md text-title-md text-on-surface">Franquicia</span>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="card-radio flex items-center justify-center p-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer ring-2 ring-primary/30 transition-all">
-                                <input checked class="hidden" name="card_entity" type="radio" value="Visa"/>
-                                <span class="font-label-md text-label-md font-bold">Visa</span>
-                            </label>
-                            <label class="card-radio flex items-center justify-center p-3 bg-surface-container-high text-on-surface-variant rounded-lg cursor-pointer hover:bg-surface-variant transition-all">
-                                <input class="hidden" name="card_entity" type="radio" value="Mastercard"/>
-                                <span class="font-label-md text-label-md font-bold">Mastercard</span>
-                            </label>
-                        </div>
-                        <label class="flex flex-col gap-2 mt-2">
-                            <span class="font-title-md text-title-md text-on-surface">Número de Voucher</span>
-                            <input id="card_ref" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-title-md text-title-md rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="text" placeholder="Ej. 000123"/>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex justify-end gap-4 w-full">
-                    <a href="{{ url_for('pos.view_order', table_id=order.table_id|default('takeaway', true)) }}" class="min-h-[64px] px-8 rounded-xl font-title-md text-title-md text-primary bg-transparent hover:bg-surface-container transition-colors flex items-center justify-center">
-                        Cancelar
-                    </a>
-                    <button type="submit" class="min-h-[64px] px-12 rounded-xl font-title-md text-title-md text-on-primary bg-gradient-to-r from-primary to-primary-container hover:from-primary-container hover:to-primary transition-all shadow-md active:scale-95 flex items-center justify-center">
-                        Confirmar Pago
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const orderTotal = parseFloat("{{ order.total }}") || 0;
-    const amountInput = document.getElementById('amount_received');
-    const changeSpan = document.getElementById('change_amount');
-    
-    const form = document.getElementById('payment-form');
-    const finalReference = document.getElementById('final_reference');
-    
-    const cashSection = document.getElementById('cash_section');
-    const transferSection = document.getElementById('transfer_section');
-    const cardSection = document.getElementById('card_section');
-    
-    function updateChange() {
-        const received = parseFloat(amountInput.value) || 0;
-        let change = received - orderTotal;
-        if (change < 0) change = 0;
-        changeSpan.textContent = '$' + change.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    
-    amountInput.addEventListener('input', updateChange);
-    updateChange();
-    
-    function setupRadios(selector) {
-        const radios = document.querySelectorAll(selector + ' input[type="radio"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                document.querySelectorAll(selector).forEach(lbl => {
-                    lbl.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'ring-2', 'ring-primary/30');
-                    lbl.classList.add('bg-surface-container-high', 'text-on-surface-variant');
-                    const icon = lbl.querySelector('span.material-symbols-outlined');
-                    if(icon) icon.style.fontVariationSettings = "'FILL' 0";
+    document.addEventListener('DOMContentLoaded', () => {
+        const orderTotal = parseFloat("{{ order.total }}") || 0;
+        const amountInput = document.getElementById('amount_received');
+        const changeSpan = document.getElementById('change_amount');
+
+        const form = document.getElementById('payment-form');
+        const finalReference = document.getElementById('final_reference');
+
+        const cashSection = document.getElementById('cash_section');
+        const transferSection = document.getElementById('transfer_section');
+        const cardSection = document.getElementById('card_section');
+
+        function updateChange() {
+            const received = parseFloat(amountInput.value) || 0;
+            let change = received - orderTotal;
+            if (change < 0) change = 0;
+            changeSpan.textContent = '$' + change.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        amountInput.addEventListener('input', updateChange);
+        updateChange();
+
+        function setupRadios(selector) {
+            const radios = document.querySelectorAll(selector + ' input[type="radio"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    document.querySelectorAll(selector).forEach(lbl => {
+                        lbl.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'ring-2', 'ring-primary/30');
+                        lbl.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                        const icon = lbl.querySelector('span.material-symbols-outlined');
+                        if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+                    });
+
+                    const selectedLbl = e.target.closest('label');
+                    selectedLbl.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                    selectedLbl.classList.add('bg-secondary-container', 'text-on-secondary-container', 'ring-2', 'ring-primary/30');
+                    const icon = selectedLbl.querySelector('span.material-symbols-outlined');
+                    if (icon) icon.style.fontVariationSettings = "'FILL' 1";
                 });
-                
-                const selectedLbl = e.target.closest('label');
-                selectedLbl.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
-                selectedLbl.classList.add('bg-secondary-container', 'text-on-secondary-container', 'ring-2', 'ring-primary/30');
-                const icon = selectedLbl.querySelector('span.material-symbols-outlined');
-                if(icon) icon.style.fontVariationSettings = "'FILL' 1";
+            });
+        }
+
+        setupRadios('label.has-radio');
+        setupRadios('label.transfer-radio');
+        setupRadios('label.card-radio');
+
+        const methodRadios = document.querySelectorAll('input[name="payment_method"]');
+        methodRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const val = e.target.value;
+                cashSection.classList.add('hidden');
+                transferSection.classList.add('hidden');
+                cardSection.classList.add('hidden');
+
+                if (val === 'cash') {
+                    cashSection.classList.remove('hidden');
+                } else if (val === 'transfer') {
+                    transferSection.classList.remove('hidden');
+                } else if (val === 'card') {
+                    cardSection.classList.remove('hidden');
+                }
             });
         });
-    }
 
-    setupRadios('label.has-radio');
-    setupRadios('label.transfer-radio');
-    setupRadios('label.card-radio');
+        form.addEventListener('submit', (e) => {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
 
-    const methodRadios = document.querySelectorAll('input[name="payment_method"]');
-    methodRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const val = e.target.value;
-            cashSection.classList.add('hidden');
-            transferSection.classList.add('hidden');
-            cardSection.classList.add('hidden');
-            
-            if (val === 'cash') {
-                cashSection.classList.remove('hidden');
-            } else if (val === 'transfer') {
-                transferSection.classList.remove('hidden');
-            } else if (val === 'card') {
-                cardSection.classList.remove('hidden');
+            if (selectedMethod === 'transfer') {
+                const entity = document.querySelector('input[name="transfer_entity"]:checked').value;
+                const ref = document.getElementById('transfer_ref').value || 'Sin Ref';
+                finalReference.value = entity + ' - ' + ref;
+                amountInput.value = orderTotal;
+            } else if (selectedMethod === 'card') {
+                const entity = document.querySelector('input[name="card_entity"]:checked').value;
+                const ref = document.getElementById('card_ref').value || 'Sin Ref';
+                finalReference.value = entity + ' - ' + ref;
+                amountInput.value = orderTotal;
+            } else {
+                finalReference.value = '';
             }
         });
     });
-
-    form.addEventListener('submit', (e) => {
-        const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        
-        if (selectedMethod === 'transfer') {
-            const entity = document.querySelector('input[name="transfer_entity"]:checked').value;
-            const ref = document.getElementById('transfer_ref').value || 'Sin Ref';
-            finalReference.value = entity + ' - ' + ref;
-            amountInput.value = orderTotal;
-        } else if (selectedMethod === 'card') {
-            const entity = document.querySelector('input[name="card_entity"]:checked').value;
-            const ref = document.getElementById('card_ref').value || 'Sin Ref';
-            finalReference.value = entity + ' - ' + ref;
-            amountInput.value = orderTotal;
-        } else {
-            finalReference.value = '';
-        }
-    });
-});
 </script>
 {% endblock %}

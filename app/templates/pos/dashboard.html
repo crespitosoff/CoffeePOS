@@ -157,11 +157,9 @@
                     class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1">{{ table.info }}</p>
                     <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{
                         table.capacity }} Personas</p>
-                    <p class="font-label-md text-label-md text-primary mt-1" style="color: #10B981;">{{ table.order |
-                        default("Sin orden") }}</p>
+                    <p class="font-label-md text-label-md text-primary mt-1" style="color: #EF4444;">{{ table.order | default("Sin orden") }}</p>
                 </div>
             </a>
             {% endif %}

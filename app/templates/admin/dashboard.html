@@ -1,0 +1,232 @@
+{% extends "layout/admin_base.html" %}
+
+{% block title %}Dashboard – Admin CoffeePOS{% endblock %}
+
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">Dashboard</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">
+        Auditoría · Últimos 7 días hasta hoy ({{ today }})
+    </p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ── KPI Cards ───────────────────────────────────────────────────────────── #}
+{% if daily %}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
+
+    {# Ventas del día #}
+    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ventas Hoy</span>
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1;">payments</span>
+        </div>
+        <p class="font-headline-lg text-headline-lg text-on-surface">${{ "{:,.0f}".format(daily.grand_total) }}</p>
+        <p class="font-label-md text-label-md text-on-surface-variant">{{ daily.total_orders }} orden(es)</p>
+    </div>
+
+    {# Efectivo #}
+    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Efectivo</span>
+            <span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+        </div>
+        <p class="font-headline-lg text-headline-lg text-on-surface">${{ "{:,.0f}".format(daily.totals_by_method.cash) }}</p>
+        <p class="font-label-md text-label-md text-on-surface-variant">en caja física</p>
+    </div>
+
+    {# Tarjeta + Transferencia #}
+    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Digital</span>
+            <span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings:'FILL' 1;">credit_card</span>
+        </div>
+        <p class="font-headline-lg text-headline-lg text-on-surface">
+            ${{ "{:,.0f}".format(daily.totals_by_method.card + daily.totals_by_method.transfer) }}
+        </p>
+        <p class="font-label-md text-label-md text-on-surface-variant">tarjeta + transferencia</p>
+    </div>
+
+    {# Alertas #}
+    <div class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
+        {% if daily.open_sessions_alert or suspicious %}
+            bg-error-container/30 border-error/30
+        {% else %}
+            bg-surface-container-lowest border-outline-variant/15
+        {% endif %}">
+        <div class="flex items-center justify-between">
+            <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alertas</span>
+            <span class="material-symbols-outlined text-xl
+                {% if daily.open_sessions_alert or suspicious %}text-error{% else %}text-on-surface-variant{% endif %}"
+                  style="font-variation-settings:'FILL' 1;">warning</span>
+        </div>
+        <p class="font-headline-lg text-headline-lg {% if suspicious %}text-error{% else %}text-on-surface{% endif %}">
+            {{ suspicious | length }}
+        </p>
+        <p class="font-label-md text-label-md text-on-surface-variant">
+            retiro(s) sospechoso(s)
+            {% if daily.open_sessions_alert %} · caja sin cerrar{% endif %}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+{# ── Tabla de Auditoría de Sesiones ──────────────────────────────────────── #}
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 mb-8 overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant/15 flex items-center justify-between">
+        <div>
+            <h2 class="font-title-lg text-title-lg text-on-surface">Historial de Caja</h2>
+            <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Últimos 7 días · Descuadres marcados</p>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">receipt_long</span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[900px]">
+            <thead>
+                <tr class="border-b border-outline-variant/10 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                    <th class="py-3 px-5">Cajero</th>
+                    <th class="py-3 px-4">Apertura</th>
+                    <th class="py-3 px-4">Cierre</th>
+                    <th class="py-3 px-4">Monto Apertura</th>
+                    <th class="py-3 px-4">Esperado</th>
+                    <th class="py-3 px-4">Real Contado</th>
+                    <th class="py-3 px-4">Diferencia</th>
+                    <th class="py-3 px-4">Órdenes</th>
+                    <th class="py-3 px-4">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in audit_trail %}
+                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors
+                           {% if s.has_alerts %}bg-error-container/10{% endif %}">
+                    <td class="py-4 px-5 font-title-md text-title-md text-on-surface">
+                        {{ s.opener }}
+                        {% if s.has_alerts %}
+                        <span class="material-symbols-outlined text-error text-sm align-middle ml-1"
+                              style="font-variation-settings:'FILL' 1;">warning</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
+                        {% if s.opened_at %}
+                            {{ s.opened_at.strftime('%d/%m %H:%M') }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
+                        {% if s.closed_at %}
+                            {{ s.closed_at.strftime('%d/%m %H:%M') }}
+                        {% else %}
+                            <span class="text-warning bg-secondary-container/40 px-2 py-0.5 rounded-full text-xs">Abierta</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
+                        ${{ "{:,.0f}".format(s.opening_amount) }}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
+                        {% if s.expected_amount %}
+                            ${{ "{:,.0f}".format(s.expected_amount) }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
+                        {% if s.closing_amount %}
+                            ${{ "{:,.0f}".format(s.closing_amount) }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="py-4 px-4 font-title-md text-title-md">
+                        {% if s.difference is not none %}
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold
+                                {% if s.discrepancy_status == 'deficit' %}
+                                    bg-error/15 text-error
+                                {% elif s.discrepancy_status == 'surplus' %}
+                                    bg-tertiary/15 text-tertiary
+                                {% else %}
+                                    bg-primary/10 text-primary
+                                {% endif %}">
+                                {% if s.difference > 0 %}+{% endif %}${{ "{:,.0f}".format(s.difference) }}
+                            </span>
+                        {% else %}
+                            <span class="text-on-surface-variant">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
+                        {{ s.total_orders }} pagadas
+                        {% if s.cancelled_orders > 0 %}
+                        · <span class="text-error">{{ s.cancelled_orders }} cancel.</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4">
+                        {% if s.status == 'open' %}
+                        <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-sm font-medium">Abierta</span>
+                        {% else %}
+                        <span class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-sm font-medium">Cerrada</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="py-10 text-center text-on-surface-variant font-body-lg">
+                        No hay sesiones registradas en este período.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{# ── Retiros Sospechosos ─────────────────────────────────────────────────── #}
+{% if suspicious %}
+<div class="bg-error-container/20 rounded-2xl shadow-sm border border-error/30 overflow-hidden">
+    <div class="px-6 py-4 border-b border-error/20 flex items-center gap-3">
+        <span class="material-symbols-outlined text-error text-xl" style="font-variation-settings:'FILL' 1;">gpp_bad</span>
+        <div>
+            <h2 class="font-title-lg text-title-lg text-error">Retiros Sospechosos</h2>
+            <p class="font-label-md text-label-md text-on-surface-variant">Requieren revisión manual</p>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[700px]">
+            <thead>
+                <tr class="border-b border-error/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                    <th class="py-3 px-5">Cajero</th>
+                    <th class="py-3 px-4">Fecha/Hora</th>
+                    <th class="py-3 px-4">Monto</th>
+                    <th class="py-3 px-4">Saldo Post-Retiro</th>
+                    <th class="py-3 px-4">Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in suspicious %}
+                <tr class="border-b border-error/10 hover:bg-error/5 transition-colors">
+                    <td class="py-3 px-5 font-title-md text-title-md text-on-surface">{{ m.cashier }}</td>
+                    <td class="py-3 px-4 text-on-surface-variant font-body-lg">
+                        {{ m.created_at.strftime('%d/%m/%Y %H:%M') if m.created_at else '—' }}
+                    </td>
+                    <td class="py-3 px-4 font-title-md text-title-md text-error">
+                        -${{ "{:,.0f}".format(m.amount) }}
+                    </td>
+                    <td class="py-3 px-4 text-on-surface font-body-lg">
+                        ${{ "{:,.0f}".format(m.balance_after) }}
+                    </td>
+                    <td class="py-3 px-4 text-on-surface-variant font-body-lg italic">
+                        {{ m.description or 'Sin descripción' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 flex items-center gap-4">
+    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings:'FILL' 1;">verified_user</span>
+    <div>
+        <p class="font-title-md text-title-md text-on-surface">Sin retiros sospechosos</p>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">No se detectaron movimientos de alto riesgo en los últimos 7 días.</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,52 +1,189 @@
-{% extends "layout/base.html" %}
+{% extends "layout/admin_base.html" %}
 
-{% block title %}Nuevo Producto - Admin{% endblock %}
+{% block title %}{{ 'Editar' if product else 'Nuevo' }} Producto – Admin CoffeePOS{% endblock %}
 
-{% block content %}
-<main class="flex-1 w-full max-w-3xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-    <div>
-        <h1 class="font-headline-lg text-headline-lg text-primary">Nuevo Producto</h1>
-        <p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Agregar al Catálogo</p>
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">
+        {{ 'Editar Producto' if product else 'Nuevo Producto' }}
+    </h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">
+        {{ product.name if product else 'Agregar al catálogo' }}
+    </p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+<div class="max-w-3xl">
+    {# Breadcrumb #}
+    <div class="flex items-center gap-2 font-label-md text-label-md text-on-surface-variant mb-6">
+        <a href="{{ url_for('admin.products') }}" class="hover:text-primary transition-colors">Productos</a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <span>{{ 'Editar' if product else 'Nuevo' }}</span>
     </div>
 
     <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-outline-variant/15">
-        <form action="{{ url_for('admin.create_product') }}" method="POST" class="flex flex-col gap-6">
-            <label class="flex flex-col gap-2">
-                <span class="font-title-md text-title-md text-on-surface">Nombre del Producto</span>
-                <input name="name" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="text" placeholder="Ej. Café Americano" required/>
-            </label>
+        {# El action y method cambian según si es create o update #}
+        <form action="{{ url_for('admin.update_product', id=product.id) if product else url_for('admin.create_product') }}"
+              method="POST"
+              class="flex flex-col gap-6">
 
-            <label class="flex flex-col gap-2">
-                <span class="font-title-md text-title-md text-on-surface">ID Categoría</span>
-                <input name="category" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="text" placeholder="ID de la Categoría" required/>
-            </label>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <label class="flex flex-col gap-2">
-                    <span class="font-title-md text-title-md text-on-surface">Precio de Venta</span>
-                    <input name="price" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="number" step="0.01" placeholder="0.00" required/>
+            {# Nombre #}
+            <div class="flex flex-col gap-2">
+                <label for="name" class="font-title-md text-title-md text-on-surface">
+                    Nombre del Producto <span class="text-error">*</span>
                 </label>
-                
-                <label class="flex flex-col gap-2">
-                    <span class="font-title-md text-title-md text-on-surface">Costo Unitario</span>
-                    <input name="unit_cost" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="number" step="0.01" placeholder="0.00" required/>
-                </label>
+                <input id="name" name="name" type="text" required
+                       value="{{ product.name if product else '' }}"
+                       placeholder="Ej. Café Americano"
+                       class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                              rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                              border border-transparent focus:border-primary/20 placeholder:text-on-surface-variant/50"/>
             </div>
 
-            <label class="flex flex-col gap-2">
-                <span class="font-title-md text-title-md text-on-surface">Stock Inicial</span>
-                <input name="stock" class="w-full min-h-[56px] bg-surface-container-high text-on-surface font-body-lg text-body-lg rounded-lg px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all border-none placeholder:text-on-surface-variant/50" type="number" step="1" placeholder="0" required/>
-            </label>
+            {# Categoría #}
+            <div class="flex flex-col gap-2">
+                <label for="category_id" class="font-title-md text-title-md text-on-surface">Categoría</label>
+                <div class="relative">
+                    <select id="category_id" name="category_id"
+                            class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                   rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                   border border-transparent appearance-none">
+                        <option value="">Sin categoría</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}"
+                            {% if product and product.category_id and product.category_id | string == cat.id | string %}
+                                selected
+                            {% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
+                        arrow_drop_down
+                    </span>
+                </div>
+            </div>
 
-            <div class="flex justify-end gap-4 mt-4">
-                <a href="{{ url_for('admin.dashboard') if 'admin.dashboard' in request.endpoint else '#' }}" class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-primary bg-transparent hover:bg-surface-container transition-colors flex items-center justify-center">
+            {# Precio y Costo #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="flex flex-col gap-2">
+                    <label for="price" class="font-title-md text-title-md text-on-surface">
+                        Precio de Venta <span class="text-error">*</span>
+                    </label>
+                    <input id="price" name="price" type="number" step="0.01" min="0" required
+                           value="{{ product.price if product else '' }}"
+                           placeholder="0.00"
+                           class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                  rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                  border border-transparent placeholder:text-on-surface-variant/50"/>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="unit_cost" class="font-title-md text-title-md text-on-surface">Costo Unitario</label>
+                    <input id="unit_cost" name="unit_cost" type="number" step="0.01" min="0"
+                           value="{{ product.unit_cost if product else '' }}"
+                           placeholder="0.00"
+                           class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                  rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                  border border-transparent placeholder:text-on-surface-variant/50"/>
+                </div>
+            </div>
+
+            {# SKU #}
+            <div class="flex flex-col gap-2">
+                <label for="sku" class="font-title-md text-title-md text-on-surface">
+                    SKU <span class="font-label-md text-label-md text-on-surface-variant">(código único)</span>
+                </label>
+                <input id="sku" name="sku" type="text"
+                       value="{{ product.sku if product else '' }}"
+                       placeholder="Ej. CAFE-001"
+                       class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                              rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                              border border-transparent placeholder:text-on-surface-variant/50"/>
+            </div>
+
+            {# Stock y Stock Mínimo #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="flex flex-col gap-2">
+                    <label for="stock" class="font-title-md text-title-md text-on-surface">
+                        Stock Actual <span class="text-error">*</span>
+                    </label>
+                    <input id="stock" name="stock" type="number" step="1" min="0" required
+                           value="{{ product.stock if product is not none else 0 }}"
+                           placeholder="0"
+                           class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                  rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                  border border-transparent placeholder:text-on-surface-variant/50"/>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label for="min_stock" class="font-title-md text-title-md text-on-surface">Stock Mínimo</label>
+                    <input id="min_stock" name="min_stock" type="number" step="1" min="0"
+                           value="{{ product.min_stock if product else 0 }}"
+                           placeholder="0"
+                           class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                  rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                  border border-transparent placeholder:text-on-surface-variant/50"/>
+                </div>
+            </div>
+
+            {# Descripción #}
+            <div class="flex flex-col gap-2">
+                <label for="description" class="font-title-md text-title-md text-on-surface">Descripción</label>
+                <textarea id="description" name="description" rows="3"
+                          placeholder="Descripción breve del producto..."
+                          class="w-full bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                 border border-transparent placeholder:text-on-surface-variant/50 resize-none">{{ product.description if product else '' }}</textarea>
+            </div>
+
+            {# URL de imagen #}
+            <div class="flex flex-col gap-2">
+                <label for="image_url" class="font-title-md text-title-md text-on-surface">URL de Imagen</label>
+                <input id="image_url" name="image_url" type="url"
+                       value="{{ product.image_url if product else '' }}"
+                       placeholder="https://..."
+                       class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                              rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                              border border-transparent placeholder:text-on-surface-variant/50"/>
+            </div>
+
+            {# Estado (solo en edición) #}
+            {% if product %}
+            <div class="flex flex-col gap-2">
+                <label for="status" class="font-title-md text-title-md text-on-surface">Estado</label>
+                <div class="relative">
+                    <select id="status" name="status"
+                            class="w-full min-h-[52px] bg-surface-container-high text-on-surface font-body-lg text-body-lg
+                                   rounded-xl px-4 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all
+                                   border border-transparent appearance-none">
+                        <option value="active"   {% if product.status and product.status.value == 'active' %}selected{% endif %}>Activo</option>
+                        <option value="inactive" {% if product.status and product.status.value == 'inactive' %}selected{% endif %}>Inactivo</option>
+                        <option value="archived" {% if product.status and product.status.value == 'archived' %}selected{% endif %}>Archivado</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
+                        arrow_drop_down
+                    </span>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Botones #}
+            <div class="flex items-center justify-between pt-2 border-t border-outline-variant/15">
+                <a href="{{ url_for('admin.products') }}"
+                   class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-on-surface-variant
+                          hover:bg-surface-container transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
                     Cancelar
                 </a>
-                <button type="submit" class="min-h-[48px] px-8 rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center justify-center shadow-sm">
-                    Guardar Producto
+                <button type="submit"
+                        class="min-h-[48px] px-8 rounded-xl font-title-md text-title-md text-on-primary
+                               bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-base">save</span>
+                    {{ 'Guardar Cambios' if product else 'Crear Producto' }}
                 </button>
             </div>
         </form>
     </div>
-</main>
+</div>
 {% endblock %}

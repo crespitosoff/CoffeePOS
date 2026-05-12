@@ -1,6 +1,6 @@
 {% extends "layout/base.html" %}
 
-{% block title %}CoffeePOS - Order Screen{% endblock %}
+{% block title %}CoffeePOS - Orden{% endblock %}
 
 {% block body_class %}bg-background flex{% endblock %}
 
@@ -9,7 +9,7 @@
 <nav
     class="fixed left-0 top-0 h-full flex flex-col py-4 md:py-6 border-r border-outline-variant/15 bg-surface-container-low w-64 z-20 hidden md:flex">
     <div class="px-4 md:px-6 mb-8">
-        <h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS Admin</h1>
+        <h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS</h1>
         <p class="font-body-lg text-body-lg text-on-surface-variant">The Elevated Harvest</p>
     </div>
     <div class="flex flex-col gap-2 flex-grow overflow-y-auto">
@@ -21,39 +21,30 @@
         <a class="bg-secondary-container text-on-secondary-container rounded-lg mx-4 my-1 px-4 py-3 flex items-center gap-4 translate-x-1 transition-transform duration-150"
             href="{{ url_for('pos.dashboard') }}">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">deck</span>
-            <span class="font-title-md text-title-md">Tables</span>
-        </a>
-        <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
-            href="#">
-            <span class="material-symbols-outlined">menu_book</span>
-            <span class="font-title-md text-title-md">Catalog</span>
+            <span class="font-title-md text-title-md">Mesas</span>
         </a>
         <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
             href="#">
             <span class="material-symbols-outlined">analytics</span>
-            <span class="font-title-md text-title-md">Reports</span>
+            <span class="font-title-md text-title-md">Reportes</span>
         </a>
         <a class="text-on-surface-variant mx-4 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
             href="#">
             <span class="material-symbols-outlined">settings</span>
-            <span class="font-title-md text-title-md">Settings</span>
+            <span class="font-title-md text-title-md">Configuración</span>
         </a>
     </div>
     <div class="mt-auto flex flex-col gap-2 px-4">
-        <a href="{{ url_for('pos.open_register_form') }}"
-            class="bg-primary text-on-primary font-title-md text-title-md rounded-xl h-[64px] w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-            Open Register
+        <a href="{{ url_for('pos.close_register_form') }}"
+            class="bg-secondary text-on-secondary font-title-md text-title-md rounded-xl h-[64px] w-full flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+            <span class="material-symbols-outlined">lock</span>
+            Cerrar Caja
         </a>
-        <div class="mt-4">
+        <div class="mt-2">
             <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
-                href="{{ url_for('auth.logout') if 'auth.logout' in request.endpoint else '#' }}">
+                href="{{ url_for('auth.logout') }}">
                 <span class="material-symbols-outlined">logout</span>
-                <span class="font-title-md text-title-md">Logout</span>
-            </a>
-            <a class="text-on-surface-variant py-3 px-4 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
-                href="#">
-                <span class="material-symbols-outlined">help</span>
-                <span class="font-title-md text-title-md">Support</span>
+                <span class="font-title-md text-title-md">Salir</span>
             </a>
         </div>
     </div>
@@ -65,45 +56,35 @@
     <div class="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-background pb-32 max-w-screen-2xl mx-auto w-full">
         <!-- Header -->
         <div class="flex justify-between items-end mb-6 md:mb-8">
-            
+            <div>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Catálogo</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Selecciona los productos</p>
+            </div>
             <div class="flex gap-4">
                 <span
                     class="material-symbols-outlined text-on-surface-variant p-2 rounded-full hover:bg-surface-container-high cursor-pointer">search</span>
             </div>
         </div>
 
-        <!-- Categories -->
-        <div class="flex gap-4 md:gap-6 overflow-x-auto pb-4 mb-6 no-scrollbar border-b border-outline-variant/15">
-            <button
-                class="font-title-md text-title-md text-primary border-b-2 border-primary pb-2 whitespace-nowrap">Café</button>
-            <button
-                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Bebidas
-                Frías</button>
-            <button
-                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Postres</button>
-            <button
-                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Panadería</button>
-            <button
-                class="font-title-md text-title-md text-on-surface-variant hover:text-primary pb-2 whitespace-nowrap">Extras</button>
-        </div>
-
         <!-- Products Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {% for product in products %}
-            <button data-product-id="{{ product.id }}" class="bg-surface-container-lowest rounded-[1.5rem] md:rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group hover:scale-[1.02]">
+            <button data-product-id="{{ product.id }}"
+                class="bg-surface-container-lowest rounded-[1.5rem] md:rounded-[2rem] p-4 flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.06)] hover:bg-surface-container-low transition-colors cursor-pointer relative overflow-hidden group hover:scale-[1.02]">
                 <img class="w-full h-40 object-cover rounded-[1.5rem]" alt="{{ product.name }}"
-                    src="{{ product.image_url }}" />
+                    src="{{ product.image_url or 'https://placehold.co/400x300/f5f1ed/763000?text=' ~ product.name }}" />
                 <div class="flex flex-col gap-1">
                     <div class="flex justify-between items-center mt-2">
-                        <h3 class="font-title-lg text-title-lg text-on-surface">{{ product.name }}</h3>
+                        <h3 class="font-title-lg text-title-lg text-on-surface text-left">{{ product.name }}</h3>
                         <span
-                            class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock:
+                            class="font-label-md text-label-md text-on-surface-variant bg-surface-container-high px-2 py-1 rounded-full">Stock:
                             {{ product.stock }}</span>
                     </div>
                     <div class="flex justify-between items-center mt-2">
                         <span class="font-headline-md text-headline-md text-primary">${{ "{:,.2f}".format(product.price)
                             }}</span>
-                        <div data-product-id="{{ product.id }}" class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                        <div data-product-id="{{ product.id }}"
+                            class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
                             <span class="material-symbols-outlined">add</span>
                         </div>
                     </div>
@@ -124,14 +105,18 @@
         <div class="p-4 md:p-6 border-b border-outline-variant/15">
             <h2 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-4">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt</span>
-                {{ table_name | default('Takeaway') }}
+                {{ table_name | default('Para llevar') }}
             </h2>
+            <p class="font-label-md text-label-md text-on-surface-variant mt-1">
+                Orden #{{ order.id | string | truncate(8, True, '') }}
+            </p>
         </div>
 
         <!-- Cart Items -->
         <div class="flex-grow overflow-y-auto p-6 flex flex-col gap-6" id="cart-items-container">
             {% for item in order.order_items %}
-            <div class="bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.04)]">
+            <div
+                class="bg-surface-container-lowest p-4 rounded-[2rem] flex flex-col gap-4 shadow-[0px_12px_32px_rgba(35,25,21,0.04)]">
                 <div class="flex justify-between items-start">
                     <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.product.name }}</h4>
                     <button class="text-outline hover:text-error transition-colors" data-action="remove"
@@ -159,8 +144,9 @@
             </div>
             {% else %}
             <div class="flex flex-col items-center justify-center h-full text-outline opacity-50">
-                <span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
-                <p class="font-title-md">Aún no hay productos</p>
+                <span class="material-symbols-outlined text-6xl"
+                    style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+                <p class="font-title-md mt-2">Aún no hay productos</p>
             </div>
             {% endfor %}
         </div>
@@ -168,56 +154,86 @@
         <!-- Cart Footer -->
         <div
             class="p-4 md:p-6 bg-surface-container-lowest border-t border-outline-variant/15 shadow-[0px_-12px_32px_rgba(35,25,21,0.06)]">
-            <div class="flex justify-between items-center mb-4 md:mb-6">
+            <div class="flex justify-between items-center mb-3">
                 <span class="font-body-lg text-body-lg text-on-surface-variant">Subtotal</span>
-                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.subtotal)
-                    }}</span>
+                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.subtotal) }}</span>
             </div>
-            <div class="flex justify-between items-center mb-4 md:mb-6">
-                <span class="font-body-lg text-body-lg text-on-surface-variant">Impuestos (IVA)</span>
-                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.tax)
-                    }}</span>
+            <div class="flex justify-between items-center mb-4">
+                <span class="font-body-lg text-body-lg text-on-surface-variant">IVA (19%)</span>
+                <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.tax) }}</span>
             </div>
-            <div class="flex flex-col gap-4">
-                <a href="{{ url_for('pos.payment_form', order_id=order.id) }}" class="w-full py-4 rounded-[2rem] font-title-lg text-title-lg flex items-center justify-center gap-3 transition-all
-                   {% if not order.order_items %}
-                       bg-surface-container-highest text-outline cursor-not-allowed pointer-events-none
-                   {% else %}
-                       bg-primary text-on-primary shadow-[0px_12px_32px_rgba(35,25,21,0.12)] hover:scale-[1.02]
-                   {% endif %}">
+
+            <div class="flex flex-col gap-3">
+                <!-- Botón PAGAR -->
+                <a href="{{ url_for('pos.payment_form', order_id=order.id) }}"
+                    id="btn-pay"
+                    class="w-full py-4 rounded-[2rem] font-title-lg text-title-lg flex items-center justify-center gap-3 transition-all
+                       {% if not order.order_items %}
+                           bg-surface-container-highest text-outline cursor-not-allowed pointer-events-none
+                       {% else %}
+                           bg-primary text-on-primary shadow-[0px_12px_32px_rgba(35,25,21,0.12)] hover:scale-[1.02]
+                       {% endif %}">
                     <span class="material-symbols-outlined">payments</span>
-                    <span class="font-headline-lg text-on-primary">${{ '{:,.2f}'.format(order.total)}}</span>
+                    <span class="font-headline-lg text-on-primary">${{ '{:,.2f}'.format(order.total) }}</span>
                 </a>
+
+                <!-- Botón CANCELAR ORDEN — conectado a POST /pos/order/<id>/cancel -->
                 <button
-                    class="bg-surface border border-outline/15 text-error font-title-md text-title-md py-4 hover:bg-error-container/20 rounded-xl transition-all w-full hover:scale-[1.02]">
-                    Cancelar
+                    id="btn-cancel-order"
+                    data-order-id="{{ order.id }}"
+                    data-cancel-url="{{ url_for('pos.cancel_order', order_id=order.id) }}"
+                    type="button"
+                    class="bg-surface border border-error/30 text-error font-title-md text-title-md py-4 hover:bg-error/10 rounded-xl transition-all w-full hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">cancel</span>
+                    Cancelar / Eliminar Orden
                 </button>
             </div>
         </div>
     </aside>
 </main>
 
+<!-- Modal de Confirmación de Cancelación -->
+<div id="cancel-modal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4 flex flex-col gap-6 animate-fade-in">
+        <div class="flex flex-col items-center gap-3 text-center">
+            <span class="material-symbols-outlined text-error text-5xl">warning</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">¿Cancelar orden?</h3>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">
+                Esto devolverá el stock de todos los productos y liberará la mesa.
+                Esta acción <strong>no se puede deshacer</strong>.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button id="modal-keep"
+                class="flex-1 py-3 rounded-xl border border-outline-variant text-on-surface font-title-md text-title-md hover:bg-surface-container transition-colors">
+                Mantener
+            </button>
+            <button id="modal-confirm"
+                class="flex-1 py-3 rounded-xl bg-error text-on-error font-title-md text-title-md hover:opacity-90 transition-opacity">
+                Sí, cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // 1. Add Items
+
+        // ────────────────────────────────────────
+        // 1. Agregar Ítems al Carrito
+        // ────────────────────────────────────────
         const addButtons = document.querySelectorAll('button[data-product-id]');
         addButtons.forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', async () => {
                 const productId = btn.getAttribute('data-product-id');
-                const orderId = '{{ order.id if order else "" }}';
-
-                if (!orderId) {
-                    alert('No hay una orden activa para agregar productos.');
-                    return;
-                }
+                const orderId   = '{{ order.id }}';
 
                 try {
                     const response = await fetch(`/pos/order/${orderId}/add`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ product_id: productId, quantity: 1 })
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body:    JSON.stringify({ product_id: productId, quantity: 1 }),
                     });
 
                     if (response.ok) {
@@ -233,11 +249,13 @@
             });
         });
 
-        // 2 & 3. Update Quantities and Remove
+        // ────────────────────────────────────────
+        // 2 & 3. Actualizar Cantidades y Eliminar Ítems
+        // ────────────────────────────────────────
         const cartContainer = document.getElementById('cart-items-container');
         if (cartContainer) {
             cartContainer.addEventListener('click', async (e) => {
-                const btn = e.target.closest('button[data-action]');
+                const btn    = e.target.closest('button[data-action]');
                 if (!btn) return;
 
                 const action = btn.getAttribute('data-action');
@@ -245,30 +263,27 @@
                 if (!itemId) return;
 
                 try {
-                    let url = '';
+                    let url  = '';
                     let body = null;
 
                     if (action === 'remove') {
                         url = `/pos/order-item/${itemId}/remove`;
                     } else if (action === 'increase' || action === 'decrease') {
                         url = `/pos/order-item/${itemId}/update-quantity`;
-
-                        const qtySpan = btn.parentElement.querySelector('span.text-center');
+                        const qtySpan  = btn.parentElement.querySelector('span.text-center');
                         let currentQty = parseInt(qtySpan.textContent);
-                        let newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+                        let newQty     = action === 'increase' ? currentQty + 1 : currentQty - 1;
 
                         if (newQty < 1) {
-                            url = `/pos/order-item/${itemId}/remove`;
+                            url  = `/pos/order-item/${itemId}/remove`;
                         } else {
                             body = JSON.stringify({ quantity: newQty });
                         }
                     }
 
                     const fetchOptions = {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
                     };
                     if (body) fetchOptions.body = body;
 
@@ -282,6 +297,64 @@
                 } catch (err) {
                     console.error(err);
                     alert('Error de conexión al servidor.');
+                }
+            });
+        }
+
+        // ────────────────────────────────────────
+        // 4. Cancelar Orden (modal de confirmación)
+        // ────────────────────────────────────────
+        const btnCancel    = document.getElementById('btn-cancel-order');
+        const cancelModal  = document.getElementById('cancel-modal');
+        const modalKeep    = document.getElementById('modal-keep');
+        const modalConfirm = document.getElementById('modal-confirm');
+
+        if (btnCancel && cancelModal) {
+            // Abrir modal al hacer clic en "Cancelar Orden"
+            btnCancel.addEventListener('click', () => {
+                cancelModal.classList.remove('hidden');
+            });
+
+            // Cerrar modal sin acción
+            modalKeep.addEventListener('click', () => {
+                cancelModal.classList.add('hidden');
+            });
+
+            // Cerrar modal al hacer clic en el fondo
+            cancelModal.addEventListener('click', (e) => {
+                if (e.target === cancelModal) cancelModal.classList.add('hidden');
+            });
+
+            // Confirmar cancelación → POST al endpoint
+            modalConfirm.addEventListener('click', async () => {
+                const cancelUrl = btnCancel.getAttribute('data-cancel-url');
+
+                modalConfirm.disabled    = true;
+                modalConfirm.textContent = 'Cancelando...';
+
+                try {
+                    const response = await fetch(cancelUrl, {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Redirigir al dashboard con mensaje de éxito
+                        window.location.href = data.redirect || '{{ url_for("pos.dashboard") }}';
+                    } else {
+                        cancelModal.classList.add('hidden');
+                        alert(data.error || 'No se pudo cancelar la orden.');
+                        modalConfirm.disabled    = false;
+                        modalConfirm.textContent = 'Sí, cancelar';
+                    }
+                } catch (err) {
+                    console.error(err);
+                    cancelModal.classList.add('hidden');
+                    alert('Error de conexión al cancelar.');
+                    modalConfirm.disabled    = false;
+                    modalConfirm.textContent = 'Sí, cancelar';
                 }
             });
         }

@@ -2,6 +2,7 @@
 # COF-33: Backend – Servicio de gestión de órdenes
 from __future__ import annotations
 
+import datetime
 import decimal
 from typing import List, Optional
 
@@ -15,6 +16,7 @@ from app.models.domain import (
     Product,
     StoreSetting,
     GenericStatus,
+    Table,
 )
 
 
@@ -157,7 +159,6 @@ class OrderService:
                 .first()
             )
 
-            # Convertir a decimal y calcular subtotales
             base_price = decimal.Decimal(str(product.price))
             qty_decimal = decimal.Decimal(quantity)
             item_subtotal = base_price * qty_decimal
@@ -168,12 +169,10 @@ class OrderService:
             )
 
             if item:
-                # Si el item ya existe, incrementar la cantidad y recalcular subtotales
                 item.quantity += quantity
                 item.subtotal = item.base_price * decimal.Decimal(item.quantity)
                 item.historical_cost += historical_cost * qty_decimal
             else:
-                # Si no existe el item, se crea uno nuevo
                 item = OrderItem(
                     order_id=order_id,
                     product_id=product_id,
@@ -214,7 +213,6 @@ class OrderService:
             )
 
         try:
-            # Reponer stock
             product: Optional[Product] = db.session.get(Product, item.product_id)
             if product and product.stock is not None:
                 product.stock += item.quantity
@@ -262,11 +260,9 @@ class OrderService:
             )
 
         try:
-            # Ajustar stock
             if product.stock is not None:
                 product.stock -= quantity_diff
 
-            # Actualizar ítem
             item.quantity = new_quantity
             base_price = decimal.Decimal(str(item.base_price))
             item.subtotal = base_price * decimal.Decimal(new_quantity)
@@ -309,7 +305,12 @@ class OrderService:
     @staticmethod
     def cancel_order(order_id: str) -> Order:
         """
-        Cancela una orden en estado OPEN o PREPARING, devolviendo el stock.
+        Cancela una orden en estado OPEN o PREPARING:
+          1. Devuelve el stock de todos los ítems al inventario.
+          2. Libera la mesa asociada (pone table_id en None) para que
+             no quede bloqueada por una orden cancelada.
+          3. Cambia el estado de la orden a CANCELLED.
+
         No se puede cancelar una orden PAID o ya CANCELLED.
         """
         order = OrderService.get_order_by_id(order_id)
@@ -321,16 +322,23 @@ class OrderService:
             )
 
         try:
-            # Reponer stock de cada ítem
+            # 1. Reponer stock de cada ítem
             for item in order.order_items:
                 product: Optional[Product] = db.session.get(Product, item.product_id)
                 if product and product.stock is not None:
                     product.stock += item.quantity
 
-            import datetime
+            # 2. Liberar la mesa asociada
+            #    Desvinculamos la orden de la mesa (table_id = None) para que
+            #    el dashboard muestre la mesa como disponible inmediatamente.
+            #    No modificamos Table.status porque éste se gestiona aparte.
+            if order.table_id is not None:
+                order.table_id = None
 
+            # 3. Marcar la orden como cancelada
             order.status = OrderStatus.CANCELLED
-            order.closed_at = datetime.datetime.utcnow()
+            order.closed_at = datetime.datetime.now(datetime.timezone.utc)
+
             db.session.commit()
             return order
         except SQLAlchemyError as e:

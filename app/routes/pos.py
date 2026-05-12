@@ -17,7 +17,8 @@ pos_bp = Blueprint("pos", __name__, url_prefix="/pos")
 @cashier_required
 def dashboard():
     tables = db.session.query(Table).order_by(Table.name).all()
-    return render_template("pos/dashboard.html", tables=tables)
+    session = RegisterService.get_active_session(user_id=str(current_user.id))
+    return render_template("pos/dashboard.html", tables=tables, session=session)
 
 
 # --- Gestión de Caja (Apertura y Cierre) ---
@@ -61,44 +62,51 @@ def close_register_form():
             flash("No hay una sesión activa para cerrar.", "warning")
             return redirect(url_for("pos.dashboard"))
 
-        # Obtener todas las órdenes pagadas en esta sesión
+        # Advertir al cajero sobre órdenes OPEN pendientes antes de mostrar el formulario
+        pending_orders = (
+            db.session.query(Order)
+            .filter_by(register_session_id=session.id, status=OrderStatus.OPEN)
+            .all()
+        )
+
+        # Obtener todas las órdenes pagadas en esta sesión para el resumen
         ventas_turno = (
             db.session.query(Order)
             .filter_by(register_session_id=session.id, status=OrderStatus.PAID)
             .all()
         )
 
-        # Desglose de pagos por método
-        pagos_efectivo = decimal.Decimal("0.00")
-        pagos_tarjeta = decimal.Decimal("0.00")
+        pagos_efectivo     = decimal.Decimal("0.00")
+        pagos_tarjeta      = decimal.Decimal("0.00")
         pagos_transferencia = decimal.Decimal("0.00")
 
         for orden in ventas_turno:
-            # Se asume que cada orden tiene un pago asociado
             pago = db.session.query(Payment).filter_by(order_id=orden.id).first()
             if pago:
                 if pago.method == PaymentMethod.CASH:
-                    pagos_efectivo += orden.total
+                    pagos_efectivo += decimal.Decimal(str(orden.total))
                 elif pago.method == PaymentMethod.CARD:
-                    pagos_tarjeta += orden.total
+                    pagos_tarjeta += decimal.Decimal(str(orden.total))
                 elif pago.method == PaymentMethod.TRANSFER:
-                    pagos_transferencia += orden.total
+                    pagos_transferencia += decimal.Decimal(str(orden.total))
 
-        total_vendido = pagos_efectivo + pagos_tarjeta + pagos_transferencia
-        # El efectivo esperado es únicamente: Fondo Inicial + Ventas en Efectivo
-        efectivo_esperado = session.opening_amount + pagos_efectivo
+        total_vendido     = pagos_efectivo + pagos_tarjeta + pagos_transferencia
+        efectivo_esperado = decimal.Decimal(str(session.opening_amount)) + pagos_efectivo
 
         summary = {
-            "opening_amount": session.opening_amount,
-            "sales_total": total_vendido,
-            "cash_sales": pagos_efectivo,
-            "card_sales": pagos_tarjeta,
-            "transfer_sales": pagos_transferencia,
-            "expected_cash": efectivo_esperado,
+            "opening_amount":    session.opening_amount,
+            "sales_total":       total_vendido,
+            "cash_sales":        pagos_efectivo,
+            "card_sales":        pagos_tarjeta,
+            "transfer_sales":    pagos_transferencia,
+            "expected_cash":     efectivo_esperado,
         }
 
         return render_template(
-            "pos/register_close.html", session=session, summary=summary
+            "pos/register_close.html",
+            session=session,
+            summary=summary,
+            pending_orders=pending_orders,
         )
     except Exception as e:
         flash(f"Error al cargar resumen: {str(e)}", "danger")
@@ -123,6 +131,9 @@ def close_register():
         )
         flash("Caja cerrada exitosamente.", "success")
         return redirect(url_for("pos.dashboard"))
+    except ValueError as e:
+        flash(str(e), "warning")
+        return redirect(url_for("pos.close_register_form"))
     except Exception as e:
         flash(str(e), "danger")
         return redirect(url_for("pos.close_register_form"))
@@ -142,9 +153,9 @@ def create_order():
             return redirect(url_for("pos.dashboard"))
 
         data = request.get_json() or request.form.to_dict()
-        table_id = data.get("table_id")
+        table_id      = data.get("table_id")
         customer_name = data.get("customer_name")
-        notes = data.get("notes")
+        notes         = data.get("notes")
 
         order = OrderService.create_order(
             user_id=str(current_user.id),
@@ -173,12 +184,11 @@ def view_order(table_id):
             flash("Debe abrir caja antes de tomar pedidos.", "warning")
             return redirect(url_for("pos.open_register_form"))
 
-        # Interceptar 'takeaway' para evitar errores de tipo UUID en PostgreSQL
         db_table_id = None if table_id == "takeaway" else table_id
-        table_name = "Para llevar"
+        table_name  = "Para llevar"
 
         if db_table_id:
-            table_obj = db.session.get(Table, db_table_id)
+            table_obj  = db.session.get(Table, db_table_id)
             table_name = table_obj.name if table_obj else "Desconocida"
 
         order = (
@@ -217,9 +227,9 @@ def view_order(table_id):
 @cashier_required
 def add_item(order_id):
     try:
-        data = request.get_json() or request.form.to_dict()
+        data       = request.get_json() or request.form.to_dict()
         product_id = data.get("product_id")
-        quantity = int(data.get("quantity", 1))
+        quantity   = int(data.get("quantity", 1))
 
         item = OrderService.add_item_to_order(
             order_id=order_id, product_id=product_id, quantity=quantity
@@ -245,13 +255,50 @@ def remove_item(item_id):
 @cashier_required
 def update_item_quantity(item_id):
     try:
-        data = request.get_json() or request.form.to_dict()
+        data     = request.get_json() or request.form.to_dict()
         quantity = int(data.get("quantity", 1))
 
         OrderService.update_item_quantity(order_item_id=item_id, new_quantity=quantity)
         return jsonify({"status": "success"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+# --- Cancelación de Orden (Paso 1.2) ---
+@pos_bp.route("/order/<order_id>/cancel", methods=["POST"])
+@login_required
+@cashier_required
+def cancel_order(order_id):
+    """
+    Cancela una orden OPEN:
+      - Devuelve stock a todos los productos.
+      - Libera la mesa (table_id = None).
+      - Cambia estado a CANCELLED.
+    Responde JSON si la petición es AJAX, redirige si es form POST.
+    """
+    try:
+        order = OrderService.cancel_order(order_id=order_id)
+
+        if request.is_json:
+            return jsonify({
+                "status": "cancelled",
+                "order_id": str(order.id),
+                "redirect": url_for("pos.dashboard"),
+            }), 200
+
+        flash("Orden cancelada. El stock ha sido repuesto.", "success")
+        return redirect(url_for("pos.dashboard"))
+
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"error": str(e)}), 400
+        flash(str(e), "warning")
+        return redirect(url_for("pos.dashboard"))
+    except Exception as e:
+        if request.is_json:
+            return jsonify({"error": str(e)}), 500
+        flash(str(e), "danger")
+        return redirect(url_for("pos.dashboard"))
 
 
 # --- Flujo de Pago ---
@@ -281,9 +328,9 @@ def pay_order(order_id):
         else:
             data = request.form.to_dict()
 
-        payment_method = data.get("payment_method")
+        payment_method  = data.get("payment_method")
         amount_received = decimal.Decimal(str(data.get("amount_received", 0)))
-        reference = data.get("reference")
+        reference       = data.get("reference")
 
         result = PaymentService.process_payment(
             order_id=order_id,
@@ -293,22 +340,25 @@ def pay_order(order_id):
         )
 
         if request.is_json:
-            return jsonify(
-                {
-                    "status": "success",
-                    "order_id": order_id,
-                    "change": str(result["change"]),
-                }
-            ), 200
+            return jsonify({
+                "status":   "success",
+                "order_id": order_id,
+                "change":   str(result["change"]),
+            }), 200
         else:
-            flash(f"Pago procesado. Cambio: {result['change']}", "success")
+            flash(f"Pago procesado. Cambio: ${result['change']:,.2f}", "success")
             return redirect(url_for("pos.receipt", order_id=order_id))
-    except Exception as e:
+
+    except ValueError as e:
         if request.is_json:
             return jsonify({"error": str(e)}), 400
-        else:
-            flash(str(e), "danger")
-            return redirect(url_for("pos.payment_form", order_id=order_id))
+        flash(str(e), "warning")
+        return redirect(url_for("pos.payment_form", order_id=order_id))
+    except Exception as e:
+        if request.is_json:
+            return jsonify({"error": str(e)}), 500
+        flash(str(e), "danger")
+        return redirect(url_for("pos.payment_form", order_id=order_id))
 
 
 @pos_bp.route("/receipt/<order_id>", methods=["GET"])

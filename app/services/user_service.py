@@ -109,11 +109,11 @@ class UserService:
         ]
         try:
             for field in updatable_fields:
-                if field in data:
-                    setattr(user, field, data[field])
+                if field in data and data[field] != '':
+                    setattr(user, field, data[field] or None)
 
             # Actualizar username con verificación de unicidad
-            if "username" in data:
+            if "username" in data and data["username"].strip():
                 new_username = data["username"].strip()
                 existing = UserService.get_user_by_username(new_username)
                 if existing and str(existing.id) != str(user_id):
@@ -123,20 +123,27 @@ class UserService:
                 user.username = new_username
 
             # Actualizar rol
-            if "role" in data:
+            if "role" in data and data["role"]:
                 role_raw = data["role"]
                 user.role = (
                     UserRole(role_raw) if isinstance(role_raw, str) else role_raw
                 )
 
             # Actualizar status
-            if "status" in data:
+            if "status" in data and data["status"]:
                 status_raw = data["status"]
                 user.status = (
                     UserStatus(status_raw)
                     if isinstance(status_raw, str)
                     else status_raw
                 )
+
+            # Cambio de contraseña opcional: solo si se envió un valor no vacío
+            new_password = data.get("password", "").strip()
+            if new_password:
+                if len(new_password) < 6:
+                    raise ValueError("La contraseña debe tener al menos 6 caracteres.")
+                user.set_password(new_password)
 
             db.session.commit()
             return user

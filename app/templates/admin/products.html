@@ -1,61 +1,173 @@
-{% extends "layout/base.html" %}
+{% extends "layout/admin_base.html" %}
 
-{% block title %}Productos - Admin{% endblock %}
+{% block title %}Productos – Admin CoffeePOS{% endblock %}
 
-{% block content %}
-<main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="font-headline-lg text-headline-lg text-primary">Productos</h1>
-            <p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Gestión de Catálogo</p>
-        </div>
-        <a href="{{ url_for('admin.new_product') if 'admin.new_product' in request.endpoint else '#' }}" class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
-            <span class="material-symbols-outlined">add</span>
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">Productos</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Gestión de Catálogo</p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ── Barra de acciones ───────────────────────────────────────────────────── #}
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+        <span class="bg-surface-container px-4 py-2 rounded-full font-label-md text-label-md text-on-surface-variant">
+            {{ products | length }} producto(s)
+        </span>
+    </div>
+    <div class="flex gap-3">
+        <a href="{{ url_for('admin.import_products_form') }}"
+           class="min-h-[44px] px-5 rounded-xl font-title-md text-title-md text-primary
+                  bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">upload_file</span>
+            Importar CSV
+        </a>
+        <a href="{{ url_for('admin.new_product') }}"
+           class="min-h-[44px] px-5 rounded-xl font-title-md text-title-md text-on-primary
+                  bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
+            <span class="material-symbols-outlined text-lg">add</span>
             Nuevo Producto
         </a>
     </div>
+</div>
 
-    <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/15 overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[800px]">
+{# ── Tabla de productos ──────────────────────────────────────────────────── #}
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[800px]">
             <thead>
-                <tr class="border-b border-outline-variant/15 text-on-surface-variant font-title-md text-title-md">
-                    <th class="py-4 px-4">Nombre</th>
-                    <th class="py-4 px-4">Categoría</th>
-                    <th class="py-4 px-4">Precio</th>
-                    <th class="py-4 px-4">Costo</th>
-                    <th class="py-4 px-4">Stock</th>
-                    <th class="py-4 px-4">Estado</th>
-                    <th class="py-4 px-4 text-right">Acciones</th>
+                <tr class="border-b border-outline-variant/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                    <th class="py-3 px-5">Nombre</th>
+                    <th class="py-3 px-4">Categoría</th>
+                    <th class="py-3 px-4">Precio</th>
+                    <th class="py-3 px-4">Costo</th>
+                    <th class="py-3 px-4">Stock</th>
+                    <th class="py-3 px-4">Estado</th>
+                    <th class="py-3 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in products %}
-                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors text-on-surface font-body-lg text-body-lg">
-                    <td class="py-4 px-4 font-medium">{{ p.name }}</td>
-                    <td class="py-4 px-4">{{ p.category.name if p.category else 'N/A' }}</td>
-                    <td class="py-4 px-4">${{ "{:,.2f}".format(p.price) }}</td>
-                    <td class="py-4 px-4">${{ "{:,.2f}".format(p.unit_cost) }}</td>
-                    <td class="py-4 px-4">{{ p.stock }}</td>
+                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors
+                           {% if p.status and p.status.value == 'archived' %}opacity-50{% endif %}">
+                    <td class="py-4 px-5 font-title-md text-title-md text-on-surface">
+                        {{ p.name }}
+                        {% if p.stock is not none and p.min_stock is not none and p.stock <= p.min_stock and p.stock >= 0 %}
+                        <span class="ml-2 text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">
+                            Stock bajo
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface-variant">
+                        {{ p.category.name if p.category else '—' }}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
+                        ${{ "{:,.2f}".format(p.price) }}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface-variant">
+                        ${{ "{:,.2f}".format(p.unit_cost or 0) }}
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg
+                               {% if p.stock is not none and p.stock <= 0 %}text-error font-semibold{% else %}text-on-surface{% endif %}">
+                        {{ p.stock if p.stock is not none else '∞' }}
+                    </td>
                     <td class="py-4 px-4">
                         {% if p.status and p.status.value == 'active' %}
                         <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">Activo</span>
+                        {% elif p.status and p.status.value == 'archived' %}
+                        <span class="bg-on-surface/10 text-on-surface-variant px-3 py-1 rounded-full text-sm font-medium">Archivado</span>
                         {% else %}
                         <span class="bg-error/10 text-error px-3 py-1 rounded-full text-sm font-medium">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td class="py-4 px-4 text-right">
-                        <button class="text-primary hover:text-primary-container p-2 rounded-full hover:bg-surface-container transition-colors inline-block">
-                            <span class="material-symbols-outlined text-sm">edit</span>
-                        </button>
+                    <td class="py-4 px-4">
+                        <div class="flex items-center justify-end gap-1">
+                            {# Editar #}
+                            <a href="{{ url_for('admin.edit_product', id=p.id) }}"
+                               title="Editar"
+                               class="p-2 rounded-full text-primary hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-base">edit</span>
+                            </a>
+                            {# Archivar #}
+                            {% if p.status and p.status.value != 'archived' %}
+                            <button type="button"
+                                    title="Archivar producto"
+                                    data-delete-url="{{ url_for('admin.delete_product', id=p.id) }}"
+                                    data-product-name="{{ p.name }}"
+                                    class="btn-delete p-2 rounded-full text-error hover:bg-error/10 transition-colors">
+                                <span class="material-symbols-outlined text-base">archive</span>
+                            </button>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="py-8 text-center text-on-surface-variant font-body-lg">No hay productos registrados.</td>
+                    <td colspan="7" class="py-14 text-center">
+                        <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-5xl opacity-40">inventory_2</span>
+                            <p class="font-body-lg">No hay productos registrados.</p>
+                            <a href="{{ url_for('admin.new_product') }}"
+                               class="text-primary font-title-md text-title-md hover:underline">
+                                Crear el primero
+                            </a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</main>
+</div>
+
+{# ── Modal de confirmación de archivo ─────────────────────────────────────── #}
+<div id="delete-modal"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4 flex flex-col gap-5">
+        <div class="flex flex-col items-center gap-3 text-center">
+            <span class="material-symbols-outlined text-error text-5xl"
+                  style="font-variation-settings:'FILL' 1;">archive</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">¿Archivar producto?</h3>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">
+                El producto <strong id="delete-product-name"></strong> será archivado
+                y no aparecerá en el catálogo del POS.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button id="modal-cancel-delete"
+                    class="flex-1 py-3 rounded-xl border border-outline-variant text-on-surface
+                           font-title-md text-title-md hover:bg-surface-container transition-colors">
+                Cancelar
+            </button>
+            <form id="delete-form" method="POST" class="flex-1">
+                <button type="submit"
+                        class="w-full py-3 rounded-xl bg-error text-on-error
+                               font-title-md text-title-md hover:opacity-90 transition-opacity">
+                    Archivar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modal        = document.getElementById('delete-modal');
+    const deleteForm   = document.getElementById('delete-form');
+    const productName  = document.getElementById('delete-product-name');
+    const cancelDelete = document.getElementById('modal-cancel-delete');
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            deleteForm.action = btn.dataset.deleteUrl;
+            productName.textContent = btn.dataset.productName;
+            modal.classList.remove('hidden');
+        });
+    });
+
+    cancelDelete.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+</script>
 {% endblock %}

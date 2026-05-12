@@ -4,6 +4,7 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 from typing import Optional
+
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from app.extensions import db
@@ -16,6 +17,7 @@ from app.models.domain import (
     RegisterSession,
     RegisterStatus,
 )
+from app.services.cash_movement_service import CashMovementService
 
 
 class RegisterService:
@@ -26,7 +28,7 @@ class RegisterService:
       - La tabla register_sessions usa opened_by / closed_by (FK a users.id),
         NO user_id.
       - opening_amount es NOT NULL.
-      - Todo flujo de dinero se registra en cash_movements con MovementType.
+      - Todo flujo de dinero se delega a CashMovementService (centralización contable).
       - Se opera SIEMPRE con Decimal para valores financieros.
     """
 
@@ -100,7 +102,7 @@ class RegisterService:
         )
 
         withdrawals = sum(
-            Decimal(str(m.amount))
+            abs(Decimal(str(m.amount)))
             for m in movements
             if m.movement_type == MovementType.WITHDRAWAL
         )
@@ -152,10 +154,10 @@ class RegisterService:
         Abre una nueva sesión de caja.
 
         Valida:
-          - No haya otra sesión abierta por otro usuario del mismo rol.
+          - No haya otra sesión abierta por este usuario.
           - El monto de apertura sea >= 0.
 
-        Registra automáticamente un movimiento OPENING en cash_movements.
+        Delega el movimiento OPENING a CashMovementService (centralización contable).
         """
         opening_amount = Decimal(str(opening_amount))
         if opening_amount < Decimal("0"):
@@ -163,7 +165,7 @@ class RegisterService:
 
         if RegisterService.get_active_session(user_id):
             raise ValueError(
-                "El usuario ya tiene una sesión de caja abierta."
+                "El usuario ya tiene una sesión de caja abierta. "
                 "Cierre la sesión activa antes de abrir una nueva."
             )
 
@@ -177,24 +179,25 @@ class RegisterService:
             db.session.add(session)
             db.session.flush()  # obtener session.id sin commit
 
-            # Registrar movimiento de apertura
-            movement = CashMovement(
-                register_session_id=str(session.id),
+            # Delegar el registro del movimiento de apertura a CashMovementService.
+            # _execute_movement hace su propio commit; aquí flush es suficiente
+            # para asegurar el orden; usamos add+flush para que el session.id exista.
+            CashMovementService.record_opening(
+                session_id=str(session.id),
                 user_id=user_id,
-                movement_type=MovementType.OPENING,
                 amount=opening_amount,
-                balance_before=Decimal("0"),
-                balance_after=opening_amount,
-                description="Apertura de caja",
             )
-            db.session.add(movement)
-            db.session.commit()
+            # record_opening ya hace commit internamente; la sesión ya quedó guardada.
             return session
+
         except IntegrityError as e:
             db.session.rollback()
             raise ValueError(
-                f"Error de integridad: Violacón de sesión única activa. - {e}"
+                f"Error de integridad: Violación de sesión única activa. - {e}"
             ) from e
+        except (ValueError, RuntimeError):
+            db.session.rollback()
+            raise
         except SQLAlchemyError as e:
             db.session.rollback()
             raise RuntimeError(f"Error al abrir la caja: {e}") from e
@@ -219,8 +222,8 @@ class RegisterService:
           - expected_cash: efectivo esperado según movimientos.
           - difference: closing_amount - expected_cash (positivo = sobrante).
 
-        Registra un movimiento CLOSING en cash_movements.
-        Valida que no existan transacciones pendientes o huérfanas en estado OPEN.
+        Delega el movimiento CLOSING a CashMovementService (centralización contable).
+        Valida que no existan órdenes en estado OPEN asociadas a la sesión.
         """
         closing_amount = Decimal(str(closing_amount))
         if closing_amount < Decimal("0"):
@@ -231,65 +234,54 @@ class RegisterService:
             raise ValueError("Sesión de caja no encontrada.")
         if session.status == RegisterStatus.CLOSED:
             raise ValueError("La sesión de caja ya está cerrada.")
-        # Comparar como string para evitar error de tipos
         if str(session.opened_by) != str(user_id):
             raise ValueError("No puedes cerrar la caja de otro usuario.")
 
-        # # Prevenir cierre si existen órdenes sin finalizar asociadas a esta sesión
-        # pending_orders_count = Order.query.filter_by(
-        #     register_session_id=session.id, status=OrderStatus.OPEN
-        # ).count()
-
-
-        # if pending_orders_count > 0:
-        #     raise ValueError(
-        #         f"No se puede cerrar la caja. Hay {pending_orders_count} órdenes pendientes."
-        #     )
+        # Prevenir cierre si existen órdenes sin finalizar asociadas a esta sesión
+        pending_orders_count = (
+            db.session.query(Order)
+            .filter_by(register_session_id=session.id, status=OrderStatus.OPEN)
+            .count()
+        )
+        if pending_orders_count > 0:
+            raise ValueError(
+                f"No se puede cerrar la caja. "
+                f"Hay {pending_orders_count} orden(es) pendiente(s). "
+                f"Cancélalas o cóbralas antes de cerrar."
+            )
 
         # Calcular expected_cash desde el resumen
         summary = RegisterService.get_session_summary(session_id)
         expected = summary["expected_cash"]
-        difference = closing_amount - expected
+        difference = (closing_amount - expected).quantize(Decimal("0.01"))
 
         try:
-            # Balance actual (último movimiento)
-            last_movement: Optional[CashMovement] = (
-                db.session.query(CashMovement)
-                .filter_by(register_session_id=session_id)
-                .order_by(CashMovement.created_at.desc())
-                .first()
-            )
-            balance_before = (
-                Decimal(str(last_movement.balance_after))
-                if last_movement
-                else Decimal("0")
-            )
-
-            movement = CashMovement(
-                register_session_id=session_id,
+            # ORDEN CRÍTICO:
+            # 1. Registrar el movimiento CLOSING primero, mientras la sesión sigue OPEN.
+            #    CashMovementService._validate_session_open requiere status=OPEN.
+            #    record_closing() hace commit internamente → el movimiento queda guardado.
+            CashMovementService.record_closing(
+                session_id=session_id,
                 user_id=user_id,
-                movement_type=MovementType.CLOSING,
                 amount=closing_amount,
-                balance_before=balance_before,
-                balance_after=closing_amount,
-                description=(
-                    f"Cierre de caja. "
-                    f"Real: {closing_amount} | Esperado: {expected} | "
-                    f"Diferencia: {difference}"
-                ),
+                expected=expected,
             )
-            db.session.add(movement)
 
-            # Actualizar estado de la sesión
-            session.closed_by = user_id
+            # 2. Refrescar el objeto sesión (el commit de record_closing lo dejó en
+            #    estado limpio) y actualizar los campos de cierre.
+            session = RegisterService.get_session_by_id(session_id)
+            session.closed_by      = user_id
             session.closing_amount = closing_amount
-            session.expected_cash = expected
-            session.difference = difference.quantize(Decimal("0.01"))
-            session.status = RegisterStatus.CLOSED
-            session.closed_at = datetime.datetime.now(datetime.timezone.utc)
-
+            session.expected_amount = expected       # columna correcta del modelo
+            session.difference     = difference
+            session.status         = RegisterStatus.CLOSED
+            session.closed_at      = datetime.datetime.now(datetime.timezone.utc)
             db.session.commit()
             return session
+
+        except (ValueError, RuntimeError):
+            db.session.rollback()
+            raise
         except SQLAlchemyError as e:
             db.session.rollback()
             raise RuntimeError(f"Error al cerrar la caja: {e}") from e

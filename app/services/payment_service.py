@@ -6,9 +6,10 @@ from typing import List, Optional
 from sqlalchemy.exc import SQLAlchemyError
 from app.extensions import db
 from app.models.domain import (
-    CashMovement, MovementType, Order, OrderStatus,
+    Order, OrderStatus,
     Payment, PaymentMethod, StoreSetting,
 )
+from app.services.cash_movement_service import CashMovementService
 
 
 class PaymentService:
@@ -33,7 +34,8 @@ class PaymentService:
         Procesa el pago de una orden y la cierra.
         Solo órdenes con status OPEN pueden pagarse.
         amount_received debe ser >= total de la orden.
-        Si el método es CASH registra un movimiento en cash_movements.
+        Si el método es CASH delega el registro del ingreso a CashMovementService
+        (centralización contable).
         """
         amount_received = decimal.Decimal(str(amount_received))
 
@@ -67,23 +69,36 @@ class PaymentService:
                 register_session_id=order.register_session_id,
                 method=method,
                 amount_paid=order_total,
+                change=change,
                 reference=reference,
             )
             db.session.add(payment)
 
             order.status = OrderStatus.PAID
             order.closed_at = datetime.now(timezone.utc)
+            db.session.flush()
 
+            # Delegar el ingreso de efectivo a CashMovementService.
+            # Solo se registra movimiento para pagos en CASH; tarjeta/transferencia
+            # no afectan el saldo físico de la caja.
             if method == PaymentMethod.CASH and order.register_session_id:
+                # record_deposit hace su propio commit. Pasamos la referencia
+                # de la orden para trazabilidad antirrobo (reference_type='order').
                 PaymentService._record_cash_income(
                     session_id=str(order.register_session_id),
                     user_id=str(order.user_id),
                     amount=order_total,
                     order_id=str(order.id),
                 )
+            else:
+                # Para métodos no-efectivo solo necesitamos el commit del pago/orden.
+                db.session.commit()
 
-            db.session.commit()
             return {"payment": payment, "order": order, "change": change}
+
+        except (ValueError, RuntimeError):
+            db.session.rollback()
+            raise
         except SQLAlchemyError as e:
             db.session.rollback()
             raise RuntimeError(f"Error al procesar el pago: {e}") from e
@@ -116,7 +131,6 @@ class PaymentService:
             for item in order.order_items
         ]
 
-        # Convertir la fecha al formato correcto
         utc_time_created_at = order.created_at.replace(tzinfo=timezone.utc)
         formatted_date_created_at = utc_time_created_at.strftime("%d-%m-%Y %H:%M")
 
@@ -163,26 +177,32 @@ class PaymentService:
         session_id: str, user_id: str,
         amount: decimal.Decimal, order_id: str,
     ) -> None:
-        """Registra ingreso de efectivo en cash_movements (sin commit propio)."""
-        amount = decimal.Decimal(str(amount))
-        last = (
-            db.session.query(CashMovement)
-            .filter_by(register_session_id=session_id)
-            .order_by(CashMovement.created_at.desc())
-            .first()
-        )
-        balance_before = decimal.Decimal(str(last.balance_after)) if last else decimal.Decimal("0")
-        balance_after  = balance_before + amount
+        """
+        Registra ingreso de efectivo por venta delegando a CashMovementService.record_deposit.
+        El método calcula el balance automáticamente y hace commit.
+        Se etiqueta con reference_type='order' para excluirlo del cálculo de
+        depósitos manuales en get_session_summary().
 
-        movement = CashMovement(
-            register_session_id=session_id,
+        NOTA: CashMovementService.record_deposit hace su propio commit, lo que
+        también persiste el Payment y la Order actualizados en el flush previo.
+        """
+        amount = decimal.Decimal(str(amount))
+        description = f"Ingreso por venta – Orden {order_id[:8]}"
+
+        # record_deposit valida monto > 0, calcula balance y hace commit.
+        movement = CashMovementService.record_deposit(
+            session_id=session_id,
             user_id=user_id,
-            movement_type=MovementType.DEPOSIT,
             amount=amount,
-            balance_before=balance_before,
-            balance_after=balance_after,
-            reference_type="order",
-            reference_id=order_id,
-            description=f"Ingreso por venta – Orden {order_id[:8]}",
+            description=description,
         )
-        db.session.add(movement)
+
+        # Etiquetar con referencia de la orden para trazabilidad antirrobo.
+        # Como record_deposit ya hizo commit, necesitamos un update posterior.
+        try:
+            movement.reference_type = "order"
+            movement.reference_id = order_id
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise RuntimeError(f"Error al etiquetar movimiento de venta: {e}") from e

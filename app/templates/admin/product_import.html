@@ -1,0 +1,199 @@
+{% extends "layout/admin_base.html" %}
+
+{% block title %}Importar Productos CSV – Admin CoffeePOS{% endblock %}
+
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">Importar Productos</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Carga masiva desde archivo CSV</p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+<div class="max-w-3xl flex flex-col gap-6">
+
+    {# ── Instrucciones ──────────────────────────────────────────────────── #}
+    <div class="bg-tertiary-container/20 border border-tertiary/20 rounded-2xl p-5 flex gap-4">
+        <span class="material-symbols-outlined text-tertiary text-2xl flex-shrink-0 mt-0.5"
+              style="font-variation-settings:'FILL' 1;">info</span>
+        <div class="flex flex-col gap-2">
+            <p class="font-title-md text-title-md text-on-surface">Formato requerido del CSV</p>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">
+                El archivo debe tener cabeceras en la primera fila. Columnas obligatorias:
+            </p>
+            <div class="flex flex-wrap gap-2 mt-1">
+                {% for col in ['name', 'price', 'stock'] %}
+                <code class="bg-surface-container text-primary px-3 py-1 rounded-lg font-label-md text-label-md font-bold">{{ col }}</code>
+                {% endfor %}
+            </div>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Columnas opcionales:</p>
+            <div class="flex flex-wrap gap-2">
+                {% for col in ['category', 'sku', 'description', 'unit_cost', 'min_stock'] %}
+                <code class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-lg font-label-md text-label-md">{{ col }}</code>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# ── Formulario de carga ─────────────────────────────────────────────── #}
+    <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 shadow-sm border border-outline-variant/15">
+        <form action="{{ url_for('admin.import_products') }}"
+              method="POST"
+              enctype="multipart/form-data"
+              class="flex flex-col gap-6">
+
+            {# Zona de drop ─ drag & drop visual #}
+            <div id="drop-zone"
+                 class="border-2 border-dashed border-outline-variant rounded-2xl p-10
+                        flex flex-col items-center justify-center gap-4 cursor-pointer
+                        hover:border-primary hover:bg-primary/5 transition-all text-center
+                        relative group">
+                <span class="material-symbols-outlined text-5xl text-on-surface-variant group-hover:text-primary transition-colors"
+                      style="font-variation-settings:'FILL' 1;">upload_file</span>
+                <div>
+                    <p class="font-title-lg text-title-lg text-on-surface">
+                        Arrastra tu CSV aquí
+                    </p>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">
+                        o <span class="text-primary font-medium">haz clic para seleccionar</span>
+                    </p>
+                </div>
+                <p id="file-name" class="font-label-md text-label-md text-primary hidden"></p>
+                <input id="csv_file" name="csv_file" type="file" accept=".csv"
+                       class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                       required />
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-outline-variant/15">
+                <a href="{{ url_for('admin.products') }}"
+                   class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-on-surface-variant
+                          hover:bg-surface-container transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">arrow_back</span>
+                    Cancelar
+                </a>
+                <button type="submit" id="btn-import"
+                        class="min-h-[48px] px-8 rounded-xl font-title-md text-title-md text-on-primary
+                               bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-base">cloud_upload</span>
+                    Importar Productos
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {# ── Resultado de importación ─────────────────────────────────────────── #}
+    {% if import_result %}
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 overflow-hidden">
+        <div class="px-6 py-4 border-b border-outline-variant/15 flex items-center justify-between">
+            <h2 class="font-title-lg text-title-lg text-on-surface">Resultado de la Importación</h2>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-primary inline-block"></span>
+                    <span class="font-label-md text-label-md text-on-surface-variant">
+                        {{ import_result.imported }} importados
+                    </span>
+                </div>
+                {% if import_result.skipped %}
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-error inline-block"></span>
+                    <span class="font-label-md text-label-md text-on-surface-variant">
+                        {{ import_result.skipped }} ignorados
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if import_result.errors %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left min-w-[600px]">
+                <thead>
+                    <tr class="border-b border-outline-variant/10 text-on-surface-variant
+                               font-label-md text-label-md uppercase tracking-wider">
+                        <th class="py-3 px-5">Fila</th>
+                        <th class="py-3 px-4">Campo</th>
+                        <th class="py-3 px-4">Valor</th>
+                        <th class="py-3 px-4">Motivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for err in import_result.errors %}
+                    <tr class="border-b border-outline-variant/10
+                               {% if err.get('warning') %}bg-secondary-container/10{% else %}bg-error-container/10{% endif %}">
+                        <td class="py-3 px-5 font-title-md text-title-md">
+                            {% if err.get('warning') %}
+                            <span class="material-symbols-outlined text-sm text-secondary align-middle mr-1"
+                                  style="font-variation-settings:'FILL' 1;">warning</span>
+                            {% else %}
+                            <span class="material-symbols-outlined text-sm text-error align-middle mr-1"
+                                  style="font-variation-settings:'FILL' 1;">error</span>
+                            {% endif %}
+                            {{ err.row }}
+                        </td>
+                        <td class="py-3 px-4 font-body-lg text-on-surface-variant">
+                            <code class="bg-surface-container px-2 py-0.5 rounded text-sm">{{ err.field }}</code>
+                        </td>
+                        <td class="py-3 px-4 font-body-lg text-on-surface italic">{{ err.value or '—' }}</td>
+                        <td class="py-3 px-4 font-body-lg text-on-surface-variant">{{ err.reason }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-8 flex items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-3xl"
+                  style="font-variation-settings:'FILL' 1;">check_circle</span>
+            <p class="font-title-md text-title-md text-on-surface">
+                Todos los productos fueron importados sin errores.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    // Drag & Drop visual feedback + nombre de archivo
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('csv_file');
+    const fileName  = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            fileName.textContent = '✓ ' + fileInput.files[0].name;
+            fileName.classList.remove('hidden');
+            dropZone.classList.add('border-primary', 'bg-primary/5');
+        }
+    });
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('border-primary', 'bg-primary/5');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        if (!fileInput.files.length) {
+            dropZone.classList.remove('border-primary', 'bg-primary/5');
+        }
+    });
+
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            fileName.textContent = '✓ ' + e.dataTransfer.files[0].name;
+            fileName.classList.remove('hidden');
+        }
+    });
+
+    // Feedback de carga en el botón submit
+    document.querySelector('form').addEventListener('submit', () => {
+        const btn = document.getElementById('btn-import');
+        btn.disabled    = true;
+        btn.innerHTML   = '<span class="material-symbols-outlined text-base animate-spin">progress_activity</span> Procesando...';
+    });
+</script>
+{% endblock %}

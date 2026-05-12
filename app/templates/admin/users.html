@@ -1,55 +1,165 @@
-{% extends "layout/base.html" %}
+{% extends "layout/admin_base.html" %}
 
-{% block title %}Usuarios - Admin{% endblock %}
+{% block title %}Usuarios – Admin CoffeePOS{% endblock %}
 
-{% block content %}
-<main class="flex-1 w-full max-w-screen-2xl mx-auto p-4 md:p-8 flex flex-col gap-6">
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="font-headline-lg text-headline-lg text-primary">Usuarios</h1>
-            <p class="font-title-lg text-title-lg text-on-surface-variant mt-2">Gestión de Personal</p>
-        </div>
-        <a href="{{ url_for('admin.create_user') if 'admin.create_user' in request.endpoint else '#' }}" class="min-h-[48px] px-6 rounded-xl font-title-md text-title-md text-on-primary bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
-            <span class="material-symbols-outlined">person_add</span>
-            Nuevo Cajero/Admin
-        </a>
-    </div>
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">Usuarios</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">Gestión de Personal</p>
+</div>
+{% endblock %}
 
-    <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-outline-variant/15 overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[600px]">
+{% block admin_content %}
+
+{# ── Barra de acciones ───────────────────────────────────────────────────── #}
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <span class="bg-surface-container px-4 py-2 rounded-full font-label-md text-label-md text-on-surface-variant">
+        {{ users | length }} usuario(s)
+    </span>
+    <a href="{{ url_for('admin.new_user') }}"
+       class="min-h-[44px] px-5 rounded-xl font-title-md text-title-md text-on-primary
+              bg-primary hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
+        <span class="material-symbols-outlined text-lg">person_add</span>
+        Nuevo Usuario
+    </a>
+</div>
+
+{# ── Tabla de usuarios ───────────────────────────────────────────────────── #}
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left min-w-[640px]">
             <thead>
-                <tr class="border-b border-outline-variant/15 text-on-surface-variant font-title-md text-title-md">
-                    <th class="py-4 px-4">Username</th>
-                    <th class="py-4 px-4">Rol</th>
-                    <th class="py-4 px-4">Estado</th>
-                    <th class="py-4 px-4 text-right">Acciones</th>
+                <tr class="border-b border-outline-variant/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                    <th class="py-3 px-5">Usuario</th>
+                    <th class="py-3 px-4">Nombre</th>
+                    <th class="py-3 px-4">Rol</th>
+                    <th class="py-3 px-4">Estado</th>
+                    <th class="py-3 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for u in users %}
-                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors text-on-surface font-body-lg text-body-lg">
-                    <td class="py-4 px-4 font-medium">{{ u.username }}</td>
-                    <td class="py-4 px-4 capitalize">{{ u.role.value if u.role else u.role }}</td>
+                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors
+                           {% if u.status and u.status.value != 'active' %}opacity-60{% endif %}">
+                    <td class="py-4 px-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span class="material-symbols-outlined text-primary text-base">person</span>
+                            </div>
+                            <div>
+                                <p class="font-title-md text-title-md text-on-surface">{{ u.username }}</p>
+                                <p class="font-label-md text-label-md text-on-surface-variant">{{ u.email or '—' }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface-variant">
+                        {{ ((u.first_name or '') + ' ' + (u.last_name or '')).strip() or '—' }}
+                    </td>
+                    <td class="py-4 px-4">
+                        {% if u.role and u.role.value == 'admin' %}
+                        <span class="bg-tertiary-container text-inverse-on-surface px-3 py-1 rounded-full text-sm font-medium">
+                            Administrador
+                        </span>
+                        {% else %}
+                        <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-sm font-medium">
+                            Cajero
+                        </span>
+                        {% endif %}
+                    </td>
                     <td class="py-4 px-4">
                         {% if u.status and u.status.value == 'active' %}
                         <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">Activo</span>
+                        {% elif u.status and u.status.value == 'suspended' %}
+                        <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-sm font-medium">Suspendido</span>
                         {% else %}
                         <span class="bg-error/10 text-error px-3 py-1 rounded-full text-sm font-medium">Inactivo</span>
                         {% endif %}
                     </td>
-                    <td class="py-4 px-4 text-right">
-                        <button class="text-primary hover:text-primary-container p-2 rounded-full hover:bg-surface-container transition-colors inline-block">
-                            <span class="material-symbols-outlined text-sm">edit</span>
-                        </button>
+                    <td class="py-4 px-4">
+                        <div class="flex items-center justify-end gap-1">
+                            {# Editar #}
+                            <a href="{{ url_for('admin.edit_user', id=u.id) }}"
+                               title="Editar usuario"
+                               class="p-2 rounded-full text-primary hover:bg-primary/10 transition-colors">
+                                <span class="material-symbols-outlined text-base">edit</span>
+                            </a>
+                            {# Desactivar (solo si no es el usuario actual y está activo) #}
+                            {% if u.status and u.status.value == 'active' and u.id | string != current_user.id | string %}
+                            <button type="button"
+                                    title="Desactivar usuario"
+                                    data-deactivate-url="{{ url_for('admin.deactivate_user', id=u.id) }}"
+                                    data-username="{{ u.username }}"
+                                    class="btn-deactivate p-2 rounded-full text-error hover:bg-error/10 transition-colors">
+                                <span class="material-symbols-outlined text-base">person_off</span>
+                            </button>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="py-8 text-center text-on-surface-variant font-body-lg">No hay usuarios registrados.</td>
+                    <td colspan="5" class="py-14 text-center">
+                        <div class="flex flex-col items-center gap-3 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-5xl opacity-40">group</span>
+                            <p class="font-body-lg">No hay usuarios registrados.</p>
+                            <a href="{{ url_for('admin.new_user') }}"
+                               class="text-primary font-title-md text-title-md hover:underline">
+                                Crear el primero
+                            </a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</main>
+</div>
+
+{# ── Modal de confirmación de desactivación ────────────────────────────────── #}
+<div id="deactivate-modal"
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm hidden">
+    <div class="bg-surface-container-lowest rounded-2xl p-8 shadow-2xl max-w-sm w-full mx-4 flex flex-col gap-5">
+        <div class="flex flex-col items-center gap-3 text-center">
+            <span class="material-symbols-outlined text-error text-5xl"
+                  style="font-variation-settings:'FILL' 1;">person_off</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">¿Desactivar usuario?</h3>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">
+                <strong id="deactivate-username"></strong> perderá acceso al sistema.
+                Puedes reactivarlo desde Editar.
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button id="modal-cancel-deactivate"
+                    class="flex-1 py-3 rounded-xl border border-outline-variant text-on-surface
+                           font-title-md text-title-md hover:bg-surface-container transition-colors">
+                Cancelar
+            </button>
+            <form id="deactivate-form" method="POST" class="flex-1">
+                <button type="submit"
+                        class="w-full py-3 rounded-xl bg-error text-on-error
+                               font-title-md text-title-md hover:opacity-90 transition-opacity">
+                    Desactivar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dModal   = document.getElementById('deactivate-modal');
+    const dForm    = document.getElementById('deactivate-form');
+    const dName    = document.getElementById('deactivate-username');
+    const dCancel  = document.getElementById('modal-cancel-deactivate');
+
+    document.querySelectorAll('.btn-deactivate').forEach(btn => {
+        btn.addEventListener('click', () => {
+            dForm.action  = btn.dataset.deactivateUrl;
+            dName.textContent = btn.dataset.username;
+            dModal.classList.remove('hidden');
+        });
+    });
+
+    dCancel.addEventListener('click', () => dModal.classList.add('hidden'));
+    dModal.addEventListener('click', e => { if (e.target === dModal) dModal.classList.add('hidden'); });
+</script>
 {% endblock %}

@@ -19,12 +19,6 @@
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             Panel Principal
         </a>
-        <!-- Mesas -->
-        <a class="text-on-surface-variant mx-2 my-1 px-4 py-3 flex items-center gap-4 hover:bg-surface-container-high rounded-lg transition-all"
-            href="{{ url_for('pos.dashboard') }}">
-            <span class="material-symbols-outlined">deck</span>
-            Mesas
-        </a>
     </div>
 
     <div class="px-4 mt-auto space-y-3">
@@ -170,7 +164,7 @@
                 <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{ table.capacity }} personas · Libre</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{ table.capacity }} personas · Disponible</p>
                 </div>
             </a>
             {% endif %}

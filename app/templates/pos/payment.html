@@ -36,9 +36,17 @@
                     {% endfor %}
                 </div>
 
-                <div class="mt-auto pt-4 flex flex-col gap-2 border-t border-outline-variant/15">
+                <div class="mt-auto pt-4 flex flex-col border-t border-outline-variant/15">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-body-lg text-body-lg text-on-surface-variant">Subtotal</span>
+                        <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.subtotal) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-body-lg text-body-lg text-on-surface-variant">IVA (19%)</span>
+                        <span class="font-body-lg text-primary">${{ '{:,.2f}'.format(order.tax) }}</span>
+                    </div>
                     <div class="flex justify-between items-end mt-2">
-                        <span class="font-title-lg text-title-lg text-on-surface">Total</span>
+                        <span class="font-title-lg text-title-lg text-on-surface">Total a Pagar</span>
                         <span class="font-headline-md text-headline-md text-primary">${{ "{:,.2f}".format(order.total)
                             }}</span>
                     </div>

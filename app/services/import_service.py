@@ -44,7 +44,7 @@ class ImportService:
         }
     """
 
-    REQUIRED_COLUMNS = {"sku", "nombre", "precio", "stock"}
+    REQUIRED_COLUMNS = {"sku", "nombre", "precio", "stock", "categoria", "precio_costo", "stock_minimo", "status"}
 
     # Alias inglés → español interno
     COLUMN_ALIASES: dict[str, str] = {
@@ -52,6 +52,8 @@ class ImportService:
         "category":    "categoria",
         "price":       "precio",
         "description": "descripcion",
+        "unit_cost":   "precio_costo",
+        "min_stock":   "stock_minimo",
     }
 
     # -------------------------------------------------------------------------
@@ -128,16 +130,23 @@ class ImportService:
             name  = row["nombre"].strip()
             price = Decimal(str(row["precio"]))
             stock = int(float(row["stock"]))
+            unit_cost = Decimal(str(row["precio_costo"]))
+            min_stock = int(float(row["stock_minimo"]))
+            
+            status_str = row["status"].strip().lower()
+            status_enum = GenericStatus.ACTIVE
+            if status_str == "archived":
+                status_enum = GenericStatus.ARCHIVED
+            elif status_str == "inactive":
+                status_enum = GenericStatus.INACTIVE
 
             # Campos opcionales
             description = row.get("descripcion", "").strip() or None
             image_url   = row.get("image_url",   "").strip() or None
-            unit_cost   = ImportService._safe_decimal(row.get("unit_cost"), Decimal("0"))
-            min_stock   = ImportService._safe_int(row.get("min_stock"), 0)
 
             # Resolver / crear categoría
             category_id: Optional[str] = None
-            raw_cat = row.get("categoria", "").strip()
+            raw_cat = row["categoria"].strip()
             if raw_cat:
                 cat_key = raw_cat.lower()
                 cat_obj = category_cache.get(cat_key)
@@ -174,6 +183,7 @@ class ImportService:
                     existing.image_url = image_url
                 existing.unit_cost   = unit_cost
                 existing.min_stock   = min_stock
+                existing.status      = status_enum
                 if category_id:
                     existing.category_id = category_id
                 to_update.append(existing)
@@ -188,7 +198,7 @@ class ImportService:
                     unit_cost=unit_cost,
                     min_stock=min_stock,
                     category_id=category_id,
-                    status=GenericStatus.ACTIVE,
+                    status=status_enum,
                 )
                 to_insert.append(product)
                 sku_cache[sku] = product   # evitar duplicados dentro del CSV
@@ -256,7 +266,7 @@ class ImportService:
 
         # Cabeceras en español (idénticas a REQUIRED_COLUMNS del importador)
         writer.writerow(["sku", "nombre", "categoria", "precio", "stock",
-                         "descripcion", "image_url"])
+                         "descripcion", "image_url", "precio_costo", "stock_minimo", "status"])
 
         for p in products:
             writer.writerow([
@@ -267,6 +277,9 @@ class ImportService:
                 str(p.stock or 0),
                 p.description or "",
                 p.image_url or "",
+                str(p.unit_cost or 0),
+                str(p.min_stock or 0),
+                p.status.value if p.status else "active",
             ])
 
         content = "\ufeff" + buf.getvalue()   # BOM para Excel
@@ -305,6 +318,34 @@ class ImportService:
         except (ValueError, TypeError):
             return {"row": row_num, "field": "stock",
                     "value": stock, "reason": f"Stock inválido: '{stock}'."}
+                    
+        category = row.get("categoria", "")
+        if not category:
+            return {"row": row_num, "field": "categoria",
+                    "value": category, "reason": "La categoría no puede estar vacía."}
+
+        unit_cost = row.get("precio_costo", "")
+        try:
+            uc = Decimal(str(unit_cost))
+            if uc < Decimal("0"):
+                raise ValueError
+        except (InvalidOperation, ValueError, TypeError):
+            return {"row": row_num, "field": "precio_costo",
+                    "value": unit_cost, "reason": f"Precio de costo inválido: '{unit_cost}'."}
+
+        min_stock = row.get("stock_minimo", "")
+        try:
+            ms = int(float(str(min_stock)))
+            if ms < 0:
+                raise ValueError
+        except (ValueError, TypeError):
+            return {"row": row_num, "field": "stock_minimo",
+                    "value": min_stock, "reason": f"Stock mínimo inválido: '{min_stock}'."}
+                    
+        status = row.get("status", "").strip().lower()
+        if status not in ["active", "inactive", "archived"]:
+            return {"row": row_num, "field": "status",
+                    "value": status, "reason": f"Estado inválido: '{status}'. Debe ser active, inactive, o archived."}
 
         return None
 

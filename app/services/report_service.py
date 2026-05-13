@@ -137,7 +137,10 @@ class ReportService:
         return audit
 
     @staticmethod
-    def get_daily_sales_summary(target_date: Optional[datetime.date] = None) -> dict:
+    def get_daily_sales_summary(
+        start_date: Optional[datetime.date] = None,
+        end_date: Optional[datetime.date] = None,
+    ) -> dict:
         """
         Resumen de ventas de un día específico (por defecto hoy):
           - Total vendido
@@ -146,11 +149,13 @@ class ReportService:
           - Cajeros que trabajaron
           - Alertas: sesiones aún abiertas
         """
-        if target_date is None:
-            target_date = datetime.date.today()
+        if start_date is None:
+            start_date = datetime.date.today()
+        if end_date is None:
+            end_date = datetime.date.today()
 
-        start_dt = datetime.datetime.combine(target_date, datetime.time.min)
-        end_dt = datetime.datetime.combine(target_date, datetime.time.max)
+        start_dt = datetime.datetime.combine(start_date, datetime.time.min)
+        end_dt = datetime.datetime.combine(end_date, datetime.time.max)
 
         paid_orders = (
             db.session.query(Order)
@@ -198,7 +203,7 @@ class ReportService:
         )
 
         return {
-            "date": target_date.isoformat(),
+            "date_range": f"{start_date.isoformat()} to {end_date.isoformat()}",
             "total_orders": len(paid_orders),
             "grand_total": grand_total.quantize(Decimal("0.01")),
             "totals_by_method": {

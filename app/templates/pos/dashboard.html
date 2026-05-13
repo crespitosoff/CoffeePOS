@@ -205,5 +205,55 @@
         tick();
         setInterval(tick, 30000);
     })();
+
+    // Polling de mesas cada 5 segundos
+    setInterval(async () => {
+        try {
+            const res = await fetch("{{ url_for('pos.api_tables_status') }}");
+            if (res.ok) {
+                const data = await res.json();
+                document.querySelectorAll('a[href^="/pos/order/table/"]').forEach(a => {
+                    const hrefParts = a.getAttribute('href').split('/');
+                    const tableId = hrefParts[hrefParts.length - 1];
+                    
+                    if (data[tableId]) {
+                        const isOccupied = data[tableId] === 'occupied';
+                        const badgeColor = isOccupied ? '#EF4444' : '#10B981';
+                        const badgeClass = isOccupied ? 'bg-[#EF4444]' : 'bg-[#10B981]';
+                        const iconColor = isOccupied ? 'text-primary' : 'text-on-surface-variant';
+                        const statusText = isOccupied ? 'Ocupada' : 'Disponible';
+                        
+                        const h3Text = a.querySelector('h3').textContent;
+                        const pEl = a.querySelector('p');
+                        const pText = pEl ? pEl.textContent.split('·')[0].trim() : '';
+
+                        if (isOccupied) {
+                            a.className = "bg-surface-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group min-h-[150px] border border-outline-variant/30 hover:shadow-md transition-shadow block";
+                            a.innerHTML = `
+                                <div class="absolute top-4 right-4 w-3 h-3 rounded-full ${badgeClass}"></div>
+                                <span class="material-symbols-outlined text-4xl ${iconColor}" style="font-variation-settings:'FILL' 1;">deck</span>
+                                <div class="text-center">
+                                    <h3 class="font-title-lg text-title-lg text-on-surface">${h3Text}</h3>
+                                    <p class="font-label-md text-label-md mt-1" style="color: ${badgeColor};">${pText} · ${statusText}</p>
+                                </div>
+                            `;
+                        } else {
+                            a.className = "bg-surface-container-lowest p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group hover:bg-surface-container-low transition-colors min-h-[150px] border border-outline-variant/15 hover:shadow-md block";
+                            a.innerHTML = `
+                                <div class="absolute top-4 right-4 w-3 h-3 rounded-full ${badgeClass}"></div>
+                                <span class="material-symbols-outlined text-4xl ${iconColor} group-hover:text-primary transition-colors">deck</span>
+                                <div class="text-center">
+                                    <h3 class="font-title-lg text-title-lg text-on-surface">${h3Text}</h3>
+                                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: ${badgeColor};">${pText} · ${statusText}</p>
+                                </div>
+                            `;
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Error fetching table status', e);
+        }
+    }, 5000);
 </script>
 {% endblock %}

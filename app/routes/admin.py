@@ -35,7 +35,7 @@ def dashboard():
         # Caja(s) abiertas GLOBALES (sin importar fecha — para la alerta)
         open_sessions_total = ReportService.count_open_sessions()
 
-        daily       = ReportService.get_daily_sales_summary(end_date)
+        daily       = ReportService.get_daily_sales_summary(start_date=start_date, end_date=end_date)
         audit_trail = ReportService.get_register_audit_trail(
             start_date=start_date,
             end_date=end_date,
@@ -44,12 +44,14 @@ def dashboard():
             start_date=start_date,
             end_date=end_date,
         )
+        suspicious_count = len(suspicious)
 
         return render_template(
             'admin/dashboard.html',
             daily=daily,
             audit_trail=audit_trail,
             suspicious=suspicious,
+            suspicious_count=suspicious_count,
             today=today,
             start_date=start_date,
             end_date=end_date,
@@ -59,7 +61,7 @@ def dashboard():
         flash(f'Error al cargar el dashboard: {str(e)}', 'danger')
         return render_template(
             'admin/dashboard.html',
-            daily=None, audit_trail=[], suspicious=[],
+            daily=None, audit_trail=[], suspicious=[], suspicious_count=0,
             today=datetime.date.today(),
             start_date=datetime.date.today() - datetime.timedelta(days=7),
             end_date=datetime.date.today(),
@@ -175,8 +177,8 @@ def export_catalog():
 @admin_required
 def download_csv_template():
     """Descarga una plantilla CSV vacía con las cabeceras requeridas + BOM."""
-    header  = 'sku,nombre,categoria,precio,stock,descripcion,image_url\n'
-    example = 'CAF-001,Café Americano,Bebidas Calientes,5000,50,Café negro sin leche,\n'
+    header  = 'sku,nombre,categoria,precio,stock,descripcion,image_url,precio_costo,stock_minimo,status\n'
+    example = 'CAF-001,Café Americano,Bebidas Calientes,5000,50,Café negro sin leche,,3000,10,active\n'
     content = '\ufeff' + header + example
 
     buf = io.BytesIO(content.encode('utf-8'))

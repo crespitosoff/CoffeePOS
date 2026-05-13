@@ -141,7 +141,10 @@
                      loading="lazy" />
                 <div class="flex flex-col gap-1.5">
                     <div class="flex justify-between items-start gap-2">
-                        <h3 class="font-title-lg text-title-lg text-on-surface text-left leading-snug">{{ product.name }}</h3>
+                        <div class="flex flex-col items-start gap-0.5">
+                            <h3 class="font-title-lg text-title-lg text-on-surface text-left leading-snug">{{ product.name }}</h3>
+                            <span class="font-label-md text-label-md text-on-surface-variant">{{ product.sku }}</span>
+                        </div>
                         <span class="flex-shrink-0 font-label-md text-label-md text-on-surface-variant
                                      bg-surface-container-high px-2 py-0.5 rounded-full text-xs">
                             Stock: {{ product.stock }}
@@ -190,10 +193,13 @@
         {# Ítems del carrito #}
         <div class="flex-grow overflow-y-auto p-5 flex flex-col gap-4" id="cart-items-container">
             {% for item in order.order_items %}
-            <div class="bg-surface-container-lowest p-4 rounded-[1.5rem] flex flex-col gap-3
+            <div class="cart-item {% if loop.index > 4 %}hidden extra-item{% endif %} bg-surface-container-lowest p-4 rounded-[1.5rem] flex flex-col gap-3
                         shadow-[0px_6px_16px_rgba(35,25,21,0.04)]">
                 <div class="flex justify-between items-start">
-                    <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.product.name }}</h4>
+                    <div class="flex flex-col">
+                        <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.product.name }}</h4>
+                        <span class="font-label-sm text-label-sm text-on-surface-variant">{{ item.product.sku }}</span>
+                    </div>
                     <button class="text-outline hover:text-error transition-colors ml-2"
                             data-action="remove" data-item-id="{{ item.id }}">
                         <span class="material-symbols-outlined text-base">close</span>
@@ -220,6 +226,22 @@
                 <p class="font-title-md mt-2">Aún no hay productos</p>
             </div>
             {% endfor %}
+
+            {% if order.order_items | length > 4 %}
+            <button id="btn-show-more" type="button" class="text-primary font-title-md py-2 w-full text-center hover:bg-primary/5 rounded-xl transition-colors">Ver más ({{ order.order_items | length - 4 }})</button>
+            <script>
+                document.getElementById('btn-show-more').addEventListener('click', function() {
+                    const hiddenItems = document.querySelectorAll('.extra-item.hidden');
+                    if (hiddenItems.length > 0) {
+                        hiddenItems.forEach(item => item.classList.remove('hidden'));
+                        this.textContent = 'Ver menos';
+                    } else {
+                        document.querySelectorAll('.extra-item').forEach(item => item.classList.add('hidden'));
+                        this.textContent = 'Ver más ({{ order.order_items | length - 4 }})';
+                    }
+                });
+            </script>
+            {% endif %}
         </div>
 
         {# Footer del carrito: totales + acciones #}

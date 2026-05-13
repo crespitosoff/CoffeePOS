@@ -91,7 +91,7 @@
     </div>
 
     {# Alertas ── muestra cajas sin cerrar GLOBALES #}
-    {% set has_alert = (open_sessions_total > 0) or suspicious %}
+    {% set has_alert = (open_sessions_total > 0) or suspicious_count > 0 %}
     <div class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
                 {{ 'bg-error-container/30 border-error/30' if has_alert else 'bg-surface-container-lowest border-outline-variant/15' }}">
         <div class="flex items-center justify-between">
@@ -100,7 +100,7 @@
                   style="font-variation-settings:'FILL' 1;">warning</span>
         </div>
         <p class="font-headline-lg text-headline-lg {{ 'text-error' if has_alert else 'text-on-surface' }}">
-            {{ suspicious | length }}
+            {{ suspicious_count }}
         </p>
         <p class="font-label-md text-label-md text-on-surface-variant">
             retiro(s) sospechoso(s)

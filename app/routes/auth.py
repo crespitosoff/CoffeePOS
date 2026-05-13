@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, flash, url_for
+from flask import Blueprint, render_template, request, redirect, flash, url_for, session
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.domain import User, UserRole
 from app.extensions import db
@@ -21,6 +21,8 @@ def login():
         
         if user and user.check_password(password):
             login_user(user)
+            session['user_id'] = str(user.id)
+            session['role'] = user.role.value
             if user.role == UserRole.ADMIN:
                 return redirect('/admin/dashboard')
             else:

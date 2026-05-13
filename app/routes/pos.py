@@ -8,6 +8,7 @@ from app.services.product_service import ProductService
 from app.models.domain import Order, OrderStatus, Payment, PaymentMethod, Table, Category, GenericStatus
 from app.extensions import db
 import decimal
+import datetime
 
 pos_bp = Blueprint("pos", __name__, url_prefix="/pos")
 
@@ -47,6 +48,29 @@ def dashboard():
 
     return render_template("pos/dashboard.html", tables=tables, session=session)
 
+@pos_bp.route("/api/tables/status", methods=["GET"])
+@login_required
+@cashier_required
+def api_tables_status():
+    from app.models.domain import OrderStatus as _OS
+    raw_tables = db.session.query(Table).all()
+    session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
+    
+    occupied_table_ids = set()
+    if session_reg:
+        open_orders = db.session.query(Order).filter(
+            Order.register_session_id == session_reg.id,
+            Order.status == _OS.OPEN,
+            Order.table_id.isnot(None)
+        ).all()
+        occupied_table_ids = {str(o.table_id) for o in open_orders}
+        
+    status_data = {
+        str(t.id): "occupied" if str(t.id) in occupied_table_ids else "available"
+        for t in raw_tables
+    }
+    return jsonify(status_data)
+
 
 # --- Gestión de Caja (Apertura y Cierre) ---
 @pos_bp.route("/register/open", methods=["GET"])
@@ -57,7 +81,7 @@ def open_register_form():
         session = RegisterService.get_active_session(user_id=str(current_user.id))
         if session:
             return redirect(url_for("pos.dashboard"))
-        return render_template("pos/register_open.html")
+        return render_template("pos/register_open.html", current_datetime=datetime.datetime.now())
     except Exception as e:
         flash(str(e), "danger")
         return redirect(url_for("pos.dashboard"))
@@ -134,6 +158,7 @@ def close_register_form():
             session=session,
             summary=summary,
             pending_orders=pending_orders,
+            current_datetime=datetime.datetime.now()
         )
     except Exception as e:
         flash(f"Error al cargar resumen: {str(e)}", "danger")

@@ -208,7 +208,17 @@
 </div>
 
 {# ── Retiros Sospechosos ──────────────────────────────────────────────────── #}
-{% if suspicious %}
+{% if suspicious_count == 0 %}
+<div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 flex items-center gap-4">
+    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings:'FILL' 1;">verified_user</span>
+    <div>
+        <p class="font-title-md text-title-md text-on-surface">Sin retiros sospechosos</p>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">
+            No se detectaron movimientos de alto riesgo en el período seleccionado.
+        </p>
+    </div>
+</div>
+{% else %}
 <div class="bg-error-container/20 rounded-2xl shadow-sm border border-error/30 overflow-hidden">
     <div class="px-6 py-4 border-b border-error/20 flex items-center gap-3">
         <span class="material-symbols-outlined text-error text-xl" style="font-variation-settings:'FILL' 1;">gpp_bad</span>
@@ -248,16 +258,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
-{% else %}
-<div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 flex items-center gap-4">
-    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings:'FILL' 1;">verified_user</span>
-    <div>
-        <p class="font-title-md text-title-md text-on-surface">Sin retiros sospechosos</p>
-        <p class="font-body-lg text-body-lg text-on-surface-variant">
-            No se detectaron movimientos de alto riesgo en el período seleccionado.
-        </p>
     </div>
 </div>
 {% endif %}

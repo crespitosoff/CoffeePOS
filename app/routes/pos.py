@@ -27,7 +27,6 @@ def dashboard():
         open_orders = (
             db.session.query(Order)
             .filter(
-                Order.register_session_id == session.id,
                 Order.status == _OS.OPEN,
                 Order.table_id.isnot(None),
             )
@@ -59,7 +58,6 @@ def api_tables_status():
     occupied_table_ids = set()
     if session_reg:
         open_orders = db.session.query(Order).filter(
-            Order.register_session_id == session_reg.id,
             Order.status == _OS.OPEN,
             Order.table_id.isnot(None)
         ).all()
@@ -247,18 +245,10 @@ def view_order(table_id):
             db.session.query(Order)
             .filter_by(
                 table_id=db_table_id,
-                register_session_id=session.id,
                 status=OrderStatus.OPEN,
             )
             .first()
         )
-
-        if not order:
-            order = OrderService.create_order(
-                user_id=str(current_user.id),
-                register_session_id=str(session.id),
-                table_id=db_table_id,
-            )
 
         products = ProductService.get_all_products(is_active=True)
 
@@ -285,19 +275,34 @@ def view_order(table_id):
         return redirect(url_for("pos.dashboard"))
 
 
-@pos_bp.route("/order/<order_id>/add", methods=["POST"])
+@pos_bp.route("/order/add-item", methods=["POST"])
 @login_required
 @cashier_required
-def add_item(order_id):
+def add_item():
     try:
+        session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
+        if not session_reg:
+             return jsonify({"error": "No hay sesión abierta."}), 400
+
         data       = request.get_json() or request.form.to_dict()
+        order_id   = data.get("order_id")
         product_id = data.get("product_id")
         quantity   = int(data.get("quantity", 1))
+        table_id   = data.get("table_id")
+
+        if not order_id:
+            db_table_id = None if table_id == "takeaway" else table_id
+            order = OrderService.create_order(
+                user_id=str(current_user.id),
+                register_session_id=str(session_reg.id),
+                table_id=db_table_id
+            )
+            order_id = str(order.id)
 
         item = OrderService.add_item_to_order(
             order_id=order_id, product_id=product_id, quantity=quantity
         )
-        return jsonify({"status": "success", "item_id": str(item.id)}), 200
+        return jsonify({"status": "success", "item_id": str(item.id), "order_id": order_id}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -395,11 +400,19 @@ def pay_order(order_id):
         amount_received = decimal.Decimal(str(data.get("amount_received", 0)))
         reference       = data.get("reference")
 
+        session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
+        if not session_reg:
+            if request.is_json:
+                return jsonify({"error": "No hay una sesión de caja abierta."}), 400
+            flash("No hay una sesión de caja abierta.", "warning")
+            return redirect(url_for("pos.dashboard"))
+
         result = PaymentService.process_payment(
             order_id=order_id,
             payment_method=payment_method,
             amount_received=amount_received,
             reference=reference,
+            session_id=str(session_reg.id)
         )
 
         if request.is_json:

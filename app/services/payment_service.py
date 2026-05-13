@@ -29,6 +29,7 @@ class PaymentService:
         payment_method: str,
         amount_received: decimal.Decimal,
         reference: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> dict:
         """
         Procesa el pago de una orden y la cierra.
@@ -62,6 +63,9 @@ class PaymentService:
             )
 
         change = (amount_received - order_total).quantize(decimal.Decimal("0.01"))
+
+        if session_id:
+            order.register_session_id = session_id
 
         try:
             payment = Payment(

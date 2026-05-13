@@ -1,0 +1,99 @@
+{% extends "layout/admin_base.html" %}
+
+{% block title %}Mesas – Admin CoffeePOS{% endblock %}
+
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">Mesas</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">
+        {{ tables | length }} mesa(s) registrada(s)
+    </p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+{# Botón Crear #}
+<div class="flex justify-end mb-6">
+    <a href="{{ url_for('admin.new_table') }}"
+       class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary
+              rounded-xl font-title-md text-title-md hover:opacity-90 transition-opacity">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Nueva Mesa
+    </a>
+</div>
+
+{# Tabla #}
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-b border-outline-variant/10 text-on-surface-variant
+                           font-label-md text-label-md uppercase tracking-wider">
+                    <th class="py-3 px-6">Nombre</th>
+                    <th class="py-3 px-4">Capacidad</th>
+                    <th class="py-3 px-4">Estado</th>
+                    <th class="py-3 px-4 text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tables %}
+                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
+                    <td class="py-4 px-6 font-title-md text-title-md text-on-surface">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-on-surface-variant"
+                                  style="font-variation-settings:'FILL' 1;">deck</span>
+                            {{ t.name }}
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 text-on-surface-variant font-body-lg">
+                        {{ t.capacity or 2 }} persona(s)
+                    </td>
+                    <td class="py-4 px-4">
+                        {% if t.status and t.status.value == 'active' %}
+                        <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">Activa</span>
+                        {% else %}
+                        <span class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-sm font-medium">Inactiva</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-4 px-4">
+                        <div class="flex justify-end gap-2">
+                            <a href="{{ url_for('admin.edit_table', id=t.id) }}"
+                               class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-outline-variant
+                                      text-on-surface-variant hover:bg-surface-container transition-colors
+                                      font-label-md text-label-md">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                                Editar
+                            </a>
+                            {# Desactivar solo si está activa #}
+                            {% if t.status and t.status.value == 'active' %}
+                            <form action="{{ url_for('admin.delete_table', id=t.id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('¿Desactivar la mesa {{ t.name }}? Asegúrate de que no tenga órdenes abiertas.')">
+                                <button type="submit"
+                                        class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-error/30
+                                               text-error hover:bg-error/10 transition-colors font-label-md text-label-md">
+                                    <span class="material-symbols-outlined text-sm">block</span>
+                                    Desactivar
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="py-12 text-center text-on-surface-variant font-body-lg">
+                        <div class="flex flex-col items-center gap-2 opacity-50">
+                            <span class="material-symbols-outlined text-5xl">deck</span>
+                            <p>No hay mesas registradas.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

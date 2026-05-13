@@ -5,7 +5,7 @@ from app.services.product_service import ProductService
 from app.services.user_service import UserService
 from app.services.import_service import ImportService
 from app.services.report_service import ReportService
-from app.models.domain import Category, GenericStatus
+from app.models.domain import Category, GenericStatus, Order, OrderStatus, Table
 from app.extensions import db
 import datetime
 import io
@@ -13,38 +13,61 @@ import io
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
-# --- Dashboard Analítico (Panel Antirrobo) ---
+# ─── Dashboard Analítico ─────────────────────────────────────────────────────
 @admin_bp.route('/dashboard')
 @login_required
 @admin_required
 def dashboard():
     try:
-        today        = datetime.date.today()
-        daily        = ReportService.get_daily_sales_summary(today)
-        audit_trail  = ReportService.get_register_audit_trail(
-            start_date=today - datetime.timedelta(days=7),
-            end_date=today,
+        today = datetime.date.today()
+
+        # ── Filtros de fecha (GET params) ────────────────────────────────
+        try:
+            start_date = datetime.date.fromisoformat(request.args.get('start_date', ''))
+        except ValueError:
+            start_date = today - datetime.timedelta(days=7)
+
+        try:
+            end_date = datetime.date.fromisoformat(request.args.get('end_date', ''))
+        except ValueError:
+            end_date = today
+
+        # Caja(s) abiertas GLOBALES (sin importar fecha — para la alerta)
+        open_sessions_total = ReportService.count_open_sessions()
+
+        daily       = ReportService.get_daily_sales_summary(end_date)
+        audit_trail = ReportService.get_register_audit_trail(
+            start_date=start_date,
+            end_date=end_date,
         )
-        suspicious   = ReportService.get_suspicious_movements(
-            start_date=today - datetime.timedelta(days=7),
-            end_date=today,
+        suspicious  = ReportService.get_suspicious_movements(
+            start_date=start_date,
+            end_date=end_date,
         )
+
         return render_template(
             'admin/dashboard.html',
             daily=daily,
             audit_trail=audit_trail,
             suspicious=suspicious,
             today=today,
+            start_date=start_date,
+            end_date=end_date,
+            open_sessions_total=open_sessions_total,
         )
     except Exception as e:
         flash(f'Error al cargar el dashboard: {str(e)}', 'danger')
         return render_template(
             'admin/dashboard.html',
-            daily=None, audit_trail=[], suspicious=[], today=datetime.date.today()
+            daily=None, audit_trail=[], suspicious=[],
+            today=datetime.date.today(),
+            start_date=datetime.date.today() - datetime.timedelta(days=7),
+            end_date=datetime.date.today(),
+            open_sessions_total=0,
         )
 
 
-# --- Gestión de Productos (CRUD) ---
+# ─── Gestión de Productos (CRUD) ─────────────────────────────────────────────
 @admin_bp.route('/products')
 @login_required
 @admin_required
@@ -73,7 +96,6 @@ def new_product():
 def create_product():
     try:
         data = request.form.to_dict()
-        # Normalizar category_id vacío a None
         if not data.get('category_id'):
             data['category_id'] = None
         ProductService.create_product(data)
@@ -129,31 +151,41 @@ def delete_product(id):
     return redirect(url_for('admin.products'))
 
 
-# --- Plantilla CSV de Importación ---
+# ─── Descarga de Catálogo actual (UPSERT-ready) ───────────────────────────────
+@admin_bp.route('/products/export-catalog')
+@login_required
+@admin_required
+def export_catalog():
+    """Descarga todos los productos activos como CSV listo para edición masiva."""
+    try:
+        csv_bytes = ImportService.export_catalog_csv()
+        buf = io.BytesIO(csv_bytes)
+        buf.seek(0)
+        filename = f"catalogo_{datetime.date.today().isoformat()}.csv"
+        return send_file(buf, mimetype='text/csv; charset=utf-8',
+                         as_attachment=True, download_name=filename)
+    except Exception as e:
+        flash(str(e), 'danger')
+        return redirect(url_for('admin.products'))
+
+
+# ─── Plantilla CSV vacía ──────────────────────────────────────────────────────
 @admin_bp.route('/products/download-template')
 @login_required
 @admin_required
 def download_csv_template():
-    """
-    Descarga una plantilla CSV vacía con las cabeceras correctas.
-    Usa BOM (\ufeff) para que Excel reconozca el UTF-8 correctamente.
-    """
-    header = 'nombre,categoria,precio,stock,descripcion\n'
-    # Ejemplo de fila para guiar al usuario
-    example = 'Café Americano,Bebidas Calientes,5000,50,Café negro sin leche\n'
-    content = '\ufeff' + header + example   # \ufeff = BOM UTF-8
+    """Descarga una plantilla CSV vacía con las cabeceras requeridas + BOM."""
+    header  = 'sku,nombre,categoria,precio,stock,descripcion,image_url\n'
+    example = 'CAF-001,Café Americano,Bebidas Calientes,5000,50,Café negro sin leche,\n'
+    content = '\ufeff' + header + example
 
     buf = io.BytesIO(content.encode('utf-8'))
     buf.seek(0)
-    return send_file(
-        buf,
-        mimetype='text/csv; charset=utf-8',
-        as_attachment=True,
-        download_name='plantilla_productos.csv',
-    )
+    return send_file(buf, mimetype='text/csv; charset=utf-8',
+                     as_attachment=True, download_name='plantilla_productos.csv')
 
 
-# --- Importación Masiva de Productos ---
+# ─── Importación Masiva ───────────────────────────────────────────────────────
 @admin_bp.route('/products/import', methods=['GET'])
 @login_required
 @admin_required
@@ -177,18 +209,12 @@ def import_products():
 
         result = ImportService.process_csv(csv_file.stream)
 
-        # Construir mensaje de resumen
-        msg = f"{result['imported']} producto(s) importado(s)."
+        msg = f"{result['imported']} producto(s) creado(s). {result['updated']} actualizado(s)."
         if result['skipped']:
-            msg += f" {result['skipped']} fila(s) ignorada(s) por errores."
+            msg += f" {result['skipped']} fila(s) rechazada(s)."
 
-        category = 'success' if result['imported'] > 0 else 'warning'
-        flash(msg, category)
-
-        return render_template(
-            'admin/product_import.html',
-            import_result=result,
-        )
+        flash(msg, 'success' if (result['imported'] + result['updated']) > 0 else 'warning')
+        return render_template('admin/product_import.html', import_result=result)
     except ValueError as e:
         flash(str(e), 'danger')
         return redirect(url_for('admin.import_products_form'))
@@ -197,7 +223,125 @@ def import_products():
         return redirect(url_for('admin.import_products_form'))
 
 
-# --- Gestión de Usuarios (CRUD) ---
+# ─── CRUD de Mesas ────────────────────────────────────────────────────────────
+@admin_bp.route('/tables')
+@login_required
+@admin_required
+def tables():
+    try:
+        tables_list = db.session.query(Table).order_by(Table.name).all()
+        return render_template('admin/tables.html', tables=tables_list)
+    except Exception as e:
+        flash(str(e), 'danger')
+        return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/tables/new', methods=['GET'])
+@login_required
+@admin_required
+def new_table():
+    return render_template('admin/table_form.html', table=None)
+
+
+@admin_bp.route('/tables', methods=['POST'])
+@login_required
+@admin_required
+def create_table():
+    try:
+        name     = request.form.get('name', '').strip()
+        capacity = int(request.form.get('capacity', 2))
+        if not name:
+            raise ValueError("El nombre de la mesa no puede estar vacío.")
+        # Verificar nombre único
+        existing = db.session.query(Table).filter_by(name=name).first()
+        if existing:
+            raise ValueError(f"Ya existe una mesa con el nombre '{name}'.")
+        table = Table(name=name, capacity=capacity, status=GenericStatus.ACTIVE)
+        db.session.add(table)
+        db.session.commit()
+        flash(f"Mesa '{name}' creada exitosamente.", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(str(e), 'danger')
+    return redirect(url_for('admin.tables'))
+
+
+@admin_bp.route('/tables/<id>/edit', methods=['GET'])
+@login_required
+@admin_required
+def edit_table(id):
+    try:
+        table = db.session.get(Table, id)
+        if not table:
+            flash('Mesa no encontrada.', 'danger')
+            return redirect(url_for('admin.tables'))
+        return render_template('admin/table_form.html', table=table)
+    except Exception as e:
+        flash(str(e), 'danger')
+        return redirect(url_for('admin.tables'))
+
+
+@admin_bp.route('/tables/<id>/update', methods=['POST'])
+@login_required
+@admin_required
+def update_table(id):
+    try:
+        table = db.session.get(Table, id)
+        if not table:
+            flash('Mesa no encontrada.', 'danger')
+            return redirect(url_for('admin.tables'))
+        name     = request.form.get('name', '').strip()
+        capacity = int(request.form.get('capacity', table.capacity or 2))
+        if not name:
+            raise ValueError("El nombre no puede estar vacío.")
+        # Comprobar unicidad excluyendo la mesa actual
+        clash = db.session.query(Table).filter(
+            Table.name == name, Table.id != table.id
+        ).first()
+        if clash:
+            raise ValueError(f"Ya existe otra mesa con el nombre '{name}'.")
+        table.name     = name
+        table.capacity = capacity
+        db.session.commit()
+        flash(f"Mesa '{name}' actualizada.", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(str(e), 'danger')
+    return redirect(url_for('admin.tables'))
+
+
+@admin_bp.route('/tables/<id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_table(id):
+    try:
+        table = db.session.get(Table, id)
+        if not table:
+            flash('Mesa no encontrada.', 'danger')
+            return redirect(url_for('admin.tables'))
+
+        # Bloquear si tiene órdenes OPEN
+        open_orders = db.session.query(Order).filter(
+            Order.table_id == table.id,
+            Order.status == OrderStatus.OPEN,
+        ).count()
+        if open_orders:
+            raise ValueError(
+                f"La mesa '{table.name}' tiene {open_orders} orden(es) abierta(s). "
+                "Ciérralas antes de eliminar la mesa."
+            )
+
+        # Borrado lógico (desactivar)
+        table.status = GenericStatus.INACTIVE
+        db.session.commit()
+        flash(f"Mesa '{table.name}' desactivada.", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(str(e), 'danger')
+    return redirect(url_for('admin.tables'))
+
+
+# ─── Gestión de Usuarios (CRUD) ───────────────────────────────────────────────
 @admin_bp.route('/users')
 @login_required
 @admin_required
@@ -264,7 +408,6 @@ def update_user(id):
 @admin_required
 def deactivate_user(id):
     try:
-        # Evitar que el admin se desactive a sí mismo
         if str(current_user.id) == str(id):
             flash('No puedes desactivar tu propia cuenta.', 'warning')
             return redirect(url_for('admin.users'))

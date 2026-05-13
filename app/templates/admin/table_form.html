@@ -1,0 +1,73 @@
+{% extends "layout/admin_base.html" %}
+
+{% block title %}{{ 'Editar Mesa' if table else 'Nueva Mesa' }} – Admin CoffeePOS{% endblock %}
+
+{% block page_title %}
+<div>
+    <h1 class="font-headline-md text-headline-md text-primary">
+        {{ 'Editar Mesa' if table else 'Nueva Mesa' }}
+    </h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant">
+        {{ table.name if table else 'Completa los datos de la mesa.' }}
+    </p>
+</div>
+{% endblock %}
+
+{% block admin_content %}
+
+<div class="max-w-lg mx-auto">
+    <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8
+                shadow-sm border border-outline-variant/15">
+
+        <form action="{{ url_for('admin.update_table', id=table.id) if table else url_for('admin.create_table') }}"
+              method="POST" class="flex flex-col gap-5">
+
+            {# Nombre #}
+            <div class="flex flex-col gap-1.5">
+                <label class="font-title-md text-title-md text-on-surface" for="name">
+                    Nombre de la Mesa <span class="text-error">*</span>
+                </label>
+                <input id="name" name="name" type="text" required
+                       placeholder="Ej: Mesa 1, Terraza, VIP…"
+                       value="{{ table.name if table else '' }}"
+                       class="w-full bg-surface-container-high text-on-surface font-body-lg
+                              rounded-xl px-4 py-3 focus:outline-none focus:ring-2
+                              focus:ring-primary/30 border-none transition-shadow" />
+            </div>
+
+            {# Capacidad #}
+            <div class="flex flex-col gap-1.5">
+                <label class="font-title-md text-title-md text-on-surface" for="capacity">
+                    Capacidad (personas)
+                </label>
+                <input id="capacity" name="capacity" type="number" min="1" max="50"
+                       value="{{ table.capacity if table else 2 }}"
+                       class="w-full bg-surface-container-high text-on-surface font-body-lg
+                              rounded-xl px-4 py-3 focus:outline-none focus:ring-2
+                              focus:ring-primary/30 border-none transition-shadow" />
+            </div>
+
+            {# Acciones #}
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                        class="flex-1 py-3 bg-primary text-on-primary rounded-xl
+                               font-title-md text-title-md hover:opacity-90 transition-opacity
+                               flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">
+                        {{ 'save' if table else 'add' }}
+                    </span>
+                    {{ 'Guardar Cambios' if table else 'Crear Mesa' }}
+                </button>
+                <a href="{{ url_for('admin.tables') }}"
+                   class="flex-1 py-3 border border-outline-variant text-on-surface-variant rounded-xl
+                          font-title-md text-title-md hover:bg-surface-container transition-colors
+                          flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

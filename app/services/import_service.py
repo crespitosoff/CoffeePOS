@@ -1,10 +1,10 @@
-# app/services/import_service.py  –  COF-39
-# Servicio de importación masiva de productos desde CSV
-# Reescrito sin pandas (Python puro: csv.DictReader)
+# app/services/import_service.py  –  COF-39 (v3)
+# Importación masiva con Upsert por SKU y auto-creación de categorías
 from __future__ import annotations
 
 import csv
 import io
+import re
 from decimal import Decimal, InvalidOperation
 from typing import Optional
 
@@ -16,53 +16,56 @@ from app.models.domain import Category, GenericStatus, Product
 
 class ImportService:
     """
-    Lee un CSV de productos y los importa masivamente a la base de datos.
+    Lee un CSV de productos y los importa masivamente con lógica UPSERT.
 
-    Columnas requeridas en el CSV:
-        name    – nombre del producto (str, no vacío)
-        price   – precio de venta (Decimal >= 0)
-        stock   – stock inicial (int >= 0)
+    Columnas del CSV (en español — compatible con la plantilla de descarga):
+        sku          – identificador único obligatorio
+        nombre       – nombre del producto (str, no vacío)
+        categoria    – nombre de categoría; se crea automáticamente si no existe
+        precio       – precio de venta (Decimal >= 0)
+        stock        – stock inicial (int >= 0)
+        descripcion  – descripción larga (str, opcional)
+        image_url    – URL de imagen (str, opcional)
 
-    Columnas opcionales:
-        category    – nombre de categoría (str) – se busca por nombre exacto
-        sku         – código único (str)
-        description – descripción larga (str)
-        unit_cost   – costo unitario (Decimal >= 0)
-        min_stock   – stock mínimo de alerta (int >= 0)
+    También acepta cabeceras en inglés: name, category, price, description.
 
-    El método process_csv() retorna:
+    Lógica UPSERT:
+        - Si el SKU ya existe → actualiza nombre, precio, stock, descripción,
+          imagen y categoría del producto existente.
+        - Si el SKU no existe → crea un producto nuevo.
+        - Nunca duplica productos por SKU.
+
+    Retorna:
         {
-            'imported': int,           # productos insertados correctamente
-            'skipped':  int,           # filas ignoradas por errores fatales
-            'errors':   list[dict],    # detalle de cada fila con error/warning
+            'imported':  int,   # productos creados
+            'updated':   int,   # productos actualizados
+            'skipped':   int,   # filas rechazadas por errores fatales
+            'errors':    list[dict],
         }
-
-    Compatible con la plantilla de 5 columnas en español:
-        nombre, categoria, precio, stock, descripcion
     """
 
-    # Columnas en inglés (API original)
-    REQUIRED_COLUMNS = {"name", "price", "stock"}
+    REQUIRED_COLUMNS = {"sku", "nombre", "precio", "stock"}
 
-    # Alias español → inglés para la plantilla de descarga del admin
+    # Alias inglés → español interno
     COLUMN_ALIASES: dict[str, str] = {
-        "nombre":      "name",
-        "categoria":   "category",
-        "precio":      "price",
-        "descripcion": "description",
+        "name":        "nombre",
+        "category":    "categoria",
+        "price":       "precio",
+        "description": "descripcion",
     }
+
+    # -------------------------------------------------------------------------
+    # Punto de entrada público
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def process_csv(file_stream) -> dict:
-        """
-        Punto de entrada principal. Acepta un objeto tipo-fichero (werkzeug
-        FileStorage o cualquier io.BytesIO / io.StringIO) y procesa el CSV.
-        """
-        # ── 1. Leer contenido como texto ─────────────────────────────────
+        """Procesa el CSV y realiza el upsert completo."""
+
+        # ── 1. Leer bytes y decodificar (eliminar BOM de Excel) ──────────
         try:
             raw = file_stream.read() if hasattr(file_stream, "read") else file_stream
             if isinstance(raw, bytes):
-                # Eliminar BOM UTF-8 si está presente (generado por Excel)
                 raw = raw.lstrip(b"\xef\xbb\xbf").decode("utf-8", errors="replace")
         except Exception as exc:
             raise ValueError(f"No se pudo leer el archivo: {exc}") from exc
@@ -75,181 +78,268 @@ class ImportService:
         except Exception as exc:
             raise ValueError(f"No se pudo parsear el CSV: {exc}") from exc
 
-        # ── 3. Normalizar y traducir cabeceras ────────────────────────────
-        # Normalizar: strip + lowercase
-        original_fields = [f.strip().lower() for f in reader.fieldnames]
-        # Aplicar alias (ej. "nombre" → "name")
-        normalized_fields = [
-            ImportService.COLUMN_ALIASES.get(f, f) for f in original_fields
+        # ── 3. Normalizar cabeceras (strip + lower + alias) ───────────────
+        raw_fields = [f.strip().lower() for f in reader.fieldnames if f]
+        norm_fields = [
+            ImportService.COLUMN_ALIASES.get(f, f) for f in raw_fields
         ]
+        field_map = dict(zip(raw_fields, norm_fields))
 
-        # Verificar columnas requeridas
-        missing = ImportService.REQUIRED_COLUMNS - set(normalized_fields)
+        missing = ImportService.REQUIRED_COLUMNS - set(norm_fields)
         if missing:
             raise ValueError(
                 f"El CSV no contiene las columnas requeridas: {', '.join(sorted(missing))}. "
-                f"Columnas encontradas: {', '.join(original_fields)}"
+                f"Columnas encontradas: {', '.join(raw_fields)}"
             )
 
-        # Construir mapa original → normalizado para reescribir cada fila
-        field_map = dict(zip(original_fields, normalized_fields))
-
-        # ── 4. Construir caché de categorías (nombre → UUID) ─────────────
-        categories = (
-            db.session.query(Category)
+        # ── 4. Caché de categorías (nombre_lower → Category) ─────────────
+        category_cache: dict[str, Category] = {
+            c.name.strip().lower(): c
+            for c in db.session.query(Category)
             .filter(Category.status == GenericStatus.ACTIVE)
             .all()
-        )
-        category_map: dict[str, str] = {
-            c.name.strip().lower(): str(c.id) for c in categories
         }
 
-        # ── 5. Procesar fila a fila ───────────────────────────────────────
-        products_to_insert: list[Product] = []
-        errors: list[dict] = []
+        # ── 5. Caché de SKUs existentes ───────────────────────────────────
+        sku_cache: dict[str, Product] = {
+            p.sku: p
+            for p in db.session.query(Product).filter(Product.sku.isnot(None)).all()
+        }
+
+        # ── 6. Procesar fila a fila ───────────────────────────────────────
+        to_insert: list[Product] = []
+        to_update: list[Product] = []
+        errors: list[dict]       = []
 
         for row_num, raw_row in enumerate(reader, start=2):
-            # Renombrar claves de la fila usando el mapa de normalización
             row = {
                 field_map.get(k.strip().lower(), k.strip().lower()): (v.strip() if v else "")
                 for k, v in raw_row.items()
                 if k is not None
             }
 
-            # Validar campos requeridos
             error = ImportService._validate_row(row_num, row)
             if error:
                 errors.append(error)
                 continue
 
-            # Parsear campos obligatorios
-            name  = row["name"].strip()
-            price = Decimal(str(row["price"]))
+            # Campos obligatorios
+            sku   = row["sku"].strip()
+            name  = row["nombre"].strip()
+            price = Decimal(str(row["precio"]))
             stock = int(float(row["stock"]))
 
-            # Parsear campos opcionales
-            sku         = row.get("sku", "").strip() or None
-            description = row.get("description", "").strip() or None
+            # Campos opcionales
+            description = row.get("descripcion", "").strip() or None
+            image_url   = row.get("image_url",   "").strip() or None
             unit_cost   = ImportService._safe_decimal(row.get("unit_cost"), Decimal("0"))
             min_stock   = ImportService._safe_int(row.get("min_stock"), 0)
 
-            # Resolver categoría por nombre
+            # Resolver / crear categoría
             category_id: Optional[str] = None
-            raw_category = row.get("category", "").strip()
-            if raw_category:
-                cat_key = raw_category.lower()
-                category_id = category_map.get(cat_key)
-                if not category_id:
-                    errors.append({
-                        "row":     row_num,
-                        "field":   "category",
-                        "value":   raw_category,
-                        "reason":  f"Categoría '{raw_category}' no encontrada. Fila importada sin categoría.",
-                        "warning": True,  # advertencia, no error fatal
-                    })
+            raw_cat = row.get("categoria", "").strip()
+            if raw_cat:
+                cat_key = raw_cat.lower()
+                cat_obj = category_cache.get(cat_key)
+                if not cat_obj:
+                    # Crear categoría al vuelo
+                    cat_obj = Category(
+                        name=raw_cat,
+                        slug=ImportService._slugify(raw_cat),
+                        status=GenericStatus.ACTIVE,
+                    )
+                    db.session.add(cat_obj)
+                    try:
+                        db.session.flush()   # obtener el UUID generado
+                        category_cache[cat_key] = cat_obj
+                    except SQLAlchemyError as exc:
+                        db.session.rollback()
+                        errors.append({
+                            "row":    row_num,
+                            "field":  "categoria",
+                            "value":  raw_cat,
+                            "reason": f"No se pudo crear la categoría '{raw_cat}': {str(exc)[:120]}",
+                        })
+                        continue
+                category_id = str(cat_obj.id)
 
-            product = Product(
-                name=name,
-                price=price,
-                stock=stock,
-                sku=sku,
-                description=description,
-                unit_cost=unit_cost,
-                min_stock=min_stock,
-                category_id=category_id,
-                status=GenericStatus.ACTIVE,
-            )
-            products_to_insert.append(product)
+            # ── UPSERT ────────────────────────────────────────────────────
+            existing = sku_cache.get(sku)
+            if existing:
+                existing.name        = name
+                existing.price       = price
+                existing.stock       = stock
+                existing.description = description
+                if image_url:
+                    existing.image_url = image_url
+                existing.unit_cost   = unit_cost
+                existing.min_stock   = min_stock
+                if category_id:
+                    existing.category_id = category_id
+                to_update.append(existing)
+            else:
+                product = Product(
+                    name=name,
+                    sku=sku,
+                    price=price,
+                    stock=stock,
+                    description=description,
+                    image_url=image_url,
+                    unit_cost=unit_cost,
+                    min_stock=min_stock,
+                    category_id=category_id,
+                    status=GenericStatus.ACTIVE,
+                )
+                to_insert.append(product)
+                sku_cache[sku] = product   # evitar duplicados dentro del CSV
 
-        # ── 6. Inserción masiva ───────────────────────────────────────────
+        # ── 7. Persistir ──────────────────────────────────────────────────
         fatal_errors = [e for e in errors if not e.get("warning")]
         imported = 0
+        updated  = 0
 
-        if products_to_insert:
+        if to_insert:
             try:
-                db.session.add_all(products_to_insert)
+                db.session.add_all(to_insert)
                 db.session.commit()
-                imported = len(products_to_insert)
+                imported = len(to_insert)
             except SQLAlchemyError:
                 db.session.rollback()
-                # Fallback: insertar uno a uno para aislar el producto que falla
-                imported, errors = ImportService._insert_one_by_one(
-                    products_to_insert, errors
-                )
+                i, errors = ImportService._insert_one_by_one(to_insert, errors)
+                imported = i
 
-        skipped = len(fatal_errors)
+        if to_update:
+            try:
+                db.session.commit()
+                updated = len(to_update)
+            except SQLAlchemyError:
+                db.session.rollback()
+                for p in to_update:
+                    try:
+                        db.session.commit()
+                        updated += 1
+                    except SQLAlchemyError as exc:
+                        db.session.rollback()
+                        errors.append({
+                            "row":    "?",
+                            "field":  "db",
+                            "value":  p.sku,
+                            "reason": f"Error al actualizar '{p.sku}': {str(exc)[:120]}",
+                        })
+
         return {
             "imported": imported,
-            "skipped":  skipped,
+            "updated":  updated,
+            "skipped":  len(fatal_errors),
             "errors":   errors,
         }
 
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Descarga del catálogo actual como CSV
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def export_catalog_csv() -> bytes:
+        """
+        Exporta todos los productos activos como CSV con BOM UTF-8.
+        Sirve como plantilla de edición masiva (ya tiene SKUs reales).
+        """
+        products = (
+            db.session.query(Product)
+            .filter(Product.status == GenericStatus.ACTIVE)
+            .order_by(Product.name)
+            .all()
+        )
+
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+
+        # Cabeceras en español (idénticas a REQUIRED_COLUMNS del importador)
+        writer.writerow(["sku", "nombre", "categoria", "precio", "stock",
+                         "descripcion", "image_url"])
+
+        for p in products:
+            writer.writerow([
+                p.sku or "",
+                p.name,
+                p.category.name if p.category else "",
+                str(p.price),
+                str(p.stock or 0),
+                p.description or "",
+                p.image_url or "",
+            ])
+
+        content = "\ufeff" + buf.getvalue()   # BOM para Excel
+        return content.encode("utf-8")
+
+    # -------------------------------------------------------------------------
     # Helpers privados
-    # ------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def _validate_row(row_num: int, row: dict) -> Optional[dict]:
-        """
-        Valida una fila del CSV. Retorna un dict de error si la fila es
-        inválida, o None si es correcta.
-        """
-        name = row.get("name", "")
-        if not name or str(name).strip() == "":
-            return {
-                "row":    row_num,
-                "field":  "name",
-                "value":  name,
-                "reason": "El nombre del producto no puede estar vacío.",
-            }
+        sku = row.get("sku", "")
+        if not sku:
+            return {"row": row_num, "field": "sku",
+                    "value": sku, "reason": "El SKU no puede estar vacío."}
 
-        price = row.get("price", "")
+        name = row.get("nombre", "")
+        if not name:
+            return {"row": row_num, "field": "nombre",
+                    "value": name, "reason": "El nombre no puede estar vacío."}
+
+        price = row.get("precio", "")
         try:
-            price_dec = Decimal(str(price))
-            if price_dec < Decimal("0"):
-                raise ValueError("negativo")
+            p = Decimal(str(price))
+            if p < Decimal("0"):
+                raise ValueError
         except (InvalidOperation, ValueError, TypeError):
-            return {
-                "row":    row_num,
-                "field":  "price",
-                "value":  price,
-                "reason": f"Precio inválido o negativo: '{price}'.",
-            }
+            return {"row": row_num, "field": "precio",
+                    "value": price, "reason": f"Precio inválido: '{price}'."}
 
         stock = row.get("stock", "")
         try:
-            stock_int = int(float(str(stock)))
-            if stock_int < 0:
-                raise ValueError("negativo")
+            s = int(float(str(stock)))
+            if s < 0:
+                raise ValueError
         except (ValueError, TypeError):
-            return {
-                "row":    row_num,
-                "field":  "stock",
-                "value":  stock,
-                "reason": f"Stock inválido o negativo: '{stock}'.",
-            }
+            return {"row": row_num, "field": "stock",
+                    "value": stock, "reason": f"Stock inválido: '{stock}'."}
 
-        return None  # fila válida
+        return None
+
+    @staticmethod
+    def _slugify(text: str) -> str:
+        """Genera un slug URL-amigable a partir de un string."""
+        text = text.lower().strip()
+        text = re.sub(r"[áàäâ]", "a", text)
+        text = re.sub(r"[éèëê]", "e", text)
+        text = re.sub(r"[íìïî]", "i", text)
+        text = re.sub(r"[óòöô]", "o", text)
+        text = re.sub(r"[úùüû]", "u", text)
+        text = re.sub(r"ñ", "n", text)
+        text = re.sub(r"[^a-z0-9]+", "-", text)
+        text = text.strip("-")
+        # Garantizar unicidad ligera con sufijo numérico si hay colisión
+        return text[:110]
 
     @staticmethod
     def _safe_decimal(value, default: Decimal) -> Decimal:
-        """Convierte un valor a Decimal de forma segura."""
         if not value:
             return default
         try:
-            result = Decimal(str(value))
-            return result if result >= Decimal("0") else default
+            r = Decimal(str(value))
+            return r if r >= Decimal("0") else default
         except (InvalidOperation, TypeError):
             return default
 
     @staticmethod
     def _safe_int(value, default: int) -> int:
-        """Convierte un valor a int de forma segura."""
         if not value:
             return default
         try:
-            result = int(float(str(value)))
-            return result if result >= 0 else default
+            r = int(float(str(value)))
+            return r if r >= 0 else default
         except (ValueError, TypeError):
             return default
 
@@ -258,25 +348,17 @@ class ImportService:
         products: list[Product],
         existing_errors: list[dict],
     ) -> tuple[int, list[dict]]:
-        """
-        Fallback: inserta productos uno a uno cuando el add_all masivo falla.
-        Identifica cuáles productos individualmente causan errores.
-        """
         imported = 0
         errors   = list(existing_errors)
-
-        for product in products:
+        for p in products:
             try:
-                db.session.add(product)
+                db.session.add(p)
                 db.session.commit()
                 imported += 1
             except SQLAlchemyError as exc:
                 db.session.rollback()
                 errors.append({
-                    "row":    "?",
-                    "field":  "db",
-                    "value":  product.name,
-                    "reason": f"Error al insertar '{product.name}': {str(exc)[:120]}",
+                    "row": "?", "field": "db", "value": p.name,
+                    "reason": f"Error al insertar '{p.name}': {str(exc)[:120]}",
                 })
-
         return imported, errors

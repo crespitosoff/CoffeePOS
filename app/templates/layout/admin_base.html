@@ -23,10 +23,11 @@
     <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
 
         {% set nav_items = [
-            ('admin.dashboard',         'dashboard',    'Dashboard'),
-            ('admin.products',          'inventory_2',  'Productos'),
-            ('admin.users',             'group',        'Usuarios'),
-            ('admin.import_products_form', 'upload_file', 'Importar CSV'),
+            ('admin.dashboard',         'dashboard',       'Dashboard'),
+            ('admin.products',          'inventory_2',     'Productos'),
+            ('admin.tables',            'deck',            'Mesas'),
+            ('admin.users',             'group',           'Usuarios'),
+            ('admin.import_products_form', 'upload_file',  'Importar CSV'),
         ] %}
 
         {% for endpoint, icon, label in nav_items %}

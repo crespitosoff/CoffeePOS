@@ -32,13 +32,13 @@
                 El archivo debe tener cabeceras en la primera fila. Columnas obligatorias:
             </p>
             <div class="flex flex-wrap gap-2 mt-1">
-                {% for col in ['name', 'price', 'stock'] %}
+                {% for col in ['nombre', 'precio', 'stock', 'categoria', 'sku'] %}
                 <code class="bg-surface-container text-primary px-3 py-1 rounded-lg font-label-md text-label-md font-bold">{{ col }}</code>
                 {% endfor %}
             </div>
             <p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Columnas opcionales:</p>
             <div class="flex flex-wrap gap-2">
-                {% for col in ['category', 'sku', 'description', 'unit_cost', 'min_stock'] %}
+                {% for col in ['descripcion', 'precio_costo', 'stock_minimo'] %}
                 <code class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-lg font-label-md text-label-md">{{ col }}</code>
                 {% endfor %}
             </div>

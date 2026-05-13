@@ -6,12 +6,53 @@
 <div>
     <h1 class="font-headline-md text-headline-md text-primary">Dashboard</h1>
     <p class="font-body-lg text-body-lg text-on-surface-variant">
-        Auditoría · Últimos 7 días hasta hoy ({{ today }})
+        Auditoría ·
+        {% if start_date and end_date %}
+            {{ start_date.strftime('%d/%m/%Y') }} – {{ end_date.strftime('%d/%m/%Y') }}
+        {% else %}
+            Últimos 7 días hasta hoy ({{ today }})
+        {% endif %}
     </p>
 </div>
 {% endblock %}
 
 {% block admin_content %}
+
+{# ── Filtros de Fecha ─────────────────────────────────────────────────────── #}
+<form method="GET" action="{{ url_for('admin.dashboard') }}"
+      class="flex flex-wrap items-end gap-4 mb-8
+             bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/15">
+    <div class="flex flex-col gap-1">
+        <label class="font-label-md text-label-md text-on-surface-variant" for="start_date">
+            Desde
+        </label>
+        <input id="start_date" name="start_date" type="date"
+               value="{{ start_date.isoformat() if start_date else '' }}"
+               class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
+                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none"/>
+    </div>
+    <div class="flex flex-col gap-1">
+        <label class="font-label-md text-label-md text-on-surface-variant" for="end_date">
+            Hasta
+        </label>
+        <input id="end_date" name="end_date" type="date"
+               value="{{ end_date.isoformat() if end_date else '' }}"
+               class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
+                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none"/>
+    </div>
+    <button type="submit"
+            class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary
+                   rounded-xl font-title-md text-title-md hover:opacity-90 transition-opacity">
+        <span class="material-symbols-outlined text-sm">filter_list</span>
+        Aplicar
+    </button>
+    <a href="{{ url_for('admin.dashboard') }}"
+       class="flex items-center gap-2 px-5 py-2.5 border border-outline-variant text-on-surface-variant
+              rounded-xl font-title-md text-title-md hover:bg-surface-container transition-colors">
+        <span class="material-symbols-outlined text-sm">restart_alt</span>
+        Hoy
+    </a>
+</form>
 
 {# ── KPI Cards ───────────────────────────────────────────────────────────── #}
 {% if daily %}
@@ -49,36 +90,36 @@
         <p class="font-label-md text-label-md text-on-surface-variant">tarjeta + transferencia</p>
     </div>
 
-    {# Alertas #}
+    {# Alertas ── muestra cajas sin cerrar GLOBALES #}
+    {% set has_alert = (open_sessions_total > 0) or suspicious %}
     <div class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
-        {% if daily.open_sessions_alert or suspicious %}
-            bg-error-container/30 border-error/30
-        {% else %}
-            bg-surface-container-lowest border-outline-variant/15
-        {% endif %}">
+                {{ 'bg-error-container/30 border-error/30' if has_alert else 'bg-surface-container-lowest border-outline-variant/15' }}">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alertas</span>
-            <span class="material-symbols-outlined text-xl
-                {% if daily.open_sessions_alert or suspicious %}text-error{% else %}text-on-surface-variant{% endif %}"
+            <span class="material-symbols-outlined text-xl {{ 'text-error' if has_alert else 'text-on-surface-variant' }}"
                   style="font-variation-settings:'FILL' 1;">warning</span>
         </div>
-        <p class="font-headline-lg text-headline-lg {% if suspicious %}text-error{% else %}text-on-surface{% endif %}">
-            {{ suspicious | length  }}
+        <p class="font-headline-lg text-headline-lg {{ 'text-error' if has_alert else 'text-on-surface' }}">
+            {{ suspicious | length }}
         </p>
         <p class="font-label-md text-label-md text-on-surface-variant">
             retiro(s) sospechoso(s)
-            {% if daily.open_sessions_alert %} · caja sin cerrar{% endif %}
+            {% if open_sessions_total > 0 %}
+                · <span class="text-error font-semibold">{{ open_sessions_total }} caja(s) sin cerrar</span>
+            {% endif %}
         </p>
     </div>
 </div>
 {% endif %}
 
-{# ── Tabla de Auditoría de Sesiones ──────────────────────────────────────── #}
+{# ── Tabla de Auditoría ──────────────────────────────────────────────────── #}
 <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 mb-8 overflow-hidden">
     <div class="px-6 py-4 border-b border-outline-variant/15 flex items-center justify-between">
         <div>
             <h2 class="font-title-lg text-title-lg text-on-surface">Historial de Caja</h2>
-            <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Últimos 7 días · Descuadres marcados</p>
+            <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">
+                Rango seleccionado · Descuadres marcados
+            </p>
         </div>
         <span class="material-symbols-outlined text-on-surface-variant">receipt_long</span>
     </div>
@@ -101,7 +142,7 @@
             <tbody>
                 {% for s in audit_trail %}
                 <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors
-                           {% if s.has_alerts %}bg-error-container/10{% endif %}">
+                           {{ 'bg-error-container/10' if s.has_alerts else '' }}">
                     <td class="py-4 px-5 font-title-md text-title-md text-on-surface">
                         {{ s.opener }}
                         {% if s.has_alerts %}
@@ -110,40 +151,30 @@
                         {% endif %}
                     </td>
                     <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
-                        {% if s.opened_at %}
-                            {{ s.opened_at.strftime('%d/%m %H:%M') }}
-                        {% else %}—{% endif %}
+                        {{ s.opened_at.strftime('%d/%m %H:%M') if s.opened_at else '—' }}
                     </td>
                     <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
                         {% if s.closed_at %}
                             {{ s.closed_at.strftime('%d/%m %H:%M') }}
                         {% else %}
-                            <span class="text-warning bg-secondary-container/40 px-2 py-0.5 rounded-full text-xs">Abierta</span>
+                            <span class="text-secondary bg-secondary-container/40 px-2 py-0.5 rounded-full text-xs font-medium">Abierta</span>
                         {% endif %}
                     </td>
                     <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
                         ${{ "{:,.0f}".format(s.opening_amount) }}
                     </td>
                     <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
-                        {% if s.expected_amount %}
-                            ${{ "{:,.0f}".format(s.expected_amount) }}
-                        {% else %}—{% endif %}
+                        {{ '$' ~ "{:,.0f}".format(s.expected_amount) if s.expected_amount else '—' }}
                     </td>
                     <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
-                        {% if s.closing_amount %}
-                            ${{ "{:,.0f}".format(s.closing_amount) }}
-                        {% else %}—{% endif %}
+                        {{ '$' ~ "{:,.0f}".format(s.closing_amount) if s.closing_amount else '—' }}
                     </td>
                     <td class="py-4 px-4 font-title-md text-title-md">
                         {% if s.difference is not none %}
                             <span class="px-3 py-1 rounded-full text-sm font-semibold
-                                {% if s.discrepancy_status == 'deficit' %}
-                                    bg-error/15 text-error
-                                {% elif s.discrepancy_status == 'surplus' %}
-                                    bg-tertiary/15 text-tertiary
-                                {% else %}
-                                    bg-primary/10 text-primary
-                                {% endif %}">
+                                {% if s.discrepancy_status == 'deficit' %}bg-error/15 text-error
+                                {% elif s.discrepancy_status == 'surplus' %}bg-tertiary/15 text-tertiary
+                                {% else %}bg-primary/10 text-primary{% endif %}">
                                 {% if s.difference > 0 %}+{% endif %}${{ "{:,.0f}".format(s.difference) }}
                             </span>
                         {% else %}
@@ -176,7 +207,7 @@
     </div>
 </div>
 
-{# ── Retiros Sospechosos ─────────────────────────────────────────────────── #}
+{# ── Retiros Sospechosos ──────────────────────────────────────────────────── #}
 {% if suspicious %}
 <div class="bg-error-container/20 rounded-2xl shadow-sm border border-error/30 overflow-hidden">
     <div class="px-6 py-4 border-b border-error/20 flex items-center gap-3">
@@ -224,7 +255,9 @@
     <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings:'FILL' 1;">verified_user</span>
     <div>
         <p class="font-title-md text-title-md text-on-surface">Sin retiros sospechosos</p>
-        <p class="font-body-lg text-body-lg text-on-surface-variant">No se detectaron movimientos de alto riesgo en los últimos 7 días.</p>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">
+            No se detectaron movimientos de alto riesgo en el período seleccionado.
+        </p>
     </div>
 </div>
 {% endif %}

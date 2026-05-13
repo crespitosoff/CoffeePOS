@@ -252,6 +252,18 @@ class ReportService:
             if ReportService._is_suspicious_movement(m)
         ]
 
+    @staticmethod
+    def count_open_sessions() -> int:
+        """
+        Retorna el número de sesiones de caja con status OPEN en este momento
+        (sin filtro de fecha). Usado para la alerta del dashboard admin.
+        """
+        return (
+            db.session.query(RegisterSession)
+            .filter(RegisterSession.status == RegisterStatus.OPEN)
+            .count()
+        )
+
     # ------------------------------------------------------------------
     # Helpers privados
     # ------------------------------------------------------------------

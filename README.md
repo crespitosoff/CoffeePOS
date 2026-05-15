@@ -126,9 +126,10 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 **Prioridad:** Media  
 **Criterios:**
 - Template CSV descargable
-- Validación de formato y datos
+- Exportación del catálogo activo completo
+- Validación de formato y datos al vuelo (Upsert)
 - Reporte de errores por fila
-- Uso de pandas para parsing
+- Uso del módulo nativo `csv` de Python (sin dependencias externas)
 
 ### RF-006: CRUD de Usuarios
 **Descripción:** Admin puede gestionar usuarios del sistema.  
@@ -139,12 +140,13 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 - No puede desactivarse a sí mismo
 
 ### RF-007: Visualización de Mesas
-**Descripción:** Cajero ve estado de todas las mesas en dashboard.  
+**Descripción:** Cajero y Admin ven estado de todas las mesas en dashboard.  
 **Prioridad:** Alta  
 **Criterios:**
 - Estados: disponible (verde), ocupada (rojo)
+- Visión global independiente de la sesión de caja (todas las órdenes OPEN)
 - Click en mesa abre orden
-- Auto-refresh cada 30 segundos
+- Actualización en tiempo real vía short-polling (fetch/AJAX) sin recargar la página
 
 ### RF-008: Creación de Orden
 **Descripción:** Cajero puede crear orden para una mesa.  
@@ -293,9 +295,9 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 
 ### RNF-006: Compatibilidad
 - Navegadores: Chrome 90+, Firefox 88+, Safari 14+
-- PostgreSQL 15+
+- SQLite (Desarrollo local) / PostgreSQL 15+ (Producción)
 - Python 3.10+
-- Funciona en desarrollo local (Windows/Linux/Mac)
+- Funciona en desarrollo local sin dependencias restrictivas (Windows/Linux/Mac)
 
 ### RNF-007: Disponibilidad
 - Sistema funcional 24/7 en producción (si se despliega)
@@ -362,13 +364,13 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 | **Flask-Migrate** | 4.0+ | Migraciones de BD (Alembic) |
 | **Werkzeug** | 3.0+ | Utilidades (hashing passwords) |
 | **python-dotenv** | 1.0+ | Gestión de variables de entorno |
-| **pandas** | 2.0+ | Procesamiento de archivos CSV |
+| **csv (nativo)** | - | Procesamiento de archivos CSV (Upsert y Exportación) |
 
 ### 5.2 Base de Datos
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| **PostgreSQL** | 15+ | Base de datos relacional |
-| **psycopg2-binary** | 2.9+ | Driver PostgreSQL para Python |
+| **SQLite / PostgreSQL** | 3+ / 15+ | Base de datos relacional (Dev / Prod) |
+| **psycopg2-binary** | 2.9+ | Driver PostgreSQL para Python (Solo producción) |
 
 ### 5.3 Frontend
 | Tecnología | Versión | Propósito |
@@ -414,10 +416,12 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 │   │   ├── __init__.py
 │   │   ├── auth_service.py
 │   │   ├── cash_movement_service.py
+│   │   ├── import_service.py
 │   │   ├── order_service.py
 │   │   ├── payment_service.py
 │   │   ├── product_service.py
 │   │   ├── register_service.py
+│   │   ├── report_service.py
 │   │   └── user_service.py
 │   ├── templates
 │   │   ├── admin
@@ -480,3 +484,4 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 
 **Revisiones:**
 - v1.0 (13/02/2025): Documento inicial
+- v1.1 (14/05/2026): Actualización de requerimientos, eliminación de Pandas, soporte para SQLite, mejoras en UI, exportación CSV y UI responsiva.

@@ -11,7 +11,7 @@
     <div class="px-6 py-7 border-b border-white/10">
         <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary-fixed-dim text-3xl"
-                  style="font-variation-settings:'FILL' 1;">local_cafe</span>
+                style="font-variation-settings:'FILL' 1;">local_cafe</span>
             <div>
                 <p class="font-headline-md text-headline-md text-inverse-on-surface leading-none">CoffeePOS</p>
                 <p class="font-label-md text-label-md text-inverse-on-surface/50 mt-0.5">Panel Administrador</p>
@@ -23,24 +23,23 @@
     <div class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
 
         {% set nav_items = [
-            ('admin.dashboard',         'dashboard',       'Dashboard'),
-            ('admin.products',          'inventory_2',     'Productos'),
-            ('admin.tables',            'deck',            'Mesas'),
-            ('admin.users',             'group',           'Usuarios'),
-            ('admin.import_products_form', 'upload_file',  'Importar CSV'),
+        ('admin.dashboard', 'dashboard', 'Dashboard'),
+        ('admin.products', 'inventory_2', 'Productos'),
+        ('admin.tables', 'deck', 'Mesas'),
+        ('admin.users', 'group', 'Usuarios'),
+        ('admin.import_products_form', 'upload_file', 'Importar CSV'),
         ] %}
 
         {% for endpoint, icon, label in nav_items %}
         {% set is_active = request.endpoint == endpoint %}
-        <a href="{{ url_for(endpoint) }}"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md transition-all
+        <a href="{{ url_for(endpoint) }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md transition-all
                   {% if is_active %}
                       bg-primary-fixed-dim/20 text-primary-fixed-dim
                   {% else %}
                       text-inverse-on-surface/70 hover:bg-white/10 hover:text-inverse-on-surface
                   {% endif %}">
-            <span class="material-symbols-outlined text-xl"
-                  {% if is_active %}style="font-variation-settings:'FILL' 1;"{% endif %}>
+            <span class="material-symbols-outlined text-xl" {% if is_active %}style="font-variation-settings:'FILL' 1;"
+                {% endif %}>
                 {{ icon }}
             </span>
             {{ label }}
@@ -56,35 +55,31 @@
         {# Info del usuario logueado #}
         <div class="flex items-center gap-3 px-4 py-3 mb-1">
             <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
-            {% if current_user.avatar_url %}
+                {% if current_user.avatar_url %}
                 <img alt="Foto de perfil"
                     class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
                     src="{{ current_user.avatar_url }}" />
-            {% else %}
+                {% else %}
                 <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
                     <span class="material-symbols-outlined text-primary-fixed-dim text-lg">person</span>
                 </div>
-            {% endif %}
+                {% endif %}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="font-title-md text-title-md text-inverse-on-surface truncate">
-                    {{ current_user.username }}
-                </p>
+                <p class="font-title-md text-title-md text-inverse-on-surface truncate">{{ current_user.username }}</p>
                 <p class="font-label-md text-label-md text-inverse-on-surface/50">{{ current_user.role.name }}</p>
             </div>
         </div>
 
         {# Ir al POS #}
-        <a href="{{ url_for('pos.dashboard') }}"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md
+        <a href="{{ url_for('pos.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md
                   text-inverse-on-surface/70 hover:bg-white/10 hover:text-inverse-on-surface transition-all">
             <span class="material-symbols-outlined text-xl">point_of_sale</span>
             Ir al POS
         </a>
 
         {# Logout #}
-        <a href="{{ url_for('auth.logout') }}"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md
+        <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-title-md text-title-md
                   text-inverse-on-surface/70 hover:bg-error/20 hover:text-error transition-all">
             <span class="material-symbols-outlined text-xl">logout</span>
             Cerrar Sesión

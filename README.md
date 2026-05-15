@@ -15,9 +15,9 @@ Antes de instalar, asegúrate de tener:
 
 | Herramienta | Versión mínima | Verificar con |
 |---|---|---|
-| Python          | 3.10+          | `python --version` |
-| PostgreSQL      | 15+            |            `psql --version` |
-| Git          | cualquier version | `git --version` |
+| Python | 3.10+ | `python --version` |
+| PostgreSQL | 15+ | `psql --version` |
+| Git | cualquier versión | `git --version` |
 
 ---
 
@@ -101,7 +101,7 @@ python seed.py
 ```
 
 Esto crea:
-- 2 usuarios de prueba (ver [Credenciales por defecto](#credenciales-por-defecto))
+- Usuarios de prueba (ver [Credenciales por defecto](#credenciales-por-defecto))
 - 5 categorías y 15 productos de ejemplo
 - 8 mesas
 - Configuración de la tienda
@@ -121,7 +121,9 @@ Abre tu navegador en: **http://localhost:5000**
 | Rol | Usuario | Contraseña | Acceso |
 |---|---|---|---|
 | Administrador | `admin` | `admin123` | Panel admin + POS |
-| Cajero | `cashier` | `cashier123` | Solo POS |
+| Administrador suplente | `adminsuple` | `adminsuple123` | Panel admin + POS |
+| Cajero | `cajero1` | `cajero1123` | Solo POS |
+| Cajero | `cajero2` | `cajero2123` | Solo POS |
 
 > **Importante:** Cambia estas contraseñas antes de desplegar en producción.
 
@@ -160,7 +162,7 @@ CoffeePOS/
 │   ├── DATABASE.md          # Modelos y esquema de BD
 │   ├── API.md               # Rutas y endpoints
 │   ├── SERVICES.md          # Descripción de servicios
-│   ├── seed_flask_shell.py  # Flujo de demostración desde Flask 
+│   ├── seed_flask_shell.py  # Flujo de demostración desde Flask shell
 │   └── CoffeePOS.sql        # Script SQL del esquema de la BD
 ├── migrations/              # Migraciones Alembic
 ├── config.py                # Configuración desde .env
@@ -192,21 +194,37 @@ pip install -r requirements.txt
 
 ## Stack Tecnológico
 
-| Capa | Tecnología |
+### Backend
+| Tecnología | Versión | Propósito |
+|---|---|---|
+| **Python** | 3.10+ | Lenguaje principal |
+| **Flask** | 3.0 | Framework web |
+| **SQLAlchemy** | 2.0 | ORM para la BD |
+| **Flask-Login** | 0.6+ | Gestión de sesiones |
+| **Flask-Migrate** | 4.0+ | Migraciones (Alembic) |
+| **Werkzeug** | 3.0+ | Hashing de contraseñas |
+| **python-dotenv** | 1.0+ | Variables de entorno |
+| **csv (nativo)** | — | Importación/exportación CSV |
+
+### Base de Datos
+| Tecnología | Versión | Propósito |
+|---|---|---|
+| **PostgreSQL** | 15+ | BD relacional (producción) |
+| **psycopg2-binary** | 2.9+ | Driver PostgreSQL para Python |
+
+### Frontend
+| Tecnología | Propósito |
 |---|---|
-| Backend | Python 3.10+, Flask 3.1 |
-| ORM | SQLAlchemy 2.0 + Flask-Migrate |
-| Autenticación | Flask-Login |
-| Base de datos | PostgreSQL 15+ |
-| Frontend | Jinja2, Tailwind CSS, JavaScript |
-| Servidor producción | Gunicorn |
+| **Jinja2** | Motor de templates |
+| **Tailwind CSS** | Framework CSS (CDN) |
+| **JavaScript ES6+** | Interactividad y AJAX |
 
 ---
 
 ## Funcionalidades
 
 **Punto de Venta (POS):**
-- Dashboard de mesas con estado en tiempo real
+- Dashboard de mesas con estado en tiempo real (short-polling)
 - Creación y gestión de órdenes por mesa o para llevar
 - Pago en efectivo, tarjeta o transferencia
 - Cálculo automático de cambio y generación de recibo imprimible
@@ -219,7 +237,7 @@ pip install -r requirements.txt
 
 **Panel de Administración:**
 - CRUD completo de productos, usuarios y mesas
-- Importación y exportación masiva de productos vía CSV
+- Importación y exportación masiva de productos vía CSV (con lógica UPSERT)
 - Reportes de ventas y auditoría de caja por rango de fechas
 
 ---
@@ -227,53 +245,60 @@ pip install -r requirements.txt
 ## Alcance del Proyecto
 
 ### Incluye
-
-- CRUD de productos con control de stock
+- CRUD de productos con control de stock e indicadores de stock bajo
 - Categorización de productos
-- Importación masiva vía CSV
+- Importación masiva vía CSV con validación por fila
 - Sistema de autenticación con roles (admin / cashier)
 - Órdenes por mesa y para llevar
 - Múltiples métodos de pago
-- Control de caja por turno
+- Control de caja por turno con trazabilidad de efectivo
 - Reportes de ventas y auditoría
 
 ### No incluye
-
 - Modificadores de productos (extra shot, leche alternativa, etc.)
 - Sistema de descuentos y cupones
 - Reportes con gráficas
 - Integración con pasarelas de pago externas
 - Facturación electrónica
-- Multi-sucursal
-- App móvil nativa
+- Multi-sucursal / multi-idioma
+- App móvil nativa / modo offline
 
 ---
 
-## Requisitos Funcionales y No Funcionales
-
-### Funcionales destacados
+## Requisitos Funcionales Destacados
 
 | ID | Descripción | Prioridad |
 |---|---|---|
 | RF-001 | Autenticación con username y password | Alta |
 | RF-002 | Control de acceso por roles (admin / cashier) | Alta |
 | RF-003 | CRUD de productos con soft delete | Alta |
-| RF-007 | Dashboard de mesas con estado de ocupación | Alta |
+| RF-005 | Importación CSV con UPSERT por SKU y exportación del catálogo | Media |
+| RF-007 | Dashboard de mesas con estado global en tiempo real | Alta |
 | RF-012 | Proceso de pago con múltiples métodos | Alta |
-| RF-013 | Generación de recibo imprimible | Alta |
+| RF-013 | Generación de recibo imprimible (formato 80mm) | Alta |
 | RF-015 | Apertura de caja con monto inicial | Alta |
 | RF-016 | Cierre de caja con cálculo de diferencia | Alta |
+| RF-020 | Cancelación de orden con devolución de stock | Media |
 
-### No funcionales destacados
+## Requisitos No Funcionales Destacados
 
 | ID | Descripción |
 |---|---|
-| RNF-002 | Passwords hasheados (Werkzeug PBKDF2), protección CSRF, SQL injection prevenido por ORM |
+| RNF-002 | Passwords hasheados (Werkzeug PBKDF2), SQL injection prevenido por ORM |
 | RNF-003 | Interfaz responsive (desktop, tablet, mobile) |
-| RNF-004 | Código modular con Blueprints y capa de servicios |
-| RNF-006 | Compatible con Chrome 90+, Firefox 88+, Safari 14+ |
-| RNF-008 | Transacciones ACID, constraints de BD, validaciones en capa de servicios |
+| RNF-004 | Código modular con Blueprints y capa de servicios (PEP 8) |
+| RNF-006 | Compatible con Chrome 90+, Firefox 88+, Safari 14+ / Python 3.10+ |
+| RNF-008 | Transacciones ACID, constraints de BD, validaciones en servicios |
 
 ---
 
-*Versión 1.0 — Proyecto académico de último semestre*
+## Aprobaciones
+
+**Desarrolladores:**
+- Backend: [@Crespitosoff](https://github.com/Crespitosoff)
+- Frontend: [@cortesperdomojulian6-max](https://github.com/cortesperdomojulian6-max)
+- Integrador: [@Tomas-Hack1](https://github.com/Tomas-Hack1)
+
+**Revisiones:**
+- v1.0 (13/02/2025): Documento inicial
+- v1.1 (14/05/2026): Actualización de requerimientos, soporte PostgreSQL, importación CSV con UPSERT, instrucciones de instalación y documentación técnica.

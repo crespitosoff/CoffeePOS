@@ -6,7 +6,8 @@
 
 {% block content %}
 <!-- Barra Lateral -->
-<nav class="bg-surface-container-low font-title-md text-title-md h-screen left-0 w-48 fixed flex flex-col py-4 md:py-6 border-r border-outline-variant/15 hidden md:flex z-50">
+<nav
+    class="bg-surface-container-low font-title-md text-title-md h-screen left-0 w-48 fixed flex flex-col py-4 md:py-6 border-r border-outline-variant/15 hidden md:flex z-50">
     <div class="px-4 md:px-6 mb-8">
         <h1 class="font-headline-md text-headline-md font-bold text-primary">CoffeePOS</h1>
     </div>
@@ -39,9 +40,17 @@
         <div class="border-t border-outline-variant/15 pt-3 space-y-1">
             <!-- Perfil del cajero -->
             <div class="flex items-center gap-3 px-2 py-2">
-                <img alt="Profile"
-                    class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
-                    src="{{ current_user.avatar_url }}" />
+                <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
+                    {% if current_user.avatar_url %}
+                    <img alt="Foto de perfil"
+                        class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-high"
+                        src="{{ current_user.avatar_url }}" />
+                    {% else %}
+                    <div class="w-9 h-9 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary-fixed-dim text-lg">person</span>
+                    </div>
+                    {% endif %}
+                </div>
                 <div class="flex-1 min-w-0">
                     <p class="font-title-md text-title-md text-on-surface truncate">{{ current_user.username }}</p>
                     <p class="font-label-md text-label-md text-on-surface-variant">{{ current_user.role.name }}</p>
@@ -60,7 +69,8 @@
 <!-- Área Principal -->
 <main class="flex-1 flex flex-col md:ml-48 min-h-screen">
     <!-- Barra Superior -->
-    <header class="bg-surface border-b border-outline-variant/15 flex justify-between items-center w-full px-4 md:px-6 py-4 sticky top-0 z-40">
+    <header
+        class="bg-surface border-b border-outline-variant/15 flex justify-between items-center w-full px-4 md:px-6 py-4 sticky top-0 z-40">
         <!-- Fecha y hora -->
         <div class="hidden md:flex items-center gap-2 text-on-surface-variant font-title-md text-title-md">
             <span class="material-symbols-outlined text-base">calendar_today</span>
@@ -88,7 +98,8 @@
         {% if session %}
         <div class="bg-primary/10 border border-primary/20 p-4 rounded-xl flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">point_of_sale</span>
+                <span class="material-symbols-outlined text-primary"
+                    style="font-variation-settings:'FILL' 1;">point_of_sale</span>
                 <div>
                     <span class="font-title-md text-title-md text-on-surface">
                         Caja abierta · Monto inicial:
@@ -101,14 +112,16 @@
                 </div>
             </div>
             <a href="{{ url_for('pos.close_register_form') }}"
-               class="bg-surface border border-primary/20 text-primary font-title-md text-title-md px-4 py-2 rounded-full hover:bg-primary/10 transition-colors text-sm whitespace-nowrap">
+                class="bg-surface border border-primary/20 text-primary font-title-md text-title-md px-4 py-2 rounded-full hover:bg-primary/10 transition-colors text-sm whitespace-nowrap">
                 Cerrar Caja
             </a>
         </div>
         {% else %}
-        <div class="bg-secondary-container/40 border border-secondary/20 p-4 rounded-xl flex items-center justify-between">
+        <div
+            class="bg-secondary-container/40 border border-secondary/20 p-4 rounded-xl flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1;">lock_open</span>
+                <span class="material-symbols-outlined text-secondary"
+                    style="font-variation-settings:'FILL' 1;">lock_open</span>
                 <div>
                     <span class="font-title-md text-title-md text-on-surface">No hay caja abierta</span>
                     <p class="font-label-md text-label-md text-on-surface-variant mt-0.5">
@@ -117,7 +130,7 @@
                 </div>
             </div>
             <a href="{{ url_for('pos.open_register_form') }}"
-               class="bg-primary text-on-primary font-title-md text-title-md px-4 py-2 rounded-full hover:opacity-90 transition-opacity text-sm whitespace-nowrap">
+                class="bg-primary text-on-primary font-title-md text-title-md px-4 py-2 rounded-full hover:opacity-90 transition-opacity text-sm whitespace-nowrap">
                 Abrir Caja
             </a>
         </div>
@@ -132,7 +145,8 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-4">
-                <button onclick="window.location.reload()" class="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-primary">
+                <button onclick="window.location.reload()"
+                    class="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full hover:bg-surface-container-highest transition-colors text-on-surface-variant hover:text-primary">
                     <span class="material-symbols-outlined text-sm">refresh</span>
                     <span class="font-title-md text-title-md">Refrescar</span>
                 </button>
@@ -153,19 +167,23 @@
             {% if table.status == 'occupied' %}
             <a href="{{ url_for('pos.view_order', table_id=table.id) }}"
                 class="bg-surface-variant p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group min-h-[150px] border border-outline-variant/30 hover:shadow-md transition-shadow block">
-                <span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings:'FILL' 1;">deck</span>
+                <span class="material-symbols-outlined text-4xl text-primary"
+                    style="font-variation-settings:'FILL' 1;">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md mt-1" style="color: #EF4444;">{{ table.capacity }} personas</p>
+                    <p class="font-label-md text-label-md mt-1" style="color: #EF4444;">{{ table.capacity }} personas
+                    </p>
                 </div>
             </a>
             {% else %}
             <a href="{{ url_for('pos.view_order', table_id=table.id) }}"
                 class="bg-surface-container-lowest p-2 md:p-3 lg:p-4 xl:p-6 rounded-xl flex flex-col items-center justify-center gap-3 relative overflow-hidden group hover:bg-surface-container-low transition-colors min-h-[150px] border border-outline-variant/15 hover:shadow-md block">
-                <span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
+                <span
+                    class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary transition-colors">deck</span>
                 <div class="text-center">
                     <h3 class="font-title-lg text-title-lg text-on-surface">{{ table.name }}</h3>
-                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{ table.capacity }} personas</p>
+                    <p class="font-label-md text-label-md text-on-surface-variant mt-1" style="color: #10B981;">{{
+                        table.capacity }} personas</p>
                 </div>
             </a>
             {% endif %}
@@ -176,7 +194,7 @@
         {% if current_user.role and current_user.role.value == 'admin' %}
         <div class="mt-4 pt-4 border-t border-outline-variant/15">
             <a href="{{ url_for('admin.dashboard') }}"
-               class="inline-flex items-center gap-2 text-primary font-title-md text-title-md hover:underline">
+                class="inline-flex items-center gap-2 text-primary font-title-md text-title-md hover:underline">
                 <span class="material-symbols-outlined text-base">admin_panel_settings</span>
                 Ir al Panel Administrativo
             </a>
@@ -217,14 +235,14 @@
                 document.querySelectorAll('a[href^="/pos/order/table/"]').forEach(a => {
                     const hrefParts = a.getAttribute('href').split('/');
                     const tableId = hrefParts[hrefParts.length - 1];
-                    
+
                     if (data[tableId]) {
                         const isOccupied = data[tableId] === 'occupied';
                         const badgeColor = isOccupied ? '#EF4444' : '#10B981';
                         const badgeClass = isOccupied ? 'bg-[#EF4444]' : 'bg-[#10B981]';
                         const iconColor = isOccupied ? 'text-primary' : 'text-on-surface-variant';
                         const statusText = isOccupied ? 'Ocupada' : 'Disponible';
-                        
+
                         const h3Text = a.querySelector('h3').textContent;
                         const pEl = a.querySelector('p');
                         const pText = pEl ? pEl.textContent.split('·')[0].trim() : '';

@@ -3,25 +3,38 @@ from app.models.domain import Product, GenericStatus
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Optional
 
+
 class ProductService:
+    """Gestión del catálogo de productos e inventario."""
+
     @staticmethod
     def get_all_products(category_id: str = None, is_active: bool = True) -> List[Product]:
+        """
+        Retorna productos ordenados por nombre.
+        Por defecto filtra solo activos; pasar is_active=False para ver todos los estados.
+        """
         query = db.session.query(Product)
-        
+
         if is_active:
             query = query.filter(Product.status == GenericStatus.ACTIVE)
-            
+
         if category_id:
             query = query.filter(Product.category_id == category_id)
-            
+
         return query.order_by(Product.name.asc()).all()
 
     @staticmethod
     def get_product_by_id(product_id: str) -> Optional[Product]:
+        """Retorna un producto por UUID o None si no existe."""
         return db.session.get(Product, product_id)
 
     @staticmethod
     def create_product(data: dict) -> Product:
+        """
+        Crea un producto nuevo.
+        Campos esperados en data: name, price, sku, category_id, description,
+        unit_cost, stock, min_stock, image_url.
+        """
         try:
             product = Product(
                 name=data.get('name'),
@@ -43,18 +56,20 @@ class ProductService:
 
     @staticmethod
     def update_product(product_id: str, data: dict) -> Product:
+        """
+        Actualiza solo los campos permitidos presentes en data.
+        El campo status se convierte de string a GenericStatus automáticamente.
+        """
         product = ProductService.get_product_by_id(product_id)
         if not product:
             raise ValueError("Producto no encontrado.")
 
         try:
-            # Actualizar solo los campos permitidos y proporcionados
-            updateable_fields = ['name', 'price', 'category_id', 'sku', 'description', 
+            updateable_fields = ['name', 'price', 'category_id', 'sku', 'description',
                                  'unit_cost', 'stock', 'min_stock', 'image_url', 'status']
-            
+
             for field in updateable_fields:
                 if field in data:
-                    # Parsear status si viene como string
                     if field == 'status' and isinstance(data[field], str):
                         setattr(product, field, GenericStatus(data[field]))
                     else:
@@ -68,12 +83,12 @@ class ProductService:
 
     @staticmethod
     def delete_product(product_id: str) -> bool:
+        """Borrado lógico: marca el producto como ARCHIVED sin eliminarlo de la BD."""
         product = ProductService.get_product_by_id(product_id)
         if not product:
             raise ValueError("Producto no encontrado.")
-            
+
         try:
-            # Borrado lógico
             product.status = GenericStatus.ARCHIVED
             db.session.commit()
             return True
@@ -83,10 +98,14 @@ class ProductService:
 
     @staticmethod
     def update_stock(product_id: str, quantity_change: int) -> Product:
+        """
+        Ajusta el stock del producto sumando quantity_change (negativo para restar).
+        Usado por order_service al agregar/quitar items y al cancelar órdenes.
+        """
         product = ProductService.get_product_by_id(product_id)
         if not product:
             raise ValueError("Producto no encontrado.")
-            
+
         try:
             product.stock += quantity_change
             db.session.commit()

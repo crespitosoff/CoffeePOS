@@ -5,22 +5,25 @@ from app.extensions import db
 
 auth_bp = Blueprint('auth', __name__)
 
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # Validación: Interceptar y redirigir usuarios activos inmediatamente
+    # Redirigir inmediatamente si el usuario ya tiene sesión activa
     if current_user.is_authenticated:
         if current_user.role == UserRole.ADMIN:
             return redirect('/admin/dashboard')
         return redirect('/pos/dashboard')
-    
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
+
         user = db.session.query(User).filter(User.username == username).first()
-        
+
         if user and user.check_password(password):
             login_user(user)
+            # Guardar role en session de Flask para que los decoradores
+            # @admin_required y @cashier_required puedan leerlo sin consultar la BD
             session['user_id'] = str(user.id)
             session['role'] = user.role.value
             if user.role == UserRole.ADMIN:
@@ -29,8 +32,9 @@ def login():
                 return redirect('/pos/dashboard')
         else:
             flash("Credenciales inválidas")
-            
+
     return render_template('auth/login.html')
+
 
 @auth_bp.route('/logout', methods=['GET'])
 @login_required

@@ -4,9 +4,13 @@ from app.extensions import db
 from app.models.domain import CashMovement, RegisterSession, MovementType, RegisterStatus
 from sqlalchemy.exc import SQLAlchemyError
 
+
 class CashMovementService:
+    """Único punto de escritura para movimientos de caja. Mantiene un saldo corrido por sesión."""
+
     @staticmethod
     def _get_current_balance(session_id: str) -> decimal.Decimal:
+        """Retorna el balance_after del último movimiento de la sesión, o 0 si no hay ninguno."""
         last_movement = db.session.query(CashMovement)\
             .filter_by(register_session_id=session_id)\
             .order_by(CashMovement.created_at.desc())\
@@ -15,6 +19,7 @@ class CashMovementService:
 
     @staticmethod
     def _validate_session_open(session_id: str) -> RegisterSession:
+        """Lanza ValueError si la sesión no existe o ya está cerrada."""
         session = db.session.get(RegisterSession, session_id)
         if not session:
             raise ValueError("La sesión de caja no existe.")
@@ -30,6 +35,11 @@ class CashMovementService:
         movement_type: MovementType,
         description: str = None,
     ):
+        """
+        Crea un CashMovement calculando balance_before y balance_after.
+        Todos los métodos públicos pasan por aquí — es la única función que escribe en la tabla.
+        Los retiros se pasan con amount negativo desde record_withdrawal.
+        """
         CashMovementService._validate_session_open(session_id)
 
         amount = decimal.Decimal(str(amount))
@@ -56,6 +66,7 @@ class CashMovementService:
 
     @staticmethod
     def record_opening(session_id: str, user_id: str, amount: decimal.Decimal):
+        """Registra el efectivo inicial al abrir la caja."""
         return CashMovementService._execute_movement(
             session_id, user_id, amount, MovementType.OPENING, "Apertura de caja"
         )
@@ -65,6 +76,7 @@ class CashMovementService:
         session_id: str, user_id: str,
         amount: decimal.Decimal, expected: decimal.Decimal,
     ):
+        """Registra el cierre de caja con diferencia entre efectivo real y esperado."""
         amount   = decimal.Decimal(str(amount))
         expected = decimal.Decimal(str(expected))
         difference = amount - expected
@@ -81,6 +93,7 @@ class CashMovementService:
         session_id: str, user_id: str,
         amount: decimal.Decimal, description: str,
     ):
+        """Registra un retiro manual. El amount se invierte a negativo internamente."""
         amount = decimal.Decimal(str(amount))
         if amount <= decimal.Decimal("0"):
             raise ValueError("El monto de retiro debe ser un valor positivo.")
@@ -93,6 +106,7 @@ class CashMovementService:
         session_id: str, user_id: str,
         amount: decimal.Decimal, description: str,
     ):
+        """Registra un depósito manual o el ingreso de efectivo de una venta."""
         amount = decimal.Decimal(str(amount))
         if amount <= decimal.Decimal("0"):
             raise ValueError("El monto de depósito debe ser un valor positivo.")
@@ -105,12 +119,14 @@ class CashMovementService:
         session_id: str, user_id: str,
         amount: decimal.Decimal, description: str,
     ):
+        """Registra un ajuste de discrepancia (puede ser positivo o negativo)."""
         return CashMovementService._execute_movement(
             session_id, user_id, amount, MovementType.ADJUSTMENT, description
         )
 
     @staticmethod
     def get_session_movements(session_id: str):
+        """Retorna todos los movimientos de una sesión ordenados cronológicamente."""
         return db.session.query(CashMovement)\
             .filter_by(register_session_id=session_id)\
             .order_by(CashMovement.created_at.asc())\
@@ -118,6 +134,7 @@ class CashMovementService:
 
     @staticmethod
     def get_cashier_movements(user_id: str, start_date, end_date):
+        """Retorna movimientos de un cajero específico en un rango de fechas."""
         return db.session.query(CashMovement)\
             .filter(
                 CashMovement.user_id == user_id,
@@ -127,6 +144,7 @@ class CashMovementService:
 
     @staticmethod
     def get_all_movements(start_date, end_date):
+        """Retorna todos los movimientos del sistema en un rango de fechas (para auditoría)."""
         return db.session.query(CashMovement)\
             .filter(
                 CashMovement.created_at >= start_date,

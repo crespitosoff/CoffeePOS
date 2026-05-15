@@ -6,7 +6,7 @@ Seguro para re-ejecución: aborta si ya existen usuarios en la BD.
 
 from app import create_app
 from app.extensions import db
-from app.models import (
+from app.models.domain import (
     User, Category, Product, Table, StoreSetting,
     UserRole, UserStatus, GenericStatus,
 )

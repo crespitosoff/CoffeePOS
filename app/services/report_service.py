@@ -59,8 +59,8 @@ class ReportService:
             start_dt = datetime.datetime.combine(start_date, datetime.time.min)
             query = query.filter(RegisterSession.opened_at >= start_dt)
         if end_date:
-            end_dt = datetime.datetime.combine(end_date, datetime.time.max)
-            query = query.filter(RegisterSession.opened_at <= end_dt)
+            end_dt = datetime.datetime.combine(end_date + datetime.timedelta(days=1), datetime.time.min)
+            query = query.filter(RegisterSession.opened_at < end_dt)
 
         sessions = query.order_by(RegisterSession.opened_at.desc()).all()
 
@@ -155,14 +155,14 @@ class ReportService:
             end_date = datetime.date.today()
 
         start_dt = datetime.datetime.combine(start_date, datetime.time.min)
-        end_dt = datetime.datetime.combine(end_date, datetime.time.max)
+        end_dt = datetime.datetime.combine(end_date + datetime.timedelta(days=1), datetime.time.min)
 
         paid_orders = (
             db.session.query(Order)
             .filter(
                 Order.status == OrderStatus.PAID,
                 Order.closed_at >= start_dt,
-                Order.closed_at <= end_dt,
+                Order.closed_at < end_dt,
             )
             .all()
         )
@@ -197,7 +197,7 @@ class ReportService:
             .filter(
                 RegisterSession.status == RegisterStatus.OPEN,
                 RegisterSession.opened_at >= start_dt,
-                RegisterSession.opened_at <= end_dt,
+                RegisterSession.opened_at < end_dt,
             )
             .all()
         )
@@ -231,14 +231,11 @@ class ReportService:
 
         if start_date:
             query = query.filter(
-                CashMovement.created_at
-                >= datetime.datetime.combine(start_date, datetime.time.min)
+                CashMovement.created_at >= datetime.datetime.combine(start_date, datetime.time.min)
             )
         if end_date:
-            query = query.filter(
-                CashMovement.created_at
-                <= datetime.datetime.combine(end_date, datetime.time.max)
-            )
+            end_dt = datetime.datetime.combine(end_date + datetime.timedelta(days=1), datetime.time.min)
+            query = query.filter(CashMovement.created_at < end_dt)
 
         movements = query.order_by(CashMovement.created_at.desc()).all()
 

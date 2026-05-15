@@ -46,7 +46,6 @@
                     <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="price">Precio <span class="sort-icon text-xs inline-block ml-1"></span></th>
                     <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="cost">Costo <span class="sort-icon text-xs inline-block ml-1"></span></th>
                     <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="stock">Stock <span class="sort-icon text-xs inline-block ml-1"></span></th>
-                    <th class="py-3 px-4">Descripción</th>
                     <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="status">Estado <span class="sort-icon text-xs inline-block ml-1"></span></th>
                     <th class="py-3 px-4 text-right">Acciones</th>
                 </tr>
@@ -62,7 +61,7 @@
                     data-stock="{{ p.stock if p.stock is not none else 999999 }}"
                     data-status="{{ p.status.value if p.status else '' }}"
                     data-updated="{{ p.updated_at.isoformat() if p.updated_at else '1970-01-01' }}">
-                    <td class="py-4 px-5 font-body-md text-body-md text-on-surface-variant">{{ p.sku }}</td>
+                    <td class="py-4 px-5 font-title-md text-title-md text-on-surface-variant">{{ p.sku }}</td>
                     <td class="py-4 px-4 font-title-md text-title-md text-on-surface">
                         {{ p.name }}
                         {% if p.stock is not none and p.min_stock is not none and p.stock <= p.min_stock and p.stock >= 0 %}
@@ -83,21 +82,6 @@
                     <td class="py-4 px-4 font-body-md text-body-md
                                {% if p.stock is not none and p.stock <= 0 %}text-error font-semibold{% else %}text-on-surface{% endif %}">
                         {{ p.stock if p.stock is not none else '∞' }}
-                    </td>
-                    <td class="py-4 px-4 font-body-md text-body-md text-on-surface-variant max-w-[200px]">
-                        {% if p.description %}
-                            {% if p.description|length > 40 %}
-                                <div class="truncate-desc">
-                                    <span class="desc-short">{{ p.description[:40] }}...</span>
-                                    <span class="desc-full hidden">{{ p.description }}</span>
-                                    <button class="text-primary text-sm hover:underline ml-1 btn-ver-mas">Ver más</button>
-                                </div>
-                            {% else %}
-                                {{ p.description }}
-                            {% endif %}
-                        {% else %}
-                            —
-                        {% endif %}
                     </td>
                     <td class="py-4 px-4">
                         {% if p.status and p.status.value == 'active' %}

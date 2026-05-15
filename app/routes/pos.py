@@ -21,18 +21,16 @@ def dashboard():
     raw_tables = db.session.query(Table).order_by(Table.name).all()
     session    = RegisterService.get_active_session(user_id=str(current_user.id))
 
-    # Determinar qué mesas tienen una orden OPEN en la sesión actual
-    occupied_table_ids: set[str] = set()
-    if session:
-        open_orders = (
-            db.session.query(Order)
-            .filter(
-                Order.status == _OS.OPEN,
-                Order.table_id.isnot(None),
-            )
-            .all()
+    # Determinar qué mesas tienen una orden OPEN (Global)
+    open_orders = (
+        db.session.query(Order)
+        .filter(
+            Order.status == _OS.OPEN,
+            Order.table_id.isnot(None),
         )
-        occupied_table_ids = {str(o.table_id) for o in open_orders}
+        .all()
+    )
+    occupied_table_ids = {str(o.table_id) for o in open_orders}
 
     # Construir lista enriquecida con estado de ocupación
     tables = [
@@ -55,13 +53,11 @@ def api_tables_status():
     raw_tables = db.session.query(Table).all()
     session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
     
-    occupied_table_ids = set()
-    if session_reg:
-        open_orders = db.session.query(Order).filter(
-            Order.status == _OS.OPEN,
-            Order.table_id.isnot(None)
-        ).all()
-        occupied_table_ids = {str(o.table_id) for o in open_orders}
+    open_orders = db.session.query(Order).filter(
+        Order.status == _OS.OPEN,
+        Order.table_id.isnot(None)
+    ).all()
+    occupied_table_ids = {str(o.table_id) for o in open_orders}
         
     status_data = {
         str(t.id): "occupied" if str(t.id) in occupied_table_ids else "available"

@@ -1,80 +1,217 @@
+"""
+seed.py — Inyección de datos iniciales
+Basado en domain.py. Solo inserta productos ACTIVE del catálogo.
+Seguro para re-ejecución: aborta si ya existen usuarios en la BD.
+"""
+
 from app import create_app
 from app.extensions import db
-from app.models import User, Category, Product, Table, StoreSetting, UserRole, GenericStatus
+from app.models import (
+    User, Category, Product, Table, StoreSetting,
+    UserRole, UserStatus, GenericStatus,
+)
 from werkzeug.security import generate_password_hash
 
 app = create_app()
 
 with app.app_context():
-    print("Iniciando la inyección de datos semilla (COF-24)...")
+    # ── Guard de idempotencia ────────────────────────────────────────────────
+    if User.query.first():
+        print("[SEED] Ya existen datos en la BD. Abortando para evitar duplicados.")
+        exit(0)
 
-    # 1. Crear 2 Usuarios (Admin y Cajero)
-    admin_user = User(
-        username="admin",
-        password_hash=generate_password_hash("admin123"),
-        role=UserRole.ADMIN
-    )
-    cashier_user = User(
-        username="cashier",
-        password_hash=generate_password_hash("cashier123"),
-        role=UserRole.CASHIER
-    )
-    db.session.add_all([admin_user, cashier_user])
+    print("[SEED] Iniciando inyección de datos...")
 
-    # 2. Crear 5 Categorías
-    cat_names = ["Café", "Bebidas Frías", "Postres", "Snacks", "Otros"]
-    categories = []
-    for i, name in enumerate(cat_names):
-        cat = Category(name=name, slug=f"cat_{i}")
-        categories.append(cat)
-    db.session.add_all(categories)
-    db.session.flush() # Flush para obtener los IDs temporalmente
-
-    # 3. Crear 15 Productos distribuidos
-    products = [
-        Product(name="Espresso", sku="CAFE-001", price=3500, category_id=categories[0].id),
-        Product(name="Americano", sku="CAFE-002", price=4000, category_id=categories[0].id),
-        Product(name="Capuccino", sku="CAFE-003", price=5500, category_id=categories[0].id),
-        Product(name="Latte", sku="CAFE-004", price=6000, category_id=categories[0].id),
-        
-        Product(name="Frappé de Caramelo", sku="FRIO-001", price=8000, category_id=categories[1].id),
-        Product(name="Limonada Cerezada", sku="FRIO-002", price=6500, category_id=categories[1].id),
-        Product(name="Té Helado", sku="FRIO-003", price=5000, category_id=categories[1].id),
-        
-        Product(name="Torta de Chocolate", sku="POST-001", price=7500, category_id=categories[2].id),
-        Product(name="Cheesecake", sku="POST-002", price=8500, category_id=categories[2].id),
-        Product(name="Brownie con Helado", sku="POST-003", price=9000, category_id=categories[2].id),
-        
-        Product(name="Empanada", sku="SNK-001", price=2500, category_id=categories[3].id),
-        Product(name="Palito de Queso", sku="SNK-002", price=3000, category_id=categories[3].id),
-        Product(name="Sandwich Jamón y Queso", sku="SNK-003", price=6000, category_id=categories[3].id),
-        
-        Product(name="Botella de Agua", sku="OTR-001", price=2500, category_id=categories[4].id),
-        Product(name="Gaseosa", sku="OTR-002", price=3500, category_id=categories[4].id),
+    # ── 1. Usuarios ──────────────────────────────────────────────────────────
+    users = [
+        User(
+            username="admin",
+            password_hash=generate_password_hash("admin123"),
+            role=UserRole.ADMIN,
+            first_name="Admin",
+            last_name="Principal",
+            email="admin@coffeepos.co",
+            phone="3001234567",
+            status=UserStatus.ACTIVE,
+        ),
+        User(
+            username="cashier",
+            password_hash=generate_password_hash("cashier123"),
+            role=UserRole.CASHIER,
+            first_name="Cajero",
+            last_name="Principal",
+            email="cajero@coffeepos.co",
+            phone="3007654321",
+            status=UserStatus.ACTIVE,
+        ),
     ]
-    db.session.add_all(products)
+    db.session.add_all(users)
+    print(f"  → {len(users)} usuarios creados.")
 
-    # 4. Crear 8 Mesas
-    tables = []
-    for i in range(1, 9):
-        # Capacidad aleatoria de 2 o 4 personas
-        capacity = 4 if i % 2 == 0 else 2 
-        tables.append(Table(name=f"Mesa {i}", capacity=capacity, status=GenericStatus.ACTIVE))
+    # ── 2. Categorías ────────────────────────────────────────────────────────
+    cat_data = [
+        ("Café",          "cafe"),
+        ("Bebidas Frías", "bebidas-frias"),
+        ("Postres",       "postres"),
+        ("Snacks",        "snacks"),
+        ("Otros",         "otros"),
+    ]
+    categories: dict[str, Category] = {}
+    for name, slug in cat_data:
+        cat = Category(name=name, slug=slug, status=GenericStatus.ACTIVE)
+        db.session.add(cat)
+        categories[name] = cat
+
+    db.session.flush()  # Obtiene los UUIDs antes del commit
+    print(f"  → {len(categories)} categorías creadas.")
+
+    # ── 3. Productos (solo registros 'active' del CSV) ───────────────────────
+    #
+    # Columnas: name, sku, price, unit_cost, stock, min_stock, image_url, category
+    #
+    # NOTA: El image_url del Americano (CAF-002) en el CSV apunta a la imagen
+    # de la Torta de Chocolate. Es un error en el origen; se conserva tal cual.
+    #
+    products_data = [
+        # ── Café ──────────────────────────────────────────────────────────────
+        (
+            "Espresso", "CAF-001", 3500, 2450, 12, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061315/26_koaxec.jpg",
+            "Café",
+        ),
+        (
+            "Americano", "CAF-002", 4000, 2800, 33, 0,
+            # ⚠ URL apunta a imagen de Torta de Chocolate — corregir en producción
+            "https://media.istockphoto.com/id/1326149453/es/foto/rebanada-de-pastel-de-chocolate-negro.jpg"
+            "?s=612x612&w=0&k=20&c=7nDwRIY7jFBTWw_4BbP00JoZcDMkVqoGejTOwG9e77o=",
+            "Café",
+        ),
+        (
+            "Capuccino", "CAF-003", 5500, 3850, 20, 3,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061659/"
+            "WhatsApp_Image_2025-10-25_at_4.52.56_PM_2_cyv7ax.jpg",
+            "Café",
+        ),
+        (
+            "Latte", "CAF-004", 6000, 4200, 28, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061327/66.1_lma2ds.jpg",
+            "Café",
+        ),
+        # ── Bebidas Frías ─────────────────────────────────────────────────────
+        (
+            "Frappé de Caramelo", "FRI-001", 8000, 5600, 75, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061325/"
+            "WhatsApp_Image_2025-10-08_at_1.42.35_PM_yan0ii.jpg",
+            "Bebidas Frías",
+        ),
+        (
+            "Limonada Cerezada", "FRI-002", 6500, 4550, 37, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061319/55.1_a9pf71.jpg",
+            "Bebidas Frías",
+        ),
+        (
+            "Té Helado", "FRI-003", 5000, 3500, 24, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061333/"
+            "WhatsApp_Image_2025-10-08_at_2.11.26_PM_tioi2j.jpg",
+            "Bebidas Frías",
+        ),
+        # ── Postres ───────────────────────────────────────────────────────────
+        (
+            "Torta de Chocolate", "POT-001", 7500, 5250, 57, 0,
+            "https://media.istockphoto.com/id/1326149453/es/foto/rebanada-de-pastel-de-chocolate-negro.jpg"
+            "?s=612x612&w=0&k=20&c=7nDwRIY7jFBTWw_4BbP00JoZcDMkVqoGejTOwG9e77o=",
+            "Postres",
+        ),
+        (
+            "Cheesecake", "POT-002", 8500, 5950, 32, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1762061149/samples/food/dessert.jpg",
+            "Postres",
+        ),
+        (
+            "Brownie con Helado", "POT-003", 9000, 6300, 18, 0,
+            "https://res.cloudinary.com/dxfh4t8jw/image/upload/v1778613351/b-helado_dvxe6j.jpg",
+            "Postres",
+        ),
+        # ── Snacks ────────────────────────────────────────────────────────────
+        (
+            "Empanada", "SNK-001", 2500, 1750, 15, 0,
+            "https://therecipecritic.com/wp-content/uploads/2025/08/empanadas.jpg",
+            "Snacks",
+        ),
+        (
+            "Palito de Queso", "SNK-002", 3000, 2100, 22, 0,
+            "https://elmolino.com.co/wp-content/uploads/2020/05/palitos-de-queso-artesanales-el-molino-cali.webp",
+            "Snacks",
+        ),
+        (
+            "Sandwich Jamón y Queso", "SNK-003", 6000, 4200, 26, 0,
+            "https://img.freepik.com/fotos-premium/sandwich-jamon-queso_105495-191.jpg",
+            "Snacks",
+        ),
+        # ── Otros ─────────────────────────────────────────────────────────────
+        (
+            "Botella de Agua", "OTR-001", 2500, 1750, 20, 0,
+            "https://http2.mlstatic.com/D_NQ_NP_925362-MLM94592678424_102025-O.webp",
+            "Otros",
+        ),
+        (
+            "Gaseosa", "OTR-002", 3500, 2450, 37, 0,
+            "https://img.magnific.com/fotos-premium/botella-coca-cola-muestra-etiqueta-roja_854579-298.jpg"
+            "?semt=ais_hybrid&w=740&q=80",
+            "Otros",
+        ),
+    ]
+
+    for name, sku, price, unit_cost, stock, min_stock, image_url, cat_key in products_data:
+        db.session.add(Product(
+            name=name,
+            sku=sku,
+            price=price,
+            unit_cost=unit_cost,
+            stock=stock,
+            min_stock=min_stock,
+            image_url=image_url,
+            category_id=categories[cat_key].id,
+            status=GenericStatus.ACTIVE,
+        ))
+
+    print(f"  → {len(products_data)} productos creados.")
+
+    # ── 4. Mesas ─────────────────────────────────────────────────────────────
+    tables = [
+        Table(
+            name=f"Mesa {i}",
+            capacity=4 if i % 2 == 0 else 2,
+            status=GenericStatus.ACTIVE,
+        )
+        for i in range(1, 9)
+    ]
     db.session.add_all(tables)
+    print(f"  → {len(tables)} mesas creadas.")
 
-    # 5. Crear 1 StoreSetting
-    settings = StoreSetting(
-        business_name="CoffeePOS Tienda Principal",
-        tax_percentage=19.00,  # 19% IVA (por ejemplo)
+    # ── 5. StoreSetting ──────────────────────────────────────────────────────
+    db.session.add(StoreSetting(
+        business_name="Tiendas de Promisión",
+        commercial_name="CoffeePOS",
+        address="Centro, Neiva, Huila",
+        phone="3000000000",
+        email="info@coffeepos.co",
         currency="COP",
-        address="Centro, Neiva",
-        phone="3000000000"
-    )
-    db.session.add(settings)
+        language="es-CO",
+        timezone="America/Bogota",
+        country_code="CO",
+        tax_percentage=19.00,
+        invoice_prefix="FAC",
+        next_invoice_number=1,
+        receipt_footer="¡Gracias por tu visita! Vuelve pronto.",
+    ))
+    print("  → StoreSetting creado.")
 
+    # ── Commit ───────────────────────────────────────────────────────────────
     try:
         db.session.commit()
-        print("¡COF-24 Completado! Base de datos poblada con los criterios exactos de Jira.")
+        print("[SEED] Completado exitosamente.")
     except Exception as e:
         db.session.rollback()
-        print(f"Error al poblar la base de datos: {e}")
+        print(f"[SEED] Error durante el commit: {e}")
+        raise

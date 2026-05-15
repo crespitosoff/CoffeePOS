@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session as flask_session
 from flask_login import login_required, current_user
 from app.utils.decorators import cashier_required
 from app.services.order_service import OrderService
@@ -229,10 +229,14 @@ def create_order():
 @cashier_required
 def view_order(table_id):
     try:
-        session = RegisterService.get_active_session(user_id=str(current_user.id))
-        if not session:
+        session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
+        is_admin = flask_session.get('role') == 'ADMIN'
+        
+        if not session_reg and not is_admin:
             flash("Debe abrir caja antes de tomar pedidos.", "warning")
             return redirect(url_for("pos.open_register_form"))
+
+        read_only = not session_reg
 
         db_table_id = None if table_id == "takeaway" else table_id
         table_name  = "Para llevar"
@@ -269,6 +273,7 @@ def view_order(table_id):
             table_id=table_id,
             categories=categories,
             tables=all_tables,
+            read_only=read_only,
         )
     except Exception as e:
         flash(str(e), "danger")

@@ -90,20 +90,20 @@
         <p class="font-label-md text-label-md text-on-surface-variant">tarjeta + transferencia</p>
     </div>
 
-    {# Alertas ── muestra cajas sin cerrar GLOBALES #}
-    {% set has_alert = (open_sessions_total > 0) or suspicious_count > 0 %}
+    {# Alertas ── muestra cajas sin cerrar GLOBALES y diferencias de caja sospechosas #}
+    {% set has_alert = (open_sessions_total > 0) or (suspicious_count > 0) %}
     <div class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
                 {{ 'bg-error-container/30 border-error/30' if has_alert else 'bg-surface-container-lowest border-outline-variant/15' }}">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alertas</span>
-            <span class="material-symbols-outlined text-xl {{ 'text-error' if has_alert else 'text-on-surface-variant' }}"
-                  style="font-variation-settings:'FILL' 1;">warning</span>
+            <span class="material-symbols-outlined text-xl {{ 'text-error' if has_alert else 'text-[#10B981]' if suspicious_count == 0 else 'text-on-surface-variant' }}"
+                  style="font-variation-settings:'FILL' 1;">{{ 'warning' if has_alert else 'check_circle' }}</span>
         </div>
-        <p class="font-headline-lg text-headline-lg {{ 'text-error' if has_alert else 'text-on-surface' }}">
+        <p class="font-headline-lg text-headline-lg {{ 'text-error' if suspicious_count > 0 else 'text-[#10B981]' }}">
             {{ suspicious_count }}
         </p>
         <p class="font-label-md text-label-md text-on-surface-variant">
-            retiro(s) sospechoso(s)
+            diferencia(s) de caja sospechosa(s)
             {% if open_sessions_total > 0 %}
                 · <span class="text-error font-semibold">{{ open_sessions_total }} caja(s) sin cerrar</span>
             {% endif %}
@@ -125,7 +125,7 @@
     </div>
 
     <div class="overflow-x-auto">
-        <table class="w-full text-left min-w-[900px]">
+        <table class="w-full text-left">
             <thead>
                 <tr class="border-b border-outline-variant/10 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                     <th class="py-3 px-5">Cajero</th>
@@ -228,7 +228,7 @@
         </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full text-left min-w-[700px]">
+        <table class="w-full text-left">
             <thead>
                 <tr class="border-b border-error/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                     <th class="py-3 px-5">Cajero</th>

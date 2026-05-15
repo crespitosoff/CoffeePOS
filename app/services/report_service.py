@@ -23,7 +23,7 @@ from app.models.domain import (
 # Umbral para marcar un retiro como "sospechoso"
 # Se puede mover a store_settings en el futuro.
 # ---------------------------------------------------------------------------
-SUSPICIOUS_WITHDRAWAL_THRESHOLD = Decimal("50000")  # COP
+SUSPICIOUS_WITHDRAWAL_THRESHOLD = Decimal("10000")  # COP
 
 
 class ReportService:

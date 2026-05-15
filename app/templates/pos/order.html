@@ -130,11 +130,11 @@
         {# ── Grilla de Productos ─────────────────────────────────────────── #}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5" id="products-grid">
             {% for product in products %}
-            <button data-product-id="{{ product.id }}" data-product-name="{{ product.name | lower }}"
+            <button {% if read_only %}disabled{% endif %} data-product-id="{{ product.id }}" data-product-name="{{ product.name | lower }}"
                 data-product-sku="{{ (product.sku or '') | lower }}" data-category-id="{{ product.category_id or '' }}"
                 class="product-card bg-surface-container-lowest rounded-[1.5rem] p-4 flex flex-col gap-3
-                       shadow-[0px_8px_24px_rgba(35,25,21,0.06)] hover:bg-surface-container-low
-                       transition-all cursor-pointer relative overflow-hidden group hover:scale-[1.02]
+                       shadow-[0px_8px_24px_rgba(35,25,21,0.06)] transition-all relative overflow-hidden group 
+                       {% if read_only %}opacity-50 cursor-not-allowed{% else %}hover:bg-surface-container-low cursor-pointer hover:scale-[1.02]{% endif %}
                        text-left border border-outline-variant/10">
                 <img class="w-full h-36 object-cover rounded-xl" alt="{{ product.name }}"
                     src="{{ product.image_url or 'https://placehold.co/400x300/f5f1ed/763000?text=' ~ (product.name | urlencode) }}"
@@ -155,11 +155,13 @@
                         <span class="font-headline-md text-headline-md text-primary leading-none">
                             ${{ "{:,.2f}".format(product.price) }}
                         </span>
+                        {% if not read_only %}
                         <div
                             class="bg-primary text-on-primary w-10 h-10 rounded-full flex items-center justify-center
                                     opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-1 group-hover:translate-y-0">
                             <span class="material-symbols-outlined text-sm">add</span>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </button>
@@ -179,7 +181,7 @@
     </div>
 
     {# ── Columna Derecha: Carrito ─────────────────────────────────────────── #}
-    <aside class="w-full lg:w-80 lg:min-w-[20rem] bg-surface-container-low border-t lg:border-t-0
+    <aside class="w-full lg:w-1/3 lg:max-w-sm bg-surface-container-low border-t lg:border-t-0
                   lg:border-l border-outline-variant/15 flex flex-col h-auto lg:h-screen lg:sticky lg:top-0 z-20">
 
         {# Encabezado del carrito #}
@@ -196,7 +198,7 @@
         {# Ítems del carrito #}
         <div class="flex-grow overflow-y-auto p-5 flex flex-col gap-4" id="cart-items-container">
             {% if order and order.order_items %}
-            {% for item in order.order_items %}
+            {% for item in order.order_items|sort(attribute='created_at') %}
             <div class="cart-item {% if loop.index > 4 %}hidden extra-item{% endif %} bg-surface-container-lowest p-4 rounded-[1.5rem] flex flex-col gap-3
                         shadow-[0px_6px_16px_rgba(35,25,21,0.04)]">
                 <div class="flex justify-between items-start">
@@ -204,25 +206,31 @@
                         <h4 class="font-title-lg text-title-lg text-on-surface">{{ item.product.name }}</h4>
                         <span class="font-label-sm text-label-sm text-on-surface-variant">{{ item.product.sku }}</span>
                     </div>
+                    {% if not read_only %}
                     <button class="text-outline hover:text-error transition-colors ml-2" data-action="remove"
                         data-item-id="{{ item.id }}">
                         <span class="material-symbols-outlined text-base">close</span>
                     </button>
+                    {% endif %}
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3 bg-surface-container-high rounded-full p-1">
+                        {% if not read_only %}
                         <button
                             class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm"
                             data-action="decrease" data-item-id="{{ item.id }}">
                             <span class="material-symbols-outlined text-sm">remove</span>
                         </button>
+                        {% endif %}
                         <span class="font-title-md text-title-md text-on-surface w-6 text-center">{{ item.quantity
                             }}</span>
+                        {% if not read_only %}
                         <button
                             class="w-8 h-8 rounded-full bg-surface-container-lowest flex items-center justify-center shadow-sm"
                             data-action="increase" data-item-id="{{ item.id }}">
                             <span class="material-symbols-outlined text-sm">add</span>
                         </button>
+                        {% endif %}
                     </div>
                     <span class="font-title-lg text-title-lg text-primary">${{ "{:,.2f}".format(item.subtotal) }}</span>
                 </div>
@@ -276,8 +284,8 @@
 
             <div class="flex flex-col gap-3">
                 {# Botón PAGAR #}
-                <a href="{{ url_for('pos.payment_form', order_id=order.id) if order else '#' }}" id="btn-pay" class="w-full py-4 rounded-[1.5rem] font-title-lg text-title-lg flex items-center justify-center gap-3 transition-all
-                          {% if not order or not order.order_items %}
+                <a href="{{ url_for('pos.payment_form', order_id=order.id) if order and not read_only else '#' }}" id="btn-pay" class="w-full py-4 rounded-[1.5rem] font-title-lg text-title-lg flex items-center justify-center gap-3 transition-all
+                          {% if not order or not order.order_items or read_only %}
                               bg-surface-container-highest text-outline cursor-not-allowed pointer-events-none
                           {% else %}
                               bg-primary text-on-primary shadow-[0px_8px_24px_rgba(35,25,21,0.12)] hover:scale-[1.01]
@@ -287,10 +295,10 @@
                 </a>
 
                 {# Botón CANCELAR #}
-                <button id="btn-cancel-order" {% if not order %}disabled{% endif %}
+                <button id="btn-cancel-order" {% if not order or read_only %}disabled{% endif %}
                     data-cancel-url="{{ url_for('pos.cancel_order', order_id=order.id) if order else '#' }}"
                     type="button"
-                    class="{% if not order %}opacity-50 cursor-not-allowed{% endif %} bg-surface border border-error/30 text-error font-title-md text-title-md py-3
+                    class="{% if not order or read_only %}opacity-50 cursor-not-allowed{% endif %} bg-surface border border-error/30 text-error font-title-md text-title-md py-3
                                hover:bg-error/10 rounded-xl transition-all w-full flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-sm">cancel</span>
                     Cancelar Orden

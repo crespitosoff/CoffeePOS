@@ -37,43 +37,67 @@
 {# ── Tabla de productos ──────────────────────────────────────────────────── #}
 <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/15 overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="w-full text-left min-w-[800px]">
+        <table class="w-full text-left w-full" id="productsTable">
             <thead>
                 <tr class="border-b border-outline-variant/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
-                    <th class="py-3 px-5">Nombre / SKU</th>
-                    <th class="py-3 px-4">Categoría</th>
-                    <th class="py-3 px-4">Precio</th>
-                    <th class="py-3 px-4">Costo</th>
-                    <th class="py-3 px-4">Stock</th>
-                    <th class="py-3 px-4">Estado</th>
+                    <th class="py-3 px-5 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="sku">SKU <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="name">Nombre <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="category">Categoría <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="price">Precio <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="cost">Costo <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="stock">Stock <span class="sort-icon text-xs inline-block ml-1"></span></th>
+                    <th class="py-3 px-4">Descripción</th>
+                    <th class="py-3 px-4 cursor-pointer hover:bg-surface-container-high transition-colors select-none" data-sort="status">Estado <span class="sort-icon text-xs inline-block ml-1"></span></th>
                     <th class="py-3 px-4 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in products %}
-                <tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors
-                           {% if p.status and p.status.value == 'archived' %}opacity-50{% endif %}">
-                    <td class="py-4 px-5 font-title-md text-title-md text-on-surface">
+                <tr class="product-row border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors {% if p.status and p.status.value == 'archived' %}opacity-50{% endif %}"
+                    data-sku="{{ p.sku | default('', true) }}"
+                    data-name="{{ p.name }}"
+                    data-category="{{ p.category.name if p.category else '' }}"
+                    data-price="{{ p.price }}"
+                    data-cost="{{ p.unit_cost or 0 }}"
+                    data-stock="{{ p.stock if p.stock is not none else 999999 }}"
+                    data-status="{{ p.status.value if p.status else '' }}"
+                    data-updated="{{ p.updated_at.isoformat() if p.updated_at else '1970-01-01' }}">
+                    <td class="py-4 px-5 font-body-md text-body-md text-on-surface-variant">{{ p.sku }}</td>
+                    <td class="py-4 px-4 font-title-md text-title-md text-on-surface">
                         {{ p.name }}
-                        <span class="block text-sm text-on-surface-variant font-normal">{{ p.sku }}</span>
                         {% if p.stock is not none and p.min_stock is not none and p.stock <= p.min_stock and p.stock >= 0 %}
                         <span class="ml-2 text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full">
                             Stock bajo
                         </span>
                         {% endif %}
                     </td>
-                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface-variant">
+                    <td class="py-4 px-4 font-body-md text-body-md text-on-surface-variant">
                         {{ p.category.name if p.category else '—' }}
                     </td>
-                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
+                    <td class="py-4 px-4 font-body-md text-body-md text-on-surface">
                         ${{ "{:,.2f}".format(p.price) }}
                     </td>
-                    <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface-variant">
+                    <td class="py-4 px-4 font-body-md text-body-md text-on-surface-variant">
                         ${{ "{:,.2f}".format(p.unit_cost or 0) }}
                     </td>
-                    <td class="py-4 px-4 font-body-lg text-body-lg
+                    <td class="py-4 px-4 font-body-md text-body-md
                                {% if p.stock is not none and p.stock <= 0 %}text-error font-semibold{% else %}text-on-surface{% endif %}">
                         {{ p.stock if p.stock is not none else '∞' }}
+                    </td>
+                    <td class="py-4 px-4 font-body-md text-body-md text-on-surface-variant max-w-[200px]">
+                        {% if p.description %}
+                            {% if p.description|length > 40 %}
+                                <div class="truncate-desc">
+                                    <span class="desc-short">{{ p.description[:40] }}...</span>
+                                    <span class="desc-full hidden">{{ p.description }}</span>
+                                    <button class="text-primary text-sm hover:underline ml-1 btn-ver-mas">Ver más</button>
+                                </div>
+                            {% else %}
+                                {{ p.description }}
+                            {% endif %}
+                        {% else %}
+                            —
+                        {% endif %}
                     </td>
                     <td class="py-4 px-4">
                         {% if p.status and p.status.value == 'active' %}
@@ -155,9 +179,11 @@
 </div>
 
 <script>
-    const modal        = document.getElementById('delete-modal');
-    const deleteForm   = document.getElementById('delete-form');
-    const productName  = document.getElementById('delete-product-name');
+document.addEventListener('DOMContentLoaded', () => {
+    // Modal script
+    const modal = document.getElementById('delete-modal');
+    const productName = document.getElementById('delete-product-name');
+    const deleteForm = document.getElementById('delete-form');
     const cancelDelete = document.getElementById('modal-cancel-delete');
 
     document.querySelectorAll('.btn-delete').forEach(btn => {
@@ -170,5 +196,78 @@
 
     cancelDelete.addEventListener('click', () => modal.classList.add('hidden'));
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    // Ver más logic
+    document.querySelectorAll('.btn-ver-mas').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const container = this.closest('.truncate-desc');
+            const shortDesc = container.querySelector('.desc-short');
+            const fullDesc = container.querySelector('.desc-full');
+
+            if (fullDesc.classList.contains('hidden')) {
+                fullDesc.classList.remove('hidden');
+                shortDesc.classList.add('hidden');
+                this.textContent = 'Ver menos';
+            } else {
+                fullDesc.classList.add('hidden');
+                shortDesc.classList.remove('hidden');
+                this.textContent = 'Ver más';
+            }
+        });
+    });
+
+    // Table sorting logic
+    const table = document.getElementById('productsTable');
+    const tbody = table.querySelector('tbody');
+    const headers = table.querySelectorAll('th[data-sort]');
+    let currentSort = { column: 'updated', desc: true };
+
+    function sortTable(column, desc) {
+        const rows = Array.from(tbody.querySelectorAll('tr.product-row'));
+
+        rows.sort((a, b) => {
+            let valA = a.dataset[column] || '';
+            let valB = b.dataset[column] || '';
+
+            if (['price', 'cost', 'stock'].includes(column)) {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
+            } else {
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+            }
+
+            if (valA < valB) return desc ? 1 : -1;
+            if (valA > valB) return desc ? -1 : 1;
+            return 0;
+        });
+
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+
+        headers.forEach(th => {
+            const icon = th.querySelector('.sort-icon');
+            if (icon) icon.textContent = '';
+            if (th.dataset.sort === column) {
+                if (icon) icon.textContent = desc ? '▼' : '▲';
+            }
+        });
+    }
+
+    sortTable(currentSort.column, currentSort.desc);
+
+    headers.forEach(th => {
+        th.addEventListener('click', () => {
+            const column = th.dataset.sort;
+            if (currentSort.column === column) {
+                currentSort.desc = !currentSort.desc;
+            } else {
+                currentSort.column = column;
+                currentSort.desc = false;
+            }
+            sortTable(currentSort.column, currentSort.desc);
+        });
+    });
+});
 </script>
 {% endblock %}

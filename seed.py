@@ -15,10 +15,7 @@ from werkzeug.security import generate_password_hash
 app = create_app()
 
 with app.app_context():
-    # ── Guard de idempotencia ────────────────────────────────────────────────
-    if User.query.first():
-        print("[SEED] Ya existen datos en la BD. Abortando para evitar duplicados.")
-        exit(0)
+
 
     print("[SEED] Iniciando inyección de datos...")
 

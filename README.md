@@ -325,9 +325,12 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 **Restricciones:**
 - ❌ No puede desactivarse a sí mismo
 
-**Usuario por defecto:**
+**Usuarios por defecto:**
 - Username: `admin`
 - Password: `admin123`
+
+- Username: `adminsuple`
+- Password: `adminsuple123`
 
 ---
 
@@ -346,9 +349,12 @@ Crear un POS funcional y profesional que sirva como proyecto académico de últi
 - ❌ No puede crear/editar/eliminar usuarios
 - ❌ No puede ver sesiones de caja de otros cajeros
 
-**Usuario por defecto:**
-- Username: `cashier`
-- Password: `cashier123`
+**Usuarios por defecto:**
+- Username: `cajero1`
+- Password: `cajero1123`
+
+- Username: `cajero2`
+- Password: `cajero2123`
 
 ---
 

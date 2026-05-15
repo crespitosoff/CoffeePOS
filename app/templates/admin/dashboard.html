@@ -8,9 +8,9 @@
     <p class="font-body-lg text-body-lg text-on-surface-variant">
         Auditoría ·
         {% if start_date and end_date %}
-            {{ start_date.strftime('%d/%m/%Y') }} – {{ end_date.strftime('%d/%m/%Y') }}
+        {{ start_date.strftime('%d/%m/%Y') }} – {{ end_date.strftime('%d/%m/%Y') }}
         {% else %}
-            Últimos 7 días hasta hoy ({{ today }})
+        Últimos 7 días hasta hoy ({{ today }})
         {% endif %}
     </p>
 </div>
@@ -19,35 +19,29 @@
 {% block admin_content %}
 
 {# ── Filtros de Fecha ─────────────────────────────────────────────────────── #}
-<form method="GET" action="{{ url_for('admin.dashboard') }}"
-      class="flex flex-wrap items-end gap-4 mb-8
+<form method="GET" action="{{ url_for('admin.dashboard') }}" class="flex flex-wrap items-end gap-4 mb-8
              bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/15">
     <div class="flex flex-col gap-1">
         <label class="font-label-md text-label-md text-on-surface-variant" for="start_date">
             Desde
         </label>
-        <input id="start_date" name="start_date" type="date"
-               value="{{ start_date.isoformat() if start_date else '' }}"
-               class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
-                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none"/>
+        <input id="start_date" name="start_date" type="date" value="{{ start_date.isoformat() if start_date else '' }}"
+            class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
+                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none" />
     </div>
     <div class="flex flex-col gap-1">
         <label class="font-label-md text-label-md text-on-surface-variant" for="end_date">
             Hasta
         </label>
-        <input id="end_date" name="end_date" type="date"
-               value="{{ end_date.isoformat() if end_date else '' }}"
-               class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
-                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none"/>
+        <input id="end_date" name="end_date" type="date" value="{{ end_date.isoformat() if end_date else '' }}" class="bg-surface-container-high text-on-surface font-body-lg rounded-xl px-4 py-2.5
+                      focus:outline-none focus:ring-2 focus:ring-primary/30 border-none" />
     </div>
-    <button type="submit"
-            class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary
+    <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary
                    rounded-xl font-title-md text-title-md hover:opacity-90 transition-opacity">
         <span class="material-symbols-outlined text-sm">filter_list</span>
         Aplicar
     </button>
-    <a href="{{ url_for('admin.dashboard') }}"
-       class="flex items-center gap-2 px-5 py-2.5 border border-outline-variant text-on-surface-variant
+    <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-2 px-5 py-2.5 border border-outline-variant text-on-surface-variant
               rounded-xl font-title-md text-title-md hover:bg-surface-container transition-colors">
         <span class="material-symbols-outlined text-sm">restart_alt</span>
         Hoy
@@ -59,30 +53,37 @@
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
 
     {# Ventas del día #}
-    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+    <div
+        class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Ventas Hoy</span>
-            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1;">payments</span>
+            <span class="material-symbols-outlined text-primary text-xl"
+                style="font-variation-settings:'FILL' 1;">payments</span>
         </div>
         <p class="font-headline-lg text-headline-lg text-on-surface">${{ "{:,.0f}".format(daily.grand_total) }}</p>
         <p class="font-label-md text-label-md text-on-surface-variant">{{ daily.total_orders }} orden(es)</p>
     </div>
 
     {# Efectivo #}
-    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+    <div
+        class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Efectivo</span>
-            <span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+            <span class="material-symbols-outlined text-tertiary text-xl"
+                style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
         </div>
-        <p class="font-headline-lg text-headline-lg text-on-surface">${{ "{:,.0f}".format(daily.totals_by_method.cash) }}</p>
+        <p class="font-headline-lg text-headline-lg text-on-surface">${{ "{:,.0f}".format(daily.totals_by_method.cash)
+            }}</p>
         <p class="font-label-md text-label-md text-on-surface-variant">en caja física</p>
     </div>
 
     {# Tarjeta + Transferencia #}
-    <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
+    <div
+        class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/15 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Digital</span>
-            <span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings:'FILL' 1;">credit_card</span>
+            <span class="material-symbols-outlined text-secondary text-xl"
+                style="font-variation-settings:'FILL' 1;">credit_card</span>
         </div>
         <p class="font-headline-lg text-headline-lg text-on-surface">
             ${{ "{:,.0f}".format(daily.totals_by_method.card + daily.totals_by_method.transfer) }}
@@ -92,20 +93,22 @@
 
     {# Alertas ── muestra cajas sin cerrar GLOBALES y diferencias de caja sospechosas #}
     {% set has_alert = (open_sessions_total > 0) or (suspicious_count > 0) %}
-    <div class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
+    <div
+        class="rounded-2xl p-5 shadow-sm border flex flex-col gap-2
                 {{ 'bg-error-container/30 border-error/30' if has_alert else 'bg-surface-container-lowest border-outline-variant/15' }}">
         <div class="flex items-center justify-between">
             <span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alertas</span>
-            <span class="material-symbols-outlined text-xl {{ 'text-error' if has_alert else 'text-[#10B981]' if suspicious_count == 0 else 'text-on-surface-variant' }}"
-                  style="font-variation-settings:'FILL' 1;">{{ 'warning' if has_alert else 'check_circle' }}</span>
+            <span
+                class="material-symbols-outlined text-xl {{ 'text-error' if has_alert else 'text-[#10B981]' if suspicious_count == 0 else 'text-on-surface-variant' }}"
+                style="font-variation-settings:'FILL' 1;">{{ 'warning' if has_alert else 'check_circle' }}</span>
         </div>
-        <p class="font-headline-lg text-headline-lg {{ 'text-error' if suspicious_count > 0 else 'text-[#10B981]' }}">
+        <p class="font-headline-lg text-headline-lg {{ 'text-error' if suspicious_count > 0 else 'text-emerald-500' }}">
             {{ suspicious_count }}
         </p>
         <p class="font-label-md text-label-md text-on-surface-variant">
             diferencia(s) de caja sospechosa(s)
             {% if open_sessions_total > 0 %}
-                · <span class="text-error font-semibold">{{ open_sessions_total }} caja(s) sin cerrar</span>
+            · <span class="text-error font-semibold">{{ open_sessions_total }} caja(s) sin cerrar</span>
             {% endif %}
         </p>
     </div>
@@ -127,7 +130,8 @@
     <div class="overflow-x-auto">
         <table class="w-full text-left">
             <thead>
-                <tr class="border-b border-outline-variant/10 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <tr
+                    class="border-b border-outline-variant/10 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                     <th class="py-3 px-5">Cajero</th>
                     <th class="py-3 px-4">Apertura</th>
                     <th class="py-3 px-4">Cierre</th>
@@ -147,7 +151,7 @@
                         {{ s.opener }}
                         {% if s.has_alerts %}
                         <span class="material-symbols-outlined text-error text-sm align-middle ml-1"
-                              style="font-variation-settings:'FILL' 1;">warning</span>
+                            style="font-variation-settings:'FILL' 1;">warning</span>
                         {% endif %}
                     </td>
                     <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
@@ -155,9 +159,10 @@
                     </td>
                     <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
                         {% if s.closed_at %}
-                            {{ s.closed_at.strftime('%d/%m %H:%M') }}
+                        {{ s.closed_at.strftime('%d/%m %H:%M') }}
                         {% else %}
-                            <span class="text-secondary bg-secondary-container/40 px-2 py-0.5 rounded-full text-xs font-medium">Abierta</span>
+                        <span
+                            class="text-secondary bg-secondary-container/40 px-2 py-0.5 rounded-full text-xs font-medium">Abierta</span>
                         {% endif %}
                     </td>
                     <td class="py-4 px-4 font-body-lg text-body-lg text-on-surface">
@@ -171,14 +176,14 @@
                     </td>
                     <td class="py-4 px-4 font-title-md text-title-md">
                         {% if s.difference is not none %}
-                            <span class="px-3 py-1 rounded-full text-sm font-semibold
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold
                                 {% if s.discrepancy_status == 'deficit' %}bg-error/15 text-error
                                 {% elif s.discrepancy_status == 'surplus' %}bg-tertiary/15 text-tertiary
                                 {% else %}bg-primary/10 text-primary{% endif %}">
-                                {% if s.difference > 0 %}+{% endif %}${{ "{:,.0f}".format(s.difference) }}
-                            </span>
+                            {% if s.difference > 0 %}+{% endif %}${{ "{:,.0f}".format(s.difference) }}
+                        </span>
                         {% else %}
-                            <span class="text-on-surface-variant">—</span>
+                        <span class="text-on-surface-variant">—</span>
                         {% endif %}
                     </td>
                     <td class="py-4 px-4 text-on-surface-variant font-body-lg text-body-lg">
@@ -189,9 +194,11 @@
                     </td>
                     <td class="py-4 px-4">
                         {% if s.status == 'open' %}
-                        <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-sm font-medium">Abierta</span>
+                        <span
+                            class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-sm font-medium">Abierta</span>
                         {% else %}
-                        <span class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-sm font-medium">Cerrada</span>
+                        <span
+                            class="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full text-sm font-medium">Cerrada</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -210,7 +217,8 @@
 {# ── Retiros Sospechosos ──────────────────────────────────────────────────── #}
 {% if suspicious_count == 0 %}
 <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/15 flex items-center gap-4">
-    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings:'FILL' 1;">verified_user</span>
+    <span class="material-symbols-outlined text-primary text-3xl"
+        style="font-variation-settings:'FILL' 1;">verified_user</span>
     <div>
         <p class="font-title-md text-title-md text-on-surface">Sin retiros sospechosos</p>
         <p class="font-body-lg text-body-lg text-on-surface-variant">
@@ -221,7 +229,8 @@
 {% else %}
 <div class="bg-error-container/20 rounded-2xl shadow-sm border border-error/30 overflow-hidden">
     <div class="px-6 py-4 border-b border-error/20 flex items-center gap-3">
-        <span class="material-symbols-outlined text-error text-xl" style="font-variation-settings:'FILL' 1;">gpp_bad</span>
+        <span class="material-symbols-outlined text-error text-xl"
+            style="font-variation-settings:'FILL' 1;">gpp_bad</span>
         <div>
             <h2 class="font-title-lg text-title-lg text-error">Retiros Sospechosos</h2>
             <p class="font-label-md text-label-md text-on-surface-variant">Requieren revisión manual</p>
@@ -230,7 +239,8 @@
     <div class="overflow-x-auto">
         <table class="w-full text-left">
             <thead>
-                <tr class="border-b border-error/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+                <tr
+                    class="border-b border-error/15 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
                     <th class="py-3 px-5">Cajero</th>
                     <th class="py-3 px-4">Fecha/Hora</th>
                     <th class="py-3 px-4">Monto</th>

@@ -51,7 +51,6 @@ def dashboard():
 def api_tables_status():
     from app.models.domain import OrderStatus as _OS
     raw_tables = db.session.query(Table).all()
-    session_reg = RegisterService.get_active_session(user_id=str(current_user.id))
     
     open_orders = db.session.query(Order).filter(
         Order.status == _OS.OPEN,

@@ -44,7 +44,8 @@ def dashboard():
             start_date=start_date,
             end_date=end_date,
         )
-        suspicious_count = len(suspicious)
+        deficit_count = sum(1 for s in audit_trail if s.get('difference') is not None and s.get('difference') < 0)
+        suspicious_count = len(suspicious) + deficit_count
 
         return render_template(
             'admin/dashboard.html',

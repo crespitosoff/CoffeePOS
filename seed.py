@@ -25,17 +25,17 @@ with app.app_context():
     # ── 1. Usuarios ──────────────────────────────────────────────────────────
     users = [
         User(
-            username="admin",
+            username="administrador",
             password_hash=generate_password_hash("admin123"),
             role=UserRole.ADMIN,
-            first_name="Admin",
+            first_name="Administrador",
             last_name="Principal",
             email="admin@coffeepos.co",
             phone="3001234567",
             status=UserStatus.ACTIVE,
         ),
         User(
-            username="cashier",
+            username="cajero",
             password_hash=generate_password_hash("cashier123"),
             role=UserRole.CASHIER,
             first_name="Cajero",

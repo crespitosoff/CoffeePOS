@@ -12,7 +12,6 @@ __pycache__/
 
 # Variables de entorno y secretos
 .env
-.env.*
 
 # Entornos de desarrollo
 .vscode/

@@ -44,7 +44,11 @@
                     <td class="py-4 px-5">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                {% if u.avatar_url %}
+                                <img src="{{ u.avatar_url }}" alt="Avatar de {{ u.username }}" class="w-9 h-9 rounded-full object-cover">
+                                {% else %}
                                 <span class="material-symbols-outlined text-primary text-base">person</span>
+                                {% endif %}
                             </div>
                             <div>
                                 <p class="font-title-md text-title-md text-on-surface">{{ u.username }}</p>
